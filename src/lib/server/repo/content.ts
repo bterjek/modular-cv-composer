@@ -1,13 +1,15 @@
 // Owner-scoped access to CV content. Every function takes ownerId first and
 // every query filters on it (docs/SCHEMA.md §6). Nothing else may import the db client for content.
-import { and, eq, inArray, ne } from 'drizzle-orm';
+import { and, eq, inArray, max, ne, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { z } from 'zod';
 import { db } from '../db';
 import { entries, entryTags, items, itemTags, profiles, tags, variantTags, variants } from '../db/schema';
-import { MODULES, VARIANT_LENGTHS, entryData, type Module, type VariantLength } from '$lib/domain/modules';
+import { MODULES, VARIANT_LENGTHS, entryData, webUrl, type Module, type VariantLength } from '$lib/domain/modules';
 import { tagName } from '$lib/domain/recipe';
 import type { Content, EntryIn, ItemIn, VariantIn } from '$lib/domain/content';
+import { entryOrder, itemOrder } from '$lib/domain/order';
+import { categories, jobTargets } from '../db/schema';
 import { InvalidError, NotFoundError } from './errors';
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -44,13 +46,18 @@ function ownedVariant(tx: Db, ownerId: string, id: string) {
 	return row;
 }
 
+function nextPosition(tx: Db, table: typeof items | typeof variants, where: ReturnType<typeof eq>) {
+	const r = tx.select({ m: max(table.position) }).from(table).where(where).get();
+	return r?.m === null || r?.m === undefined ? 0 : r.m + 1;
+}
+
 // ── profile
 const profileInput = z.object({
 	fullName: z.string().trim().min(1).max(200),
 	email: z.email(),
 	phone: z.string().trim().max(50).nullish(),
 	location: z.string().trim().max(200).nullish(),
-	links: z.array(z.object({ label: z.string().trim().min(1).max(60), url: z.url() })).max(10).default([])
+	links: z.array(z.object({ label: z.string().trim().min(1).max(60), url: webUrl })).max(10).default([])
 });
 
 export function getProfile(ownerId: string) {
@@ -123,7 +130,7 @@ export function deleteEntry(ownerId: string, id: string) {
 // Update schemas never carry .default(): with Zod 4, defaults also fill fields left out of a
 // .partial() parse, which would silently reset them on every update.
 const itemFields = z.object({ position: z.number().int(), note: z.string().max(500).nullish() });
-const itemCreate = itemFields.extend({ position: z.number().int().default(0) });
+const itemCreate = itemFields.partial({ position: true });
 const itemPatch = itemFields.partial();
 
 export function createItem(ownerId: string, entryId: string, input: unknown = {}): string {
@@ -132,7 +139,8 @@ export function createItem(ownerId: string, entryId: string, input: unknown = {}
 	db.transaction((tx) => {
 		ownedEntry(tx, ownerId, entryId);
 		const now = Date.now();
-		tx.insert(items).values({ id, ownerId, entryId, position: i.position, note: i.note ?? null, createdAt: now, updatedAt: now }).run();
+		const position = i.position ?? nextPosition(tx, items, eq(items.entryId, entryId));
+		tx.insert(items).values({ id, ownerId, entryId, position, note: i.note ?? null, createdAt: now, updatedAt: now }).run();
 	});
 	return id;
 }
@@ -169,7 +177,7 @@ const variantCreate = z
 		text: z.string().trim().min(1).max(2000),
 		length: z.enum(VARIANT_LENGTHS).default('standard'),
 		isDefault: z.boolean().default(false),
-		position: z.number().int().default(0)
+		position: z.number().int().optional()
 	})
 	.refine((v) => Boolean(v.entryId) !== Boolean(v.itemId), 'Attach the wording to either an entry or an item');
 
@@ -191,8 +199,9 @@ export function createVariant(ownerId: string, input: unknown): string {
 		const target = { entryId: v.entryId ?? null, itemId: v.itemId ?? null };
 		if (v.isDefault) clearDefault(tx, ownerId, target);
 		const now = Date.now();
+		const position = v.position ?? nextPosition(tx, variants, target.entryId ? eq(variants.entryId, target.entryId) : eq(variants.itemId, target.itemId!));
 		tx.insert(variants)
-			.values({ id, ownerId, ...target, text: v.text, length: v.length, isDefault: v.isDefault, position: v.position, createdAt: now, updatedAt: now })
+			.values({ id, ownerId, ...target, text: v.text, length: v.length, isDefault: v.isDefault, position, createdAt: now, updatedAt: now })
 			.run();
 	});
 	return id;
@@ -243,14 +252,17 @@ export function setTags(ownerId: string, target: TagTarget, names: string[]) {
 		const ids = ensureTags(tx, ownerId, names);
 		if ('entryId' in target) {
 			ownedEntry(tx, ownerId, target.entryId);
+			tx.update(entries).set({ updatedAt: Date.now() }).where(eq(entries.id, target.entryId)).run();
 			tx.delete(entryTags).where(eq(entryTags.targetId, target.entryId)).run();
 			for (const tagId of ids) tx.insert(entryTags).values({ targetId: target.entryId, tagId }).run();
 		} else if ('itemId' in target) {
 			ownedItem(tx, ownerId, target.itemId);
+			tx.update(items).set({ updatedAt: Date.now() }).where(eq(items.id, target.itemId)).run();
 			tx.delete(itemTags).where(eq(itemTags.targetId, target.itemId)).run();
 			for (const tagId of ids) tx.insert(itemTags).values({ targetId: target.itemId, tagId }).run();
 		} else {
 			ownedVariant(tx, ownerId, target.variantId);
+			tx.update(variants).set({ updatedAt: Date.now() }).where(eq(variants.id, target.variantId)).run();
 			tx.delete(variantTags).where(eq(variantTags.targetId, target.variantId)).run();
 			for (const tagId of ids) tx.insert(variantTags).values({ targetId: target.variantId, tagId }).run();
 		}
@@ -323,4 +335,60 @@ export function loadContent(ownerId: string): Content {
 		profile: profile && { fullName: profile.fullName, email: profile.email, phone: profile.phone, location: profile.location, links: profile.links },
 		entries: entryList
 	};
+}
+
+// ── ordering (editor "move up / move down")
+/** Moves an entry one place within its section. Moving fixes a manual order for that section. */
+export function moveEntry(ownerId: string, id: string, direction: 'up' | 'down') {
+	db.transaction((tx) => {
+		const row = ownedEntry(tx, ownerId, id);
+		const list = tx
+			.select({ id: entries.id, position: entries.position, sortKey: entries.sortKey })
+			.from(entries)
+			.where(and(eq(entries.ownerId, ownerId), eq(entries.module, row.module)))
+			.all()
+			.sort(entryOrder);
+		reorder(list, id, direction).forEach((e, position) =>
+			tx.update(entries).set({ position }).where(eq(entries.id, e.id)).run()
+		);
+	});
+}
+
+export function moveItem(ownerId: string, id: string, direction: 'up' | 'down') {
+	db.transaction((tx) => {
+		const row = ownedItem(tx, ownerId, id);
+		const list = tx
+			.select({ id: items.id, position: items.position })
+			.from(items)
+			.where(and(eq(items.ownerId, ownerId), eq(items.entryId, row.entryId)))
+			.all()
+			.sort(itemOrder);
+		reorder(list, id, direction).forEach((i, position) =>
+			tx.update(items).set({ position, updatedAt: Date.now() }).where(eq(items.id, i.id)).run()
+		);
+	});
+}
+
+function reorder<T extends { id: string }>(list: T[], id: string, direction: 'up' | 'down'): T[] {
+	const i = list.findIndex((x) => x.id === id);
+	const j = direction === 'up' ? i - 1 : i + 1;
+	if (i < 0 || j < 0 || j >= list.length) return list;
+	const out = [...list];
+	[out[i], out[j]] = [out[j], out[i]];
+	return out;
+}
+
+// ── change detection for the live preview
+/** Changes whenever anything that affects a rendered CV changes (edits, deletes, tags, recipes, jobs). */
+export function contentRevision(ownerId: string): string {
+	const parts = [entries, items, variants, categories, jobTargets].map((t) => {
+		const r = db
+			.select({ n: sql<number>`count(*)`, m: max(t.updatedAt) })
+			.from(t)
+			.where(eq(t.ownerId, ownerId))
+			.get();
+		return `${r?.n ?? 0}.${r?.m ?? 0}`;
+	});
+	const p = db.select({ u: profiles.updatedAt }).from(profiles).where(eq(profiles.ownerId, ownerId)).get();
+	return [...parts, p?.u ?? 0].join('-');
 }

@@ -5,13 +5,14 @@ A hosted app for building CVs from reusable modules. Content is written once
 into tailored CVs through job-category recipes. The editor has a keyboard-driven,
 DOS-style interface; the CVs it produces are modern HTML (and PDF from the same HTML).
 
-**Status:** build step 4 of 7 — designed CV preview, HTML and PDF export (see **Assemble** in the app). Test mode (invite-only) until all features are confirmed.
+**Status:** build step 5 of 7 — DOS-style editor with live preview (switch on the `editor.dos-shell` flag in Admin). Test mode (invite-only) until all features are confirmed.
 
 ## Documents
 
 - [`docs/SCHEMA.md`](docs/SCHEMA.md) — the data model. Everything depends on it; change it first.
 - [`docs/AUTH.md`](docs/AUTH.md) — accounts, sessions, invites, first admin, resets, feature flags.
 - [`docs/RENDERING.md`](docs/RENDERING.md) — designs, live preview, HTML and PDF export, output safety.
+- [`docs/EDITOR.md`](docs/EDITOR.md) — the editor: keys, screens, live preview.
 
 ## Stack
 
@@ -67,6 +68,6 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
 2. ✅ Auth, invite gate, admin screen, feature flags, environments
 3. ✅ Assembly engine (recipe + overrides → resolved CV, with trace), owner-scoped content repository, example content
 4. ✅ Rendering: first modern HTML design, preview iframe, HTML + PDF export
-5. DOS-style editor shell
+5. ✅ DOS-style editor: profile, content, wordings, tags, categories, job tailoring, live preview
 6. Snapshots, share links, export and account deletion
 7. Remaining designs, feedback tool → testers in

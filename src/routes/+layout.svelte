@@ -15,6 +15,7 @@
 	<strong>MODULAR CV COMPOSER</strong>
 	{#if data.user}
 		<a href="/" aria-current={here('/')}>Home</a>
+		{#if data.flags.includes('editor.dos-shell')}<a href="/edit" aria-current={page.url.pathname.startsWith('/edit') ? 'page' : undefined}>Editor</a>{/if}
 		<a href="/assemble" aria-current={here('/assemble')}>Assemble</a>
 		<a href="/account" aria-current={here('/account')}>Account</a>
 		{#if data.user.role === 'admin'}<a href="/admin" aria-current={here('/admin')}>Admin</a>{/if}
@@ -24,10 +25,11 @@
 	{/if}
 </nav>
 
-<main id="main">{@render children()}</main>
+<main id="main" class:wide={page.url.pathname.startsWith('/edit')}>{@render children()}</main>
 
 <style>
 	.skip { position: absolute; left: -999px; }
 	.skip:focus { left: 1ch; top: 0.25rem; background: #ffff55; color: #000; padding: 0 1ch; z-index: 10; }
 	nav form { display: contents; }
+	main.wide { max-width: none; padding: 1rem 1.5ch 0; }
 </style>

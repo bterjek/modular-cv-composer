@@ -6,6 +6,7 @@ import { db } from '../db';
 import { categories, jobTargets } from '../db/schema';
 import { overrides as overridesSchema, recipe as recipeSchema, type Overrides } from '$lib/domain/recipe';
 import { resolve } from '$lib/domain/engine';
+import { webUrl } from '$lib/domain/modules';
 import { loadContent } from './content';
 import { InvalidError, NotFoundError } from './errors';
 
@@ -68,7 +69,7 @@ const jobTargetFields = z.object({
 	categoryId: z.string(),
 	company: z.string().trim().min(1).max(120),
 	roleTitle: z.string().trim().min(1).max(160),
-	jobUrl: z.url().nullish(),
+	jobUrl: webUrl.nullish(),
 	jobAdText: z.string().max(50_000).nullish(),
 	overrides: overridesSchema,
 	status: z.enum(['draft', 'sent', 'archived'])

@@ -21,7 +21,9 @@ export type VariantLength = (typeof VARIANT_LENGTHS)[number];
 export const CREDENTIAL_KINDS = ['certification', 'course', 'license', 'membership'] as const;
 
 const yearMonth = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use YYYY-MM');
-const url = z.url();
+/** Only web links can be stored (plain z.url() accepts javascript: URLs). */
+export const webUrl = z.url({ protocol: /^https?$/, message: 'Use a full https:// link' });
+const url = webUrl;
 
 /** Structured fields per module. Prose lives in variants, never here. */
 export const entryData = {

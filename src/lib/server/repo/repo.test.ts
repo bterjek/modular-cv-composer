@@ -134,3 +134,64 @@ describe('resolving through the database', () => {
 		expect(cv.trace.find((t) => t.id === a.item)?.reason).toBe('excluded for this job');
 	});
 });
+
+describe('editor support', () => {
+	it('new items and wordings are appended at the end', () => {
+		const { entry, item } = seedA();
+		const second = repo.createItem(A, entry);
+		repo.createVariant(A, { itemId: second, text: 'Second' });
+		const v2 = repo.createVariant(A, { itemId: item, text: 'Alt wording' });
+		const e = repo.loadContent(A).entries[0];
+		expect(e.items.find((i) => i.id === second)!.position).toBeGreaterThan(e.items.find((i) => i.id === item)!.position);
+		expect(e.items.find((i) => i.id === item)!.variants.find((v) => v.id === v2)!.position).toBe(1);
+	});
+
+	it('moves entries and items, and ignores moves past the ends', () => {
+		const e1 = repo.createEntry(A, { module: 'experience', label: 'Old', data: job({ start: '2010-01' }) });
+		const e2 = repo.createEntry(A, { module: 'experience', label: 'New', data: job({ start: '2020-01' }) });
+		const order = () => repo.loadContent(A).entries.sort((a, b) => a.position - b.position || (b.sortKey ?? '').localeCompare(a.sortKey ?? '')).map((e) => e.label);
+		expect(order()).toEqual(['New', 'Old']);
+		repo.moveEntry(A, e1, 'up');
+		expect(order()).toEqual(['Old', 'New']);
+		repo.moveEntry(A, e1, 'up');
+		expect(order()).toEqual(['Old', 'New']);
+		repo.moveEntry(A, e2, 'up');
+		expect(order()).toEqual(['New', 'Old']);
+
+		const i1 = repo.createItem(A, e1);
+		const i2 = repo.createItem(A, e1);
+		repo.moveItem(A, i2, 'up');
+		const items = repo.loadContent(A).entries.find((e) => e.id === e1)!.items.sort((a, b) => a.position - b.position);
+		expect(items.map((i) => i.id)).toEqual([i2, i1]);
+		expect(() => repo.moveItem(B, i1, 'down')).toThrow(NotFoundError);
+		expect(() => repo.moveEntry(B, e1, 'down')).toThrow(NotFoundError);
+	});
+
+	it('the revision changes on every kind of change', async () => {
+		const a = seedA();
+		const steps: [string, () => void][] = [
+			['tag', () => repo.setTags(A, { itemId: a.item }, ['x'])],
+			['wording', () => repo.updateVariant(A, a.variant, { text: 'Changed' })],
+			['recipe', () => repo.updateCategory(A, a.category, { name: 'Other' })],
+			['job', () => repo.updateJobTarget(A, a.target, { company: 'Other' })],
+			['profile', () => repo.upsertProfile(A, { fullName: 'A', email: 'a@x.test' })],
+			['delete', () => repo.deleteVariant(A, a.variant)]
+		];
+		let before = repo.contentRevision(A);
+		for (const [name, fn] of steps) {
+			await new Promise((r) => setTimeout(r, 2)); // distinct millisecond timestamps
+			fn();
+			const after = repo.contentRevision(A);
+			expect(after, name).not.toBe(before);
+			before = after;
+		}
+		expect(repo.contentRevision(B)).not.toBe(before);
+	});
+
+	it('rejects non-web links everywhere', () => {
+		expect(() => repo.upsertProfile(A, { fullName: 'A', email: 'a@x.test', links: [{ label: 'x', url: 'javascript:alert(1)' }] })).toThrow(InvalidError);
+		expect(() => repo.createEntry(A, { module: 'projects', label: 'p', data: { name: 'p', url: 'javascript:alert(1)' } })).toThrow(InvalidError);
+		const { category } = seedA();
+		expect(() => repo.createJobTarget(A, { categoryId: category, company: 'c', roleTitle: 'r', jobUrl: 'data:text/html,x' })).toThrow(InvalidError);
+	});
+});

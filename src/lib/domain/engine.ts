@@ -1,6 +1,7 @@
 // The assembly engine: recipe + overrides + content → one concrete CV.
 // Pure and deterministic (same input → same output). Rules: docs/SCHEMA.md §5.
 import type { Module, VariantLength } from './modules';
+import { entryOrder, itemOrder } from './order';
 import type { Overrides, Recipe } from './recipe';
 import type {
 	Content,
@@ -113,7 +114,7 @@ export function resolve(content: Content, recipe: Recipe, overrides: Overrides =
 		// Rule 2: entries.
 		const candidates = content.entries
 			.filter((e) => e.module === module)
-			.sort((a, b) => a.position - b.position || (b.sortKey ?? '').localeCompare(a.sortKey ?? '') || byId(a, b));
+			.sort(entryOrder);
 
 		const kept: EntryIn[] = [];
 		for (const e of candidates) {
@@ -179,7 +180,7 @@ export function resolve(content: Content, recipe: Recipe, overrides: Overrides =
 			note({ kind: 'item', id: f.id, outcome: 'dropped', reason: 'forced in, but has no wording yet' });
 		}
 		return selected
-			.sort((a, b) => a.position - b.position || byId(a, b))
+			.sort(itemOrder)
 			.map((i) => {
 				note({
 					kind: 'item',
