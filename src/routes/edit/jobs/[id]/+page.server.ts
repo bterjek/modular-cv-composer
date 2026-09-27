@@ -67,7 +67,8 @@ export function load({ locals, params }) {
 		overrides: { preferTags: o.preferTags?.join(', ') ?? '', length: o.length ?? '' },
 		categoryDefaults: { preferTags: recipe.preferTags.join(', '), length: recipe.length },
 		sections,
-		warnings: cv.warnings
+		warnings: cv.warnings,
+		snapshots: repo.listSnapshots(ownerId, { jobTargetId: job.id }).map((x) => ({ id: x.id, label: x.label, createdAt: x.createdAt }))
 	};
 }
 
@@ -93,6 +94,14 @@ export const actions = {
 		const overrides = overridesFromForm(await request.formData(), recipe.modules.map((m) => m.module));
 		const r = attempt(() => repo.updateJobTarget(ownerId, params.id, { overrides }));
 		return r.ok ? { saved: 'Tailoring saved.' } : r.failure;
+	},
+	freeze: async ({ request, locals, params }) => {
+		const f = await request.formData();
+		const r = attempt(() =>
+			repo.createSnapshot(locals.user!.id, { jobTargetId: params.id }, { label: optStr(f, 'label'), markSent: f.get('markSent') === 'on' })
+		);
+		if (!r.ok) return r.failure;
+		redirect(303, `/edit/snapshots/${r.value}`);
 	},
 	reset: async ({ locals, params }) => {
 		const r = attempt(() => repo.updateJobTarget(locals.user!.id, params.id, { overrides: {} }));

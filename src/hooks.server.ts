@@ -7,12 +7,15 @@ import { closePdfBrowser } from '$lib/server/render/pdf';
 
 export const init: ServerInit = () => {
 	console.log(`[startup] APP_ENV=${env.appEnv} ORIGIN=${env.origin}`);
+	if (env.appEnv !== 'development' && (!env.operator.name || !env.operator.contact)) {
+		console.warn('[startup] OPERATOR_NAME / OPERATOR_CONTACT are not set — the privacy notice shows placeholders. Set them before inviting testers.');
+	}
 	bootstrap({ adminEmail: env.adminEmail, origin: env.origin });
 	// adapter-node emits this on SIGTERM/SIGINT after in-flight requests finish
 	process.on('sveltekit:shutdown', () => void closePdfBrowser());
 };
 
-const PUBLIC = ['/login', '/signup', '/reset', '/healthz'];
+const PUBLIC = ['/login', '/signup', '/reset', '/healthz', '/privacy', '/s'];
 const isPublic = (path: string) => PUBLIC.some((p) => path === p || path.startsWith(p + '/'));
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -40,9 +43,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	const response = await resolve(event);
-	response.headers.set('X-Content-Type-Options', 'nosniff');
-	response.headers.set('Referrer-Policy', 'same-origin');
-	response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+	// Defaults only: routes with stricter needs (public share links) set their own.
+	const setDefault = (k: string, v: string) => response.headers.has(k) || response.headers.set(k, v);
+	setDefault('X-Content-Type-Options', 'nosniff');
+	setDefault('Referrer-Policy', 'same-origin');
+	setDefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 	if (env.secureCookies) {
 		response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 	}

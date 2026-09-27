@@ -17,5 +17,29 @@
 		<input id="confirm" name="confirm" type="password" required autocomplete="new-password" />
 		<button class="primary">Change password</button>
 	</form>
-	<p class="hint">Data export and account deletion arrive in build step 6.</p>
 </section>
+
+<section class="window narrow">
+	<h2>Your data</h2>
+	<p>Download everything stored about you — account, profile, content, categories, jobs, snapshots, share-link counts and feedback — as one JSON file.</p>
+	<a class="btn" data-sveltekit-reload href="/account/export">Download my data</a>
+	<p class="hint">See the <a href="/privacy">privacy notice</a> for what is stored and why.</p>
+</section>
+
+<section class="window narrow">
+	<h2>Delete account</h2>
+	<p>Deletes your account and <b>everything</b> in it immediately: content, categories, jobs, snapshots and their share links. This cannot be undone.
+		Download your data first if you want to keep it.</p>
+	{#if form?.deleteError}<p class="msg error" role="alert">{form.deleteError}</p>{/if}
+	<form method="POST" action="?/deleteAccount">
+		<label for="del-password">Your password</label>
+		<input id="del-password" name="password" type="password" required autocomplete="current-password" />
+		<label for="del-confirm">Type <b>DELETE</b> to confirm</label>
+		<input id="del-confirm" name="confirm" required autocomplete="off" />
+		<button class="danger">Delete my account and all data</button>
+	</form>
+</section>
+
+<style>
+	.btn { display: inline-block; text-decoration: none; }
+</style>

@@ -52,6 +52,7 @@
 		<p class="menu-title">ASSEMBLY</p>
 		<a data-nav href="/edit/categories" aria-current={here('/edit/categories')}>Job categories</a>
 		<a data-nav href="/edit/jobs" aria-current={here('/edit/jobs')}>Jobs</a>
+		<a data-nav href="/edit/snapshots" aria-current={here('/edit/snapshots')}>Snapshots</a>
 	</nav>
 
 	<div class="work">{@render children()}</div>

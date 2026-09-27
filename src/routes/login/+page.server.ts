@@ -5,6 +5,7 @@ import { hit } from '$lib/server/auth/rate-limit';
 
 export function load({ locals, url }) {
 	if (locals.user) redirect(303, safeNext(url.searchParams.get('next')));
+	return { deleted: url.searchParams.get('deleted') === '1' };
 }
 
 export const actions = {

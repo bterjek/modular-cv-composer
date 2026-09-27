@@ -12,5 +12,7 @@ export const sqlite = new Database(path);
 sqlite.pragma('journal_mode = WAL');
 sqlite.pragma('foreign_keys = ON');
 sqlite.pragma('busy_timeout = 5000');
+// Deleted rows are overwritten, not just unlinked (GDPR: account deletion really removes the data)
+sqlite.pragma('secure_delete = ON');
 
 export const db = drizzle(sqlite, { schema });

@@ -183,3 +183,9 @@ export function setDisabled(userId: string, disabled: boolean): Result<null> {
 	if (disabled) invalidateUserSessions(userId);
 	return { ok: true, value: null };
 }
+
+/** Re-checks the password before sensitive actions such as deleting the account. */
+export async function checkPassword(userId: string, password: string) {
+	const row = db.select({ passwordHash: user.passwordHash }).from(user).where(eq(user.id, userId)).get();
+	return row ? verifyPassword(row.passwordHash, password) : false;
+}

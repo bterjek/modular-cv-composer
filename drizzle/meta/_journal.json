@@ -15,6 +15,13 @@
       "when": 1790492553900,
       "tag": "0001_fearless_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790496333836,
+      "tag": "0002_talented_golden_guardian",
+      "breakpoints": true
     }
   ]
 }

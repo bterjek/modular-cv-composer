@@ -5,7 +5,7 @@ A hosted app for building CVs from reusable modules. Content is written once
 into tailored CVs through job-category recipes. The editor has a keyboard-driven,
 DOS-style interface; the CVs it produces are modern HTML (and PDF from the same HTML).
 
-**Status:** build step 5 of 7 — DOS-style editor with live preview (switch on the `editor.dos-shell` flag in Admin). Test mode (invite-only) until all features are confirmed.
+**Status:** build step 6 of 7 — snapshots, share links, data export and account deletion. Test mode (invite-only) until all features are confirmed.
 
 ## Documents
 
@@ -13,6 +13,7 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 - [`docs/AUTH.md`](docs/AUTH.md) — accounts, sessions, invites, first admin, resets, feature flags.
 - [`docs/RENDERING.md`](docs/RENDERING.md) — designs, live preview, HTML and PDF export, output safety.
 - [`docs/EDITOR.md`](docs/EDITOR.md) — the editor: keys, screens, live preview.
+- [`docs/SNAPSHOTS-AND-PRIVACY.md`](docs/SNAPSHOTS-AND-PRIVACY.md) — snapshots, share links, GDPR export/deletion, privacy notice.
 
 ## Stack
 
@@ -53,7 +54,7 @@ Each environment is its own container with its **own volume** — staging data n
 becomes production data. Non-production environments show a banner on every page.
 
 On a host you need only: the image (`ghcr.io/bterjek/modular-cv-composer:latest`),
-a **persistent volume at `/data`**, HTTPS in front, the env vars from `.env.example`,
+a **persistent volume at `/data`**, HTTPS in front, the env vars from `.env.example` (including the operator details for the privacy notice),
 and **off-machine backups of `/data`**. Migrations run automatically on start.
 
 ## Changing the database
@@ -69,5 +70,5 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
 3. ✅ Assembly engine (recipe + overrides → resolved CV, with trace), owner-scoped content repository, example content
 4. ✅ Rendering: first modern HTML design, preview iframe, HTML + PDF export
 5. ✅ DOS-style editor: profile, content, wordings, tags, categories, job tailoring, live preview
-6. Snapshots, share links, export and account deletion
+6. ✅ Snapshots, share links, export and account deletion, privacy notice
 7. Remaining designs, feedback tool → testers in

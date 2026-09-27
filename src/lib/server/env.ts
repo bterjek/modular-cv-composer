@@ -17,7 +17,14 @@ function read() {
 		origin,
 		/** Cookies get the Secure flag everywhere except local development. */
 		secureCookies: appEnv !== 'development',
-		adminEmail: process.env.ADMIN_EMAIL?.trim().toLowerCase() || null
+		adminEmail: process.env.ADMIN_EMAIL?.trim().toLowerCase() || null,
+		// Shown on the privacy notice. Required reading for testers; set them before inviting anyone.
+		operator: {
+			name: process.env.OPERATOR_NAME?.trim() || null,
+			contact: process.env.OPERATOR_CONTACT?.trim() || null,
+			hosting: process.env.HOSTING_DESCRIPTION?.trim() || null,
+			backupRetentionDays: Number(process.env.BACKUP_RETENTION_DAYS) || 30
+		}
 	};
 }
 

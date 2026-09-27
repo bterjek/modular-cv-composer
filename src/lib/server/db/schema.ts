@@ -270,7 +270,9 @@ export const shareLinks = sqliteTable('share_links', {
 	tokenHash: text('token_hash').notNull().unique(),
 	createdAt: createdAt(),
 	expiresAt: ms('expires_at'),
-	revokedAt: ms('revoked_at')
+	revokedAt: ms('revoked_at'),
+	viewCount: integer('view_count').notNull().default(0), // counts only; no IPs or visitor data are stored
+	lastViewedAt: ms('last_viewed_at')
 });
 
 // ── Reserved for AI tailoring (unused in v1)

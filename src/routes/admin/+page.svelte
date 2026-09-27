@@ -1,6 +1,6 @@
 <script lang="ts">
 	let { data, form } = $props();
-	const fmt = (ms: number | null) => (ms ? new Date(ms).toISOString().slice(0, 16).replace('T', ' ') : '—');
+	const fmt = (ms: number | null) => (ms ? new Date(ms).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—');
 	const userEmail = (id: string) => data.users.find((u) => u.id === id)?.email ?? id;
 	const msg = (section: string) => (form?.section === section ? form : null);
 </script>

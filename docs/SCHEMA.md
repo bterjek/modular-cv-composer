@@ -81,8 +81,8 @@ Where variants attach:
 - `job_targets` — id, owner_id, category_id → categories (restrict), company, role_title, job_url?, job_ad_text?, overrides (JSON, §4), status (`draft` | `sent` | `archived`), created_at, updated_at
 
 ### Output
-- `snapshots` — **immutable**: id, owner_id, job_target_id? (set null), category_id? (set null), design_key, engine_version, resolved (JSON: the full resolved CV), html (frozen render), pdf_key? (object path), label, created_at. No `updated_at`: rows are never updated.
-- `share_links` — id, owner_id, snapshot_id → snapshots (cascade), token_hash, created_at, expires_at?, revoked_at?. The token itself is only shown once.
+- `snapshots` — **immutable**: id, owner_id, job_target_id? (set null), category_id? (set null), design_key, engine_version, resolved (JSON: the full resolved CV), html (frozen render, fonts embedded), pdf_key? (unused — PDFs are printed from `html` on demand), label, created_at. No `updated_at`: rows are never updated.
+- `share_links` — id, owner_id, snapshot_id → snapshots (cascade), token_hash, created_at, expires_at?, revoked_at?, view_count, last_viewed_at?. The token itself is only shown once. No visitor data is stored.
 
 ### Reserved for AI tailoring (not used in v1)
 - `ai_runs` — id, owner_id, job_target_id?, kind, model, input_tokens, output_tokens, result (JSON), created_at. Exists now so usage limits have a place to count against.
@@ -162,8 +162,8 @@ SQLite has no row-level security, so isolation is enforced in code:
 
 ## 7. GDPR hooks
 
-- **Export**: one JSON document with profile, entries, items, variants, tags, categories, job targets and snapshot metadata. The schema above is the export format.
-- **Delete account**: deletes the user row; every owned table cascades. Snapshot PDFs are removed from storage by the same job. Backups age out on their retention schedule (to be stated in the privacy notice).
+Implemented in step 6 — see `docs/SNAPSHOTS-AND-PRIVACY.md`: JSON export of everything the user owns,
+self-service account deletion (cascade + explicit feedback removal, `secure_delete` on), public privacy notice.
 
 ## 8. Open questions for review
 

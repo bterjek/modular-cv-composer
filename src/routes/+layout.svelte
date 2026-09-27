@@ -27,9 +27,12 @@
 
 <main id="main" class:wide={page.url.pathname.startsWith('/edit')}>{@render children()}</main>
 
+{#if !page.url.pathname.startsWith('/edit')}<p class="legal"><a href="/privacy">Privacy</a></p>{/if}
+
 <style>
 	.skip { position: absolute; left: -999px; }
 	.skip:focus { left: 1ch; top: 0.25rem; background: #ffff55; color: #000; padding: 0 1ch; z-index: 10; }
 	nav form { display: contents; }
 	main.wide { max-width: none; padding: 1rem 1.5ch 0; }
+	.legal { text-align: center; margin: 0 0 1.5rem; font-size: 0.9em; }
 </style>

@@ -97,6 +97,19 @@
 </form>
 
 <section class="window">
+	<h2>Snapshots</h2>
+	<p class="hint">Freeze the CV as it looks now, e.g. when you send it. Later edits won’t change the frozen copy.</p>
+	<form method="POST" action="?/freeze" use:enhance class="row">
+		<div class="grow"><label for="snap-label">Label <span class="hint">(optional)</span></label><input id="snap-label" name="label" placeholder="{j.company} — {j.roleTitle}, today" /></div>
+		<div class="auto"><label class="check"><input type="checkbox" name="markSent" checked={j.status === 'draft'} /> mark job as sent</label></div>
+		<div class="auto"><button class="primary">Freeze this version</button></div>
+	</form>
+	{#if data.snapshots.length}
+		<ul>{#each data.snapshots as x (x.id)}<li><a href="/edit/snapshots/{x.id}">{x.label}</a> <span class="muted">{new Date(x.createdAt).toISOString().slice(0, 16).replace('T', ' ') + ' UTC'}</span></li>{/each}</ul>
+	{/if}
+</section>
+
+<section class="window">
 	<h2>More</h2>
 	<form method="POST" action="?/reset" use:enhance class="inline"><button>Remove all tailoring</button><span class="hint">Back to exactly what the category produces.</span></form>
 	<details>
