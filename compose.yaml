@@ -1,0 +1,16 @@
+# Local run of the production image. On a host, the same image + a volume + env vars is all you need.
+services:
+  app:
+    build: .
+    image: modular-cv-composer:local
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      ORIGIN: ${ORIGIN:-http://localhost:3000}
+    volumes:
+      - composer-data:/data
+    restart: unless-stopped
+
+volumes:
+  composer-data:
