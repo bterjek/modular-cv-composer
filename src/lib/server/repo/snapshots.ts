@@ -10,6 +10,7 @@ import { fontsFor } from '../render/fonts';
 import { newToken, sha256 } from '../auth/tokens';
 import { getCategory, getJobTarget, resolveCategory, resolveJobTarget, updateJobTarget } from './assembly';
 import { InvalidError, NotFoundError } from './errors';
+import { styleOptions } from '$lib/domain/style';
 import type { ResolvedCV } from '$lib/domain/content';
 
 export type SnapshotSource = { jobTargetId: string } | { categoryId: string };
@@ -30,8 +31,10 @@ export function createSnapshot(ownerId: string, source: SnapshotSource, opts: { 
 		defaultLabel = c.name;
 	}
 	if (cv.sections.length === 0) throw new InvalidError('Nothing to freeze yet — this CV has no content.');
-	const designKey = getDesign(getCategory(ownerId, categoryId).designKey).key;
-	const html = renderDocument(cv, { designKey, ...fontsFor(designKey, 'embedded') });
+	const cat = getCategory(ownerId, categoryId);
+	const designKey = getDesign(cat.designKey).key;
+	const style = styleOptions.parse(cat.style ?? {});
+	const html = renderDocument(cv, { designKey, style, ...fontsFor(designKey, 'embedded', style.font) });
 	const id = uuidv7();
 	const now = Date.now();
 	const label = (opts.label?.trim() || `${defaultLabel}, ${new Date(now).toISOString().slice(0, 10)}`).slice(0, 160);

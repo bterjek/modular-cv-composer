@@ -30,6 +30,7 @@ h1 { font-size: 21pt; font-weight: 600; letter-spacing: 0.01em; margin: 0; }
 
 section { margin-top: 5mm; }
 h2 {
+	color: var(--accent, var(--ink));
 	font-size: 11pt; font-weight: 600; letter-spacing: 0.01em;
 	margin: 0 0 2mm; padding-bottom: 0.8mm; border-bottom: 0.6pt solid var(--rule); break-after: avoid;
 }

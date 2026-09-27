@@ -13,6 +13,7 @@ import {
 import { MODULES, VARIANT_LENGTHS } from '../../domain/modules';
 import type { Recipe, Overrides } from '../../domain/recipe';
 import { ROLES, type Role } from '../../domain/roles';
+import type { StyleOptions } from '../../domain/style';
 
 const id = () => text('id').primaryKey();
 const ms = (name: string) => integer(name, { mode: 'number' });
@@ -227,6 +228,7 @@ export const categories = sqliteTable('categories', {
 	description: text('description'),
 	recipe: text('recipe', { mode: 'json' }).$type<Recipe>().notNull(),
 	designKey: text('design_key').notNull(),
+	style: text('style', { mode: 'json' }).$type<StyleOptions>().notNull().default({}),
 	createdAt: createdAt(),
 	updatedAt: updatedAt()
 });

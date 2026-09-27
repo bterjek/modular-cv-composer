@@ -128,3 +128,22 @@ describe('click-to-edit markers', () => {
 		expect(html.match(/data-src="profile"/g)).toHaveLength(2); // only the real header markers (name + contact)
 	});
 });
+
+import { styleCss } from './style';
+import { styleOptions } from '$lib/domain/style';
+describe('style options', () => {
+	it('only fixed choices are accepted, and each maps to CSS', () => {
+		expect(styleOptions.safeParse({ align: 'justify', accent: 'teal' }).success).toBe(true);
+		expect(styleOptions.safeParse({ accent: '#ff0000' }).success).toBe(false);
+		expect(styleOptions.safeParse({ align: 'center; }</style><script>' }).success).toBe(false);
+		expect(styleCss({})).toBe('');
+		const css = styleCss({ align: 'justify', accent: 'teal', dates: 'below' });
+		expect(css).toContain('text-align:justify');
+		expect(css).toContain('--accent:#0f766e');
+		expect(css).toContain('flex-direction:column');
+	});
+	it('applies on top of the design in the document', () => {
+		const html = renderDocument(cv(), { fontCss: '', fontSrc: 'data:', designKey: 'bold', style: { align: 'justify' } });
+		expect(html.indexOf('text-align:justify')).toBeGreaterThan(html.indexOf('.band'));
+	});
+});

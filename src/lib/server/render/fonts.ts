@@ -56,9 +56,10 @@ const FAMILIES: Record<FontFamily, { name: string; faces: Face[] }> = {
 export type FontMode = 'embedded' | 'linked';
 
 /** @font-face rules for a design: data: URLs (standalone, PDF, snapshots) or same-origin files (live preview). */
-export function fontsFor(designKey: string | null | undefined, mode: FontMode) {
-	const css = getDesign(designKey)
-		.fonts.flatMap((fam) =>
+export function fontsFor(designKey: string | null | undefined, mode: FontMode, extra?: FontFamily) {
+	const families = [...new Set([...getDesign(designKey).fonts, ...(extra ? [extra] : [])])];
+	const css = families
+		.flatMap((fam) =>
 			FAMILIES[fam].faces.map(
 				(x) =>
 					`@font-face{font-family:'${FAMILIES[fam].name}';font-style:${x.style};font-display:block;font-weight:${x.weight};src:url(${mode === 'embedded' ? x.inline : x.url}) format('woff2');unicode-range:${x.range};}`

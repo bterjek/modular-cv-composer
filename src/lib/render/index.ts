@@ -4,10 +4,13 @@ import type { ResolvedCV } from '$lib/domain/content';
 import { h, raw } from './html';
 import { modern } from './designs/modern';
 import { classic } from './designs/classic';
+import { business, executive, bold } from './designs/extra';
 import type { Design } from './designs/types';
 import { CLICK_CSS, CLICK_SCRIPT, stripSourceMarkers } from './clickable';
+import { styleCss } from './style';
+import type { StyleOptions } from '$lib/domain/style';
 
-export const DESIGNS: Record<string, Design> = { modern, classic };
+export const DESIGNS: Record<string, Design> = { modern, classic, business, executive, bold };
 export const DEFAULT_DESIGN = 'modern';
 export const designList = () => Object.values(DESIGNS).map((d) => ({ key: d.key, name: d.name, description: d.description }));
 
@@ -22,6 +25,8 @@ export type RenderOptions = {
 	fontSrc: "data:" | "'self'";
 	/** Editor preview only: keep source markers and add the click script (allowed by its sha256). */
 	clickable?: { scriptHash: string };
+	/** Category style choices, applied on top of the design. */
+	style?: StyleOptions;
 };
 
 export function renderDocument(cv: ResolvedCV, opts: RenderOptions): string {
@@ -38,7 +43,7 @@ export function renderDocument(cv: ResolvedCV, opts: RenderOptions): string {
 <meta http-equiv="Content-Security-Policy" content="${csp}" />
 <meta name="generator" content="Modular CV Composer (${design.key}, engine ${cv.engineVersion})" />
 <title>${title}</title>
-<style>${raw(opts.fontCss)}${raw(design.css)}${opts.clickable ? raw(CLICK_CSS) : ''}</style>
+<style>${raw(opts.fontCss)}${raw(design.css)}${raw(styleCss(opts.style ?? {}))}${opts.clickable ? raw(CLICK_CSS) : ''}</style>
 </head>
 <body>
 ${opts.clickable ? design.render(cv) : raw(stripSourceMarkers(design.render(cv).value))}

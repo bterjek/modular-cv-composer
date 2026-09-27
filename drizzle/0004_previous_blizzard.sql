@@ -1,0 +1,1 @@
+ALTER TABLE `categories` ADD `style` text DEFAULT '{}' NOT NULL;

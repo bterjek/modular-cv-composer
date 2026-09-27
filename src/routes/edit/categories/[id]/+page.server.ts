@@ -3,6 +3,7 @@ import * as repo from '$lib/server/repo';
 import { recipe as recipeSchema } from '$lib/domain/recipe';
 import { recipeFromForm, recipeRows } from '$lib/editor/forms';
 import { designList } from '$lib/render';
+import { STYLE_CHOICES, STYLE_LABELS, styleOptions } from '$lib/domain/style';
 import { attempt, str, optStr } from '$lib/server/editor';
 
 function get(ownerId: string, id: string) {
@@ -19,6 +20,9 @@ export function load({ locals, params }) {
 	const recipe = recipeSchema.parse(c.recipe);
 	return {
 		category: { id: c.id, name: c.name, description: c.description, designKey: c.designKey },
+		style: styleOptions.parse(c.style ?? {}),
+		styleChoices: STYLE_CHOICES,
+		styleLabels: STYLE_LABELS,
 		recipe: { preferTags: recipe.preferTags.join(', '), length: recipe.length },
 		rows: recipeRows(recipe),
 		designs: designList(),
@@ -35,7 +39,9 @@ export const actions = {
 				name: str(f, 'name'),
 				description: optStr(f, 'description'),
 				designKey: str(f, 'designKey'),
-				recipe: recipeFromForm(f)
+				recipe: recipeFromForm(f),
+				// empty select = design default
+				style: Object.fromEntries(Object.keys(STYLE_CHOICES).map((k) => [k, str(f, `style_${k}`)]).filter(([, v]) => v))
 			})
 		);
 		return r.ok ? { saved: 'Category saved.' } : r.failure;

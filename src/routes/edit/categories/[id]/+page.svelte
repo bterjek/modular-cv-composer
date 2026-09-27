@@ -23,7 +23,7 @@
 		<div class="row">
 			<div><label for="name">Name *</label><input id="name" name="name" required value={c.name} /></div>
 			<div><label for="design">Design</label>
-				<select id="design" name="designKey">{#each data.designs as d}<option value={d.key} selected={d.key === c.designKey}>{d.name}</option>{/each}</select></div>
+				<select id="design" name="designKey">{#each data.designs as d}<option value={d.key} selected={d.key === c.designKey}>{d.name} — {d.description}</option>{/each}</select></div>
 		</div>
 		<label for="description">Description</label><input id="description" name="description" value={c.description ?? ''} />
 		<div class="row">
@@ -33,6 +33,21 @@
 				<select id="length" name="length">{#each VARIANT_LENGTHS as l}<option selected={l === data.recipe.length}>{l}</option>{/each}</select></div>
 		</div>
 		{#if data.knownTags.length}<p class="hint">Your tags: {data.knownTags.join(', ')}</p>{/if}
+	</section>
+
+	<section class="window">
+		<h2>Style</h2>
+		<p class="hint">Fine-tune the design. “design default” leaves it as the design intends. Every choice stays readable by applicant tracking systems.</p>
+		<div class="row style">
+			{#each Object.entries(data.styleChoices) as [key, options]}
+				<div><label for="style_{key}">{data.styleLabels[key as keyof typeof data.styleLabels]}</label>
+					<select id="style_{key}" name="style_{key}">
+						<option value="">design default</option>
+						{#each options as o}<option selected={(data.style as Record<string, string>)[key] === o}>{o}</option>{/each}
+					</select></div>
+			{/each}
+		</div>
+		<button class="primary">Save category <span class="hint">(F2)</span></button>
 	</section>
 
 	<section class="window">
@@ -76,6 +91,7 @@
 <style>
 	.crumbs { margin: 0 0 1rem; }
 	.grow { flex: 3 1 24ch; }
+	.style > div { flex: 1 1 16ch; }
 	td input { padding: 0.1rem 0.5ch; }
 	.num { width: 5ch; }
 	tr.off td { color: var(--dim); }

@@ -11,6 +11,7 @@ import { renderPdf } from '$lib/server/render/pdf';
 import { isEnabled } from '$lib/server/flags';
 import { hit } from '$lib/server/auth/rate-limit';
 import { asciiFileName } from '$lib/render/filename';
+import { styleOptions } from '$lib/domain/style';
 
 const FORMATS = ['preview', 'html', 'pdf'] as const;
 
@@ -23,17 +24,20 @@ export async function GET({ locals, url }) {
 	const categoryId = url.searchParams.get('category');
 	const targetId = url.searchParams.get('target');
 
-	let cv, designKey: string, suffix: string;
+	let cv, designKey: string, suffix: string, rawStyle: unknown;
 	try {
 		if (targetId) {
 			const t = repo.getJobTarget(ownerId, targetId);
 			cv = repo.resolveJobTarget(ownerId, targetId);
-			designKey = repo.getCategory(ownerId, t.categoryId).designKey;
+			const cat = repo.getCategory(ownerId, t.categoryId);
+			designKey = cat.designKey;
+			rawStyle = cat.style;
 			suffix = t.company;
 		} else if (categoryId) {
 			const c = repo.getCategory(ownerId, categoryId);
 			cv = repo.resolveCategory(ownerId, categoryId);
 			designKey = c.designKey;
+			rawStyle = c.style;
 			suffix = c.name;
 		} else error(400, 'Pass category or target');
 	} catch (e) {
@@ -41,14 +45,15 @@ export async function GET({ locals, url }) {
 		throw e;
 	}
 
+	const style = styleOptions.parse(rawStyle ?? {});
 	const baseName = `${cv.profile?.fullName ?? 'CV'} — CV (${suffix})`;
 	const common = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' };
 
 	if (format === 'preview') {
 		const clickable = url.searchParams.get('click') === '1';
 		// A script-enabled sandbox has an opaque origin and cannot load same-origin fonts, so the clickable preview embeds them.
-		const fonts = fontsFor(designKey, clickable ? 'embedded' : 'linked');
-		const html = renderDocument(cv, { designKey, ...fonts, ...(clickable && { clickable: { scriptHash: CLICK_SCRIPT_HASH } }) });
+		const fonts = fontsFor(designKey, clickable ? 'embedded' : 'linked', style.font);
+		const html = renderDocument(cv, { designKey, style, ...fonts, ...(clickable && { clickable: { scriptHash: CLICK_SCRIPT_HASH } }) });
 		return new Response(html, {
 			headers: {
 				...common,
@@ -58,7 +63,7 @@ export async function GET({ locals, url }) {
 		});
 	}
 
-	const standalone = renderDocument(cv, { designKey, ...fontsFor(designKey, 'embedded') });
+	const standalone = renderDocument(cv, { designKey, style, ...fontsFor(designKey, 'embedded', style.font) });
 	if (format === 'html') {
 		return new Response(standalone, {
 			headers: { ...common, 'Content-Type': 'text/html; charset=utf-8', 'Content-Disposition': disposition(`${baseName}.html`) }

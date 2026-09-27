@@ -7,6 +7,7 @@ import { categories, jobTargets } from '../db/schema';
 import { overrides as overridesSchema, recipe as recipeSchema, type Overrides } from '$lib/domain/recipe';
 import { resolve } from '$lib/domain/engine';
 import { webUrl } from '$lib/domain/modules';
+import { styleOptions } from '$lib/domain/style';
 import { loadContent } from './content';
 import { InvalidError, NotFoundError } from './errors';
 
@@ -22,9 +23,10 @@ const categoryFields = z.object({
 	name: z.string().trim().min(1).max(80),
 	description: z.string().trim().max(500).nullish(),
 	recipe: recipeSchema,
-	designKey: z.string().trim().min(1).max(40)
+	designKey: z.string().trim().min(1).max(40),
+	style: styleOptions
 });
-const categoryInput = categoryFields.extend({ designKey: categoryFields.shape.designKey.default('default') });
+const categoryInput = categoryFields.extend({ designKey: categoryFields.shape.designKey.default('modern'), style: styleOptions.default({}) });
 const categoryPatch = categoryFields.partial();
 
 export function createCategory(ownerId: string, input: unknown): string {
@@ -32,7 +34,7 @@ export function createCategory(ownerId: string, input: unknown): string {
 	const id = uuidv7();
 	const now = Date.now();
 	db.insert(categories)
-		.values({ id, ownerId, name: c.name, description: c.description ?? null, recipe: c.recipe, designKey: c.designKey, createdAt: now, updatedAt: now })
+		.values({ id, ownerId, name: c.name, description: c.description ?? null, recipe: c.recipe, designKey: c.designKey, style: c.style, createdAt: now, updatedAt: now })
 		.run();
 	return id;
 }

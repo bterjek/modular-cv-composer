@@ -18,6 +18,17 @@ ResolvedCV ──► renderDocument(cv, design, fonts) ──► one standalone 
 - Credentials are labelled from their `kind` field (Course / Certification / …), never guessed from the name.
 - Unknown design keys fall back to `modern`.
 
+### Style options (per category)
+Accent colour, font, text size, spacing, alignment (left/justified), section lines, date position, bullet style and
+page margins — each a fixed list (`src/lib/domain/style.ts`), turned into CSS appended after the design
+(`src/lib/render/style.ts`). Stored in `categories.style`; snapshots freeze the style along with the design.
+All combinations keep one column and real-text headings. Visual check: `VISUAL_OUT=<dir> CHROMIUM_PATH=… npx vitest run src/lib/server/render/visual.test.ts`.
+
+### `business`, `executive`, `bold`
+Built from `designs/make.ts` (shared header + base CSS). Business: compact, left accent bars. Executive: dark
+header band, serif name and headings. Bold: colour header band and colour heading tags. All verified one page and
+cleanly extractable headings with the example content.
+
 ### `classic`
 Serif (Source Serif 4, latin + latin-ext, 400/600/400 italic), centred header, title-case headings with a rule, no colour.
 Small caps were tried and dropped: synthesised small caps extract as “P rofile”, and lower-cased headings extract lower-case.
