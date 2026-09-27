@@ -19,7 +19,13 @@ const VOCAB: Record<string, string[]> = {
 	'AI Act': ['eu ai act'],
 	COBIT: ['cobit 2019', 'cobit 5'],
 	'C5': ['bsi c5'],
-	'incident management': ['incident handling', 'major incident management', 'incident response'],
+	'incident management': ['incident handling', 'major incident management', 'incidents'],
+	'incident response': ['security incidents', 'security incident response', 'security alerts'],
+	'security playbooks': ['playbooks', 'runbooks'],
+	'security policies': ['information security policies', 'security standards', 'policies and standards'],
+	'security awareness': ['information protection', 'security culture', 'awareness training'],
+	'strategic planning': ['strategy planning'],
+	'performance management': ['performance evaluations', 'performance reviews'],
 	'problem management': ['root cause analysis', 'rca'],
 	'change management': ['change enablement', 'change control', 'cab', 'change advisory board'],
 	'release management': ['release and deployment management'],
@@ -31,15 +37,15 @@ const VOCAB: Record<string, string[]> = {
 	'knowledge management': [],
 	'service desk': ['help desk', 'helpdesk', 'first line support', '1st line'],
 	'continual improvement': ['continuous improvement', 'csi'],
-	'risk management': ['it risk', 'risk assessment', 'risk assessments'],
-	'vendor management': ['supplier management', 'third-party management', 'third party risk', 'outsourcing management'],
-	'stakeholder management': ['stakeholder engagement', 'stakeholders'],
+	'risk management': ['it risk', 'risk assessment', 'risk assessments', 'risk mitigation'],
+	'vendor management': ['supplier management', 'third-party management', 'third party risk', 'outsourcing management', 'third-party vendor', 'third-party vendors', 'vendor contracts', 'vendors', 'suppliers'],
+	'stakeholder management': ['stakeholder engagement', 'stakeholders', 'stakeholder'],
 	'budget management': ['budget ownership', 'budgeting', 'cost management', 'p&l'],
-	'team leadership': ['people management', 'line management', 'people leadership', 'leading teams', 'team lead'],
+	'team leadership': ['people management', 'line management', 'people leadership', 'leading teams', 'team lead', 'people manager', 'leadership skills', 'lead and direct', 'manage personnel'],
 	'business continuity': ['bcm', 'business continuity management', 'bcp'],
 	'disaster recovery': ['drp'],
 	'information security': ['infosec', 'cybersecurity', 'cyber security', 'it security'],
-	'vulnerability management': ['patch management', 'patching'],
+	'vulnerability management': ['patch management', 'patching', 'vulnerabilities'],
 	'identity and access management': ['iam', 'access management'],
 	SIEM: ['security information and event management'],
 	'security operations': ['soc operations', 'security operations center'],
@@ -47,7 +53,7 @@ const VOCAB: Record<string, string[]> = {
 	'IT governance': ['it-governance'],
 	'internal audit': ['audit', 'audits', 'audit readiness', 'external audit'],
 	compliance: ['regulatory compliance', 'compliance management'],
-	'KPI': ['kpis', 'key performance indicators'],
+	'KPI': ['kpis', 'key performance indicators', 'key metrics', 'performance targets'],
 	'OKR': ['okrs'],
 	'transformation': ['digital transformation', 'it transformation', 'operational transformation'],
 	'transition management': ['service transition'],
@@ -86,16 +92,21 @@ const VOCAB: Record<string, string[]> = {
 	'firewall': ['firewalls'],
 	'monitoring': ['observability', 'event management'],
 	'automation': ['process automation', 'rpa'],
-	'reporting': ['management reporting', 'dashboards'],
+	'reporting': ['management reporting', 'dashboards', 'executive reporting', 'board-level'],
 	'English': ['fluent english'],
 	'German': ['fluent german'],
 	'Hungarian': []
 };
 
 /** Acronyms that are too generic to be useful as job terms. */
-const ACRONYM_STOP = new Set(['IT', 'EU', 'US', 'UK', 'CV', 'HR', 'OR', 'AND', 'THE', 'WE', 'YOU', 'OUR', 'ALL', 'NEW', 'ETC', 'EG', 'IE', 'VS', 'ASAP', 'FAQ', 'PDF', 'CEO', 'CTO', 'CIO', 'CFO', 'COO', 'HQ', 'IN', 'ON', 'AT', 'TO', 'OF', 'A', 'I', 'AM', 'PM', 'HU', 'DE', 'EN', 'FTE', 'KFT', 'ZRT', 'LTD', 'GMBH', 'INC', 'PLC', 'EUR', 'USD', 'HUF', 'GBP', 'CHF', 'ISO', 'IEC', 'ISO/IEC', 'MFD', 'M/F/D', 'M/W/D']);
-const PHRASE_HEADS = ['management', 'governance', 'compliance', 'operations', 'security', 'architecture', 'automation', 'monitoring', 'delivery', 'strategy', 'planning', 'reporting', 'framework', 'frameworks', 'processes'];
-const PHRASE_STOP = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'for', 'with', 'our', 'your', 'their', 'its', 'on', 'strong', 'excellent', 'good', 'proven', 'solid', 'hands', 'deep', 'daily', 'overall', 'senior', 'junior', 'key', 'relevant', 'related', 'effective', 'efficient', 'end', 'strategic', 'operational', 'experience', 'knowledge', 'understanding', 'you', 'we', 'will', 'be', 'is', 'are', 'from', 'as', 'by', 'this', 'that', 'other', 'all', 'any', 'high', 'level', 'within', 'across', 'including', 'such', 'e.g', 'etc', 'plus']);
+const ACRONYM_STOP = new Set(['IT', 'EU', 'US', 'UK', 'CV', 'HR', 'OR', 'AND', 'THE', 'WE', 'YOU', 'OUR', 'ALL', 'NEW', 'ETC', 'EG', 'IE', 'VS', 'ASAP', 'FAQ', 'PDF', 'CEO', 'CTO', 'CIO', 'CFO', 'COO', 'HQ', 'IN', 'ON', 'AT', 'TO', 'OF', 'A', 'I', 'AM', 'PM', 'HU', 'DE', 'EN', 'FTE', 'KFT', 'ZRT', 'LTD', 'GMBH', 'INC', 'PLC', 'EUR', 'USD', 'HUF', 'GBP', 'CHF', 'ISO', 'IEC', 'ISO/IEC', 'MFD', 'M/F/D', 'M/W/D', 'R&D', 'NOC']);
+// Heads kept narrow on purpose: 'security', 'planning', 'framework'… produced mostly verb phrases in real ads.
+const PHRASE_HEADS = ['management', 'governance', 'compliance', 'operations', 'architecture', 'automation', 'monitoring'];
+const PHRASE_STOP = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'for', 'with', 'our', 'your', 'their', 'its', 'on', 'strong', 'excellent', 'good', 'proven', 'solid', 'hands', 'deep', 'daily', 'overall', 'senior', 'junior', 'key', 'relevant', 'related', 'effective', 'efficient', 'end', 'strategic', 'operational', 'experience', 'knowledge', 'understanding', 'you', 'we', 'will', 'be', 'is', 'are', 'from', 'as', 'by', 'this', 'that', 'other', 'all', 'any', 'high', 'level', 'within', 'across', 'including', 'such', 'e.g', 'etc', 'plus',
+	// verbs that start phrases in ads ("ensure management", "oversee management")
+	'ensure', 'oversee', 'direct', 'enhance', 'handling', 'handle', 'aligning', 'align', 'improve', 'improving', 'improvement', 'strengthen', 'lead', 'leading',
+	'manage', 'managing', 'drive', 'driving', 'support', 'supporting', 'provide', 'providing', 'develop', 'developing', 'implement', 'design', 'deliver',
+	'run', 'running', 'own', 'owning', 'facilitate', 'coordinate', 'perform', 'response', 'responsible', 'accountable', 'help', 'build', 'building']);
 
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 export const normalize = (s: string) =>
@@ -108,6 +119,7 @@ function matcher(words: string[]) {
 }
 
 const VOCAB_KEYS = Object.keys(VOCAB).map((label) => ({ label, key: label.toLowerCase(), re: matcher([label, ...VOCAB[label]]) }));
+const VOCAB_LOWER = new Set(Object.keys(VOCAB).map((k) => k.toLowerCase()));
 const aliasOf = new Map<string, string>(); // any alias → canonical key
 for (const [label, aliases] of Object.entries(VOCAB)) for (const a of [label, ...aliases]) aliasOf.set(a.toLowerCase(), label.toLowerCase());
 
@@ -156,7 +168,10 @@ function expandLists(text: string): string {
 	const re = new RegExp(`((?:[\\p{L}-]+, )+(?:[\\p{L}-]+,? )?(?:and|or|&) )([\\p{L}-]+) (${heads})(?![\\p{L}])`, 'giu');
 	const extra: string[] = [];
 	for (const m of text.matchAll(re)) {
-		for (const w of m[1].split(/,|\band\b|\bor\b|&/).map((x) => x.trim()).filter(Boolean)) extra.push(`${w} ${m[3]}`);
+		for (const w of m[1].split(/,|\band\b|\bor\b|&/).map((x) => x.trim()).filter(Boolean)) {
+			const phrase = `${w} ${m[3]}`;
+			if (VOCAB_LOWER.has(termKey(phrase))) extra.push(phrase); // only known terms: avoids "response management"
+		}
 	}
 	return extra.length ? `${text} ${extra.join(' . ')} ` : text;
 }

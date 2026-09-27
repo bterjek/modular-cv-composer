@@ -63,3 +63,22 @@ describe('matching and coverage', () => {
 		expect(cov.get('service desk')![0].itemId).toBeNull(); // found in the role title
 	});
 });
+
+import { NILFISK_SEC_COMPLIANCE, LIFERAY_SECOPS } from './fixtures/ads';
+describe('real ads (tuning fixtures)', () => {
+	const keys = (ad: string) => extractTerms(ad).map((t) => t.key);
+	const NOISE = /^(ensure|oversee|direct|enhance|handling|aligning|improve|response) |r&d|security framework|operations delivery/;
+	it('Nilfisk — IT Security and Compliance Manager', () => {
+		const k = keys(NILFISK_SEC_COMPLIANCE);
+		for (const t of ['information security', 'risk management', 'vendor management', 'internal audit', 'security policies',
+			'security awareness', 'stakeholder management', 'team leadership', 'reporting', 'compliance']) expect(k, t).toContain(t);
+		expect(k.filter((x) => NOISE.test(x))).toEqual([]);
+	});
+	it('Liferay — Security Operations Manager', () => {
+		const k = keys(LIFERAY_SECOPS);
+		for (const t of ['security operations', 'incident response', 'incident management', 'vulnerability management', 'team leadership',
+			'budget management', 'kpi', 'strategic planning', 'security playbooks', 'continual improvement', 'cloud', 'ai'])
+			expect(k, t).toContain(t);
+		expect(k.filter((x) => NOISE.test(x))).toEqual([]);
+	});
+});
