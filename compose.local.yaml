@@ -1,0 +1,26 @@
+# Local hosting on your own Mac (Apple silicon or Intel): builds the image natively
+# and keeps all data in ./data next to this file, where Time Machine can back it up.
+#   ADMIN_EMAIL=you@example.com docker compose -f compose.local.yaml up -d --build
+# See docs/LOCAL-HOSTING.md.
+services:
+  app:
+    build: .
+    image: modular-cv-composer:local
+    container_name: cv-composer
+    ports:
+      - "127.0.0.1:3000:3000" # only this Mac can reach it (no LAN, no internet)
+    environment:
+      APP_ENV: development
+      ORIGIN: http://localhost:3000
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      OPERATOR_NAME: ${OPERATOR_NAME:-}
+      OPERATOR_CONTACT: ${OPERATOR_CONTACT:-}
+      HOSTING_DESCRIPTION: ${HOSTING_DESCRIPTION:-Hosted on the operator's own computer in Hungary.}
+      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-24}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+    env_file:
+      - path: .env # optional: put the values above in .env instead of typing them
+        required: false
+    volumes:
+      - ./data:/data # database + daily backups as plain files on the Mac
+    restart: unless-stopped

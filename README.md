@@ -15,6 +15,8 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 - [`docs/EDITOR.md`](docs/EDITOR.md) — the editor: keys, screens, live preview.
 - [`docs/SNAPSHOTS-AND-PRIVACY.md`](docs/SNAPSHOTS-AND-PRIVACY.md) — snapshots, share links, GDPR export/deletion, privacy notice.
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — hosting checklist, backups, first start, updating.
+- [`docs/LOCAL-HOSTING.md`](docs/LOCAL-HOSTING.md) — running on your own Mac; what testers-via-tunnel would need.
+- [`docs/BACKUP-OPTIONS.md`](docs/BACKUP-OPTIONS.md) — backup options for going public, and the recommended build.
 
 ## Stack
 
@@ -36,6 +38,27 @@ ADMIN_EMAIL=you@example.com npm run dev   # prints your first-admin sign-up link
 npm test             # schema, auth, engine, isolation, rendering and boundary tests
                      # PDF tests run when CHROMIUM_PATH points at a Chromium/Chrome binary
 npm run build && CHROMIUM_PATH=… npm run e2e   # browser regression, see e2e/README.md
+```
+
+## Run on your Mac (current setup)
+
+The app runs in Docker on your own Mac, reachable only from that Mac. Details, and what is needed later to let
+testers in: [`docs/LOCAL-HOSTING.md`](docs/LOCAL-HOSTING.md).
+
+```sh
+# first time
+ADMIN_EMAIL=you@example.com docker compose -f compose.local.yaml up -d --build
+docker compose -f compose.local.yaml logs app | grep bootstrap     # your one-time admin sign-up link
+open http://localhost:3000
+
+# update to the latest code
+git pull && docker compose -f compose.local.yaml up -d --build
+
+# everyday
+docker compose -f compose.local.yaml ps                              # is it running?
+docker compose -f compose.local.yaml logs -f app                     # follow the log (Ctrl+C to stop following)
+docker compose -f compose.local.yaml stop                            # stop (data stays in ./data)
+docker compose -f compose.local.yaml start                           # start again
 ```
 
 ## Run the container
