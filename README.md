@@ -17,6 +17,7 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — hosting checklist, backups, first start, updating.
 - [`docs/LOCAL-HOSTING.md`](docs/LOCAL-HOSTING.md) — running on your own Mac; what testers-via-tunnel would need.
 - [`docs/BACKUP-OPTIONS.md`](docs/BACKUP-OPTIONS.md) — backup options for going public, and the recommended build.
+- [`docs/BACKLOG.md`](docs/BACKLOG.md) — agreed ideas and open items not yet scheduled.
 
 ## Stack
 
