@@ -18,6 +18,8 @@ function read() {
 		/** Cookies get the Secure flag everywhere except local development. */
 		secureCookies: appEnv !== 'development',
 		adminEmail: process.env.ADMIN_EMAIL?.trim().toLowerCase() || null,
+		/** Set by the image build (git commit); shown in help and attached to feedback. */
+		appVersion: process.env.APP_VERSION?.trim().slice(0, 40) || 'dev',
 		// Shown on the privacy notice. Required reading for testers; set them before inviting anyone.
 		operator: {
 			name: process.env.OPERATOR_NAME?.trim() || null,

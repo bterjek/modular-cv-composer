@@ -2,7 +2,7 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { existsSync } from 'node:fs';
 import { renderPdf, closePdfBrowser } from './pdf';
 import { renderDocument } from '$lib/render';
-import { embeddedFontCss } from './fonts';
+import { fontsFor } from './fonts';
 import type { ResolvedCV } from '$lib/domain/content';
 
 // Runs where Chromium is available (CI image, local dev with CHROMIUM_PATH); skipped otherwise.
@@ -20,7 +20,7 @@ afterAll(() => closePdfBrowser());
 
 describe.skipIf(!hasChromium)('renderPdf', () => {
 	it('produces a one-page A4 PDF with the document title', async () => {
-		const pdf = await renderPdf(renderDocument(cv, { fontCss: embeddedFontCss, fontSrc: 'data:' }));
+		const pdf = await renderPdf(renderDocument(cv, fontsFor('modern', 'embedded')));
 		const text = pdf.toString('latin1');
 		expect(text.startsWith('%PDF-')).toBe(true);
 		expect(text.match(/\/Type\s*\/Page[^s]/g)).toHaveLength(1);

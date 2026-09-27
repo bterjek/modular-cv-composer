@@ -4,7 +4,7 @@ import { sqlite } from './db';
 import * as repo from './repo';
 import { seedDemo, hasContent } from './demo';
 import { renderDocument } from '$lib/render';
-import { embeddedFontCss } from './render/fonts';
+import { fontsFor } from './render/fonts';
 import { renderPdf, closePdfBrowser } from './render/pdf';
 
 describe('demo content', () => {
@@ -42,7 +42,7 @@ describe('demo content', () => {
 			// Visual review: standalone HTML of each example CV
 			mkdirSync(process.env.RENDER_OUT, { recursive: true });
 			for (const [name, cv] of [['governance', govCv], ['delivery', delCv], ['job-target', tailored]] as const) {
-				const html = renderDocument(cv, { fontCss: embeddedFontCss, fontSrc: 'data:' });
+				const html = renderDocument(cv, { designKey: process.env.RENDER_DESIGN, ...fontsFor(process.env.RENDER_DESIGN, 'embedded') });
 				writeFileSync(`${process.env.RENDER_OUT}/${name}.html`, html);
 				if (process.env.CHROMIUM_PATH) writeFileSync(`${process.env.RENDER_OUT}/${name}.pdf`, await renderPdf(html));
 			}

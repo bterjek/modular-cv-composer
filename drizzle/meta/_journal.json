@@ -22,6 +22,13 @@
       "when": 1790496333836,
       "tag": "0002_talented_golden_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790497296312,
+      "tag": "0003_smooth_sir_ram",
+      "breakpoints": true
     }
   ]
 }

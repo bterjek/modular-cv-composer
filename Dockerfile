@@ -14,11 +14,13 @@ RUN npm run build && npm prune --omit=dev
 
 # ── Runtime
 FROM node:22-bookworm-slim
+ARG APP_VERSION=dev
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		tini chromium fonts-liberation fonts-noto-core fonts-dejavu-core \
 	&& rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production \
 	APP_ENV=production \
+	APP_VERSION=${APP_VERSION} \
 	PORT=3000 \
 	DATABASE_PATH=/data/composer.sqlite \
 	CHROMIUM_PATH=/usr/bin/chromium

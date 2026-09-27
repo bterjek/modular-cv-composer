@@ -10,6 +10,7 @@ feature flag during testing. Three panes: menu · editor · live preview.
 | F2 or Ctrl+S | Save the form you are in (or the page's main form) |
 | F3 · F4 · F8 · F9 | Content · Job categories · Jobs · Profile |
 | ↑ ↓ Home End | Move through menus and lists; Enter opens |
+| Shift+F1 | Send feedback (every page, also the orange Feedback button) |
 
 Every key also exists as a clickable button in the bottom bar. F5–F7 and F10–F12 are left
 alone on purpose: browsers reserve them (reload, address bar, caret browsing, menu, full screen, devtools).

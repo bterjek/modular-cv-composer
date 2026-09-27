@@ -1,10 +1,10 @@
 // "Modern" — single column, A4, Inter, one accent colour. Built to read well
 // on screen, print cleanly, and stay parseable by applicant tracking systems
 // (real text, one column, standard section names, no tables for layout).
-import type { ResolvedCV, ResolvedEntry, ResolvedSection } from '$lib/domain/content';
-import { h, safeHref, type SafeHtml } from '../html';
-import { CREDENTIAL_KIND_LABEL, LANGUAGE_LEVEL_LABEL, range, str, month } from '../format';
+import type { ResolvedCV } from '$lib/domain/content';
+import { h, type SafeHtml } from '../html';
 import type { Design } from './types';
+import { bodySections, bullets, contactParts, headlineOf, sectionBody, type EntryBlock } from './shared';
 
 const css = /* css */ `
 :root {
@@ -59,7 +59,7 @@ li::before { content: ''; position: absolute; left: 0.6mm; top: 0.5em; width: 1.
 .kind { font-size: 7.6pt; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
 	border: 1px solid var(--rule); border-radius: 3px; padding: 0 1.2mm; margin-left: 1.5mm; white-space: nowrap; }
 .inline { margin: 0; }
-.inline .group { font-weight: 600; margin-right: 1.5mm; }
+.inline .group { font-weight: 600; }
 .sep { color: #9aa3ae; margin: 0 0.6mm; }
 .nowrap { white-space: nowrap; }
 .compact .entry { margin-bottom: 1.6mm; }
@@ -75,90 +75,31 @@ li::before { content: ''; position: absolute; left: 0.6mm; top: 0.5em; width: 1.
 }
 `;
 
-// Each part stays on one line; the separator is where lines may break.
-const joinWithSep = (parts: (SafeHtml | string)[]) =>
-	parts.map((p, i) => (i === 0 ? h`<span class="nowrap">${p}</span>` : h` <span class="sep" aria-hidden="true">·</span> <span class="nowrap">${p}</span>`));
-
-function bullets(e: ResolvedEntry) {
-	return e.items.length ? h`<ul>${e.items.map((i) => h`<li>${i.text}</li>`)}</ul>` : '';
-}
-
-function entryBlock(what: SafeHtml | string, where: string, when: string, e: ResolvedEntry) {
-	return h`<div class="entry">
+const entryBlock: EntryBlock = (what, where, when, e) =>
+	h`<div class="entry">
 		<div class="row"><div><span class="what">${what}</span>${where ? h`<span class="where"> · ${where}</span>` : ''}</div>${when ? h`<div class="when">${when}</div>` : ''}</div>
 		${e.text ? h`<p class="desc">${e.text}</p>` : ''}${bullets(e)}
 	</div>`;
-}
-
-function sectionBody(s: ResolvedSection): SafeHtml {
-	switch (s.module) {
-		case 'summary':
-			return h`${s.entries.map((e) => h`<p class="lead">${e.text}</p>${bullets(e)}`)}`;
-		case 'experience':
-			return h`${s.entries.map((e) => {
-				const where = [str(e.data, 'organization'), str(e.data, 'location')].filter(Boolean).join(', ');
-				return entryBlock(str(e.data, 'title'), where, range(e.data.start, e.data.end), e);
-			})}`;
-		case 'education':
-			return h`${s.entries.map((e) => {
-				const what = [str(e.data, 'degree'), str(e.data, 'field')].filter(Boolean).join(', ');
-				return entryBlock(what, str(e.data, 'institution'), range(e.data.start, e.data.end), e);
-			})}`;
-		case 'projects':
-			return h`${s.entries.map((e) => {
-				const href = safeHref(str(e.data, 'url'));
-				const name = href ? h`<a href="${href}">${str(e.data, 'name')}</a>` : str(e.data, 'name');
-				return entryBlock(name, '', range(e.data.start, e.data.end), e);
-			})}`;
-		case 'credentials':
-			return h`<div class="compact">${s.entries.map((e) => {
-				const href = safeHref(str(e.data, 'credentialUrl'));
-				const name = str(e.data, 'name');
-				const label = CREDENTIAL_KIND_LABEL[str(e.data, 'kind')] ?? '';
-				const what = h`${href ? h`<a href="${href}">${name}</a>` : name}<span class="kind">${label}</span>`;
-				const expires = str(e.data, 'expires') ? ` (valid until ${month(e.data.expires)})` : '';
-				return entryBlock(what, str(e.data, 'issuer'), month(e.data.issued) + expires, e);
-			})}</div>`;
-		case 'skills':
-			return h`${s.entries.map((e) => {
-				const group = str(e.data, 'group');
-				return h`<p class="inline">${group ? h`<span class="group">${group}:</span>` : ''}${joinWithSep(e.items.map((i) => i.text))}</p>`;
-			})}`;
-		case 'languages':
-			return h`<p class="inline">${joinWithSep(
-				s.entries.map((e) => `${str(e.data, 'language')} (${LANGUAGE_LEVEL_LABEL[str(e.data, 'level')] ?? str(e.data, 'level')})`)
-			)}</p>`;
-		case 'custom':
-			return h`${s.entries.map((e) => entryBlock(str(e.data, 'heading'), '', '', e))}`;
-		default:
-			return h``;
-	}
-}
 
 function render(cv: ResolvedCV): SafeHtml {
 	const p = cv.profile;
-	const headline = cv.sections.find((s) => s.module === 'headline')?.entries[0]?.text;
-	const contact = p
-		? [
-				h`<span><a href="mailto:${p.email}">${p.email}</a></span>`,
-				p.phone ? h`<span>${p.phone}</span>` : '',
-				p.location ? h`<span>${p.location}</span>` : '',
-				...p.links.map((l) => {
-					const href = safeHref(l.url);
-					return href ? h`<span><a href="${href}">${l.label}</a></span>` : '';
-				})
-			]
-		: [];
+	const headline = headlineOf(cv.sections);
+	const contact = contactParts(p);
 	return h`<main class="page">
 	<header>
 		<h1>${p?.fullName ?? 'Your name'}</h1>
 		${headline ? h`<p class="headline">${headline}</p>` : ''}
-		${contact.length ? h`<div class="contact">${contact}</div>` : ''}
+		${contact.length ? h`<div class="contact">${contact.map((c) => h`<span>${c}</span>`)}</div>` : ''}
 	</header>
-	${cv.sections
-		.filter((s) => s.module !== 'headline')
-		.map((s) => h`<section class="${s.module}">${s.title ? h`<h2>${s.title}</h2>` : ''}${sectionBody(s)}</section>`)}
+	${bodySections(cv.sections).map((s) => h`<section class="${s.module}">${s.title ? h`<h2>${s.title}</h2>` : ''}${sectionBody(s, entryBlock)}</section>`)}
 </main>`;
 }
 
-export const modern: Design = { key: 'modern', name: 'Modern', css, render };
+export const modern: Design = {
+	key: 'modern',
+	name: 'Modern',
+	description: 'Sans-serif, one accent colour, crisp section rules.',
+	fonts: ['inter'],
+	css,
+	render
+};

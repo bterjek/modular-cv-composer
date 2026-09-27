@@ -5,7 +5,7 @@
 import { error } from '@sveltejs/kit';
 import * as repo from '$lib/server/repo';
 import { renderDocument } from '$lib/render';
-import { embeddedFontCss, linkedFontCss } from '$lib/server/render/fonts';
+import { fontsFor } from '$lib/server/render/fonts';
 import { renderPdf } from '$lib/server/render/pdf';
 import { isEnabled } from '$lib/server/flags';
 import { hit } from '$lib/server/auth/rate-limit';
@@ -44,7 +44,7 @@ export async function GET({ locals, url }) {
 	const common = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' };
 
 	if (format === 'preview') {
-		const html = renderDocument(cv, { designKey, fontCss: linkedFontCss, fontSrc: "'self'" });
+		const html = renderDocument(cv, { designKey, ...fontsFor(designKey, 'linked') });
 		return new Response(html, {
 			headers: {
 				...common,
@@ -54,7 +54,7 @@ export async function GET({ locals, url }) {
 		});
 	}
 
-	const standalone = renderDocument(cv, { designKey, fontCss: embeddedFontCss, fontSrc: 'data:' });
+	const standalone = renderDocument(cv, { designKey, ...fontsFor(designKey, 'embedded') });
 	if (format === 'html') {
 		return new Response(standalone, {
 			headers: { ...common, 'Content-Type': 'text/html; charset=utf-8', 'Content-Disposition': disposition(`${baseName}.html`) }

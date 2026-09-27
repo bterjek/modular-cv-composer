@@ -96,12 +96,14 @@
 					<tr><td><b>↑ ↓ Home End</b></td><td>Move through menus and lists</td></tr>
 					<tr><td><b>Tab</b> / <b>Shift+Tab</b></td><td>Next / previous field</td></tr>
 					<tr><td><b>Enter</b></td><td>Open the highlighted item</td></tr>
+					<tr><td><b>Shift+F1</b></td><td>Send feedback (works on every page)</td></tr>
 					<tr><td><b>Esc</b></td><td>Close this help</td></tr>
 				</tbody>
 			</table>
 			<p class="hint">How it fits together: write facts once under Content, give their wordings tags,
 				then a Job category decides which sections, tags and lengths to use. A Job adds changes for one application.
 				The preview on the right updates after every save.</p>
+			<p class="hint">Version {page.data.appVersion}</p>
 			<button onclick={() => (help = false)}>Close</button>
 		</section>
 	</div>

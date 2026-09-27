@@ -4,15 +4,20 @@ import { bootstrap } from '$lib/server/bootstrap';
 import { SESSION_COOKIE, validateSession } from '$lib/server/auth/session';
 import { setSessionCookie, clearSessionCookie } from '$lib/server/auth/cookies';
 import { closePdfBrowser } from '$lib/server/render/pdf';
+import { scheduleBackups, stopBackups } from '$lib/server/backup';
 
 export const init: ServerInit = () => {
-	console.log(`[startup] APP_ENV=${env.appEnv} ORIGIN=${env.origin}`);
+	console.log(`[startup] APP_ENV=${env.appEnv} ORIGIN=${env.origin} version=${env.appVersion}`);
 	if (env.appEnv !== 'development' && (!env.operator.name || !env.operator.contact)) {
 		console.warn('[startup] OPERATOR_NAME / OPERATOR_CONTACT are not set — the privacy notice shows placeholders. Set them before inviting testers.');
 	}
 	bootstrap({ adminEmail: env.adminEmail, origin: env.origin });
 	// adapter-node emits this on SIGTERM/SIGINT after in-flight requests finish
-	process.on('sveltekit:shutdown', () => void closePdfBrowser());
+	scheduleBackups();
+	process.on('sveltekit:shutdown', () => {
+		stopBackups();
+		void closePdfBrowser();
+	});
 };
 
 const PUBLIC = ['/login', '/signup', '/reset', '/healthz', '/privacy', '/s'];

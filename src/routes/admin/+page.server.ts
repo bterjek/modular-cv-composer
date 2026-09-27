@@ -5,12 +5,13 @@ import { ROLES, isRole } from '$lib/domain/roles';
 import { createInvite, listInvites, revokeInvite } from '$lib/server/auth/invites';
 import { issuePasswordReset, listUsers, setDisabled, setRole } from '$lib/server/auth/users';
 import { isFlagKey, listFlags, setGlobal, setOverride } from '$lib/server/flags';
-import { listFeedback } from '$lib/server/feedback';
+import { listFeedback, setFeedbackResolved } from '$lib/server/feedback';
 import { env } from '$lib/server/env';
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? '').trim();
 
-export function load() {
+export function load({ url }) {
+	const show = (['open', 'done', 'all'] as const).find((s) => s === url.searchParams.get('feedback')) ?? 'open';
 	const now = Date.now();
 	return {
 		users: listUsers(),
@@ -19,7 +20,8 @@ export function load() {
 			status: i.revokedAt ? 'revoked' : i.expiresAt && i.expiresAt <= now ? 'expired' : i.uses >= i.maxUses ? 'used up' : 'active'
 		})),
 		flags: listFlags(),
-		feedback: listFeedback(),
+		feedback: listFeedback({ show }),
+		feedbackShow: show,
 		roles: ROLES
 	};
 }
@@ -73,6 +75,11 @@ export const actions = {
 		if (!isFlagKey(key)) return fail(400, { section: 'flags', error: 'Unknown flag.' });
 		setGlobal(key, str(f, 'enabled') === 'true');
 		return { section: 'flags', ok: `${key} updated.` };
+	},
+	resolveFeedback: async ({ request }) => {
+		const f = await request.formData();
+		setFeedbackResolved(str(f, 'id'), str(f, 'resolved') === 'true');
+		return { section: 'feedback', ok: 'Feedback updated.' };
 	},
 	setOverride: async ({ request }) => {
 		const f = await request.formData();

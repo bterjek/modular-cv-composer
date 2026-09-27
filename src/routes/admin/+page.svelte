@@ -124,7 +124,30 @@
 
 <section class="window" id="feedback">
 	<h2>Tester feedback</h2>
+	{@render feedbackFor('feedback')}
+	<p class="filter">Show:
+		{#each ['open', 'done', 'all'] as f}<a href="?feedback={f}#feedback" aria-current={data.feedbackShow === f ? 'page' : undefined}>{f}</a> {/each}</p>
 	{#each data.feedback as fb (fb.id)}
-		<p><span class="muted">{fmt(fb.createdAt)} · {fb.email ?? 'deleted user'} · {fb.route ?? ''}</span><br />{fb.message}</p>
-	{:else}<p class="muted">No feedback yet. The in-app feedback key arrives with the editor.</p>{/each}
+		{@const st = (fb.screenState ?? {}) as Record<string, string>}
+		<div class="fb" class:done={fb.resolvedAt}>
+			<p class="muted">{fmt(fb.createdAt)} · {fb.email ?? 'deleted user'} · {fb.route ?? ''}{st.appVersion ? ` · v${st.appVersion}` : ''}{st.viewport ? ` · ${st.viewport}` : ''}</p>
+			<p class="text">{fb.message}</p>
+			{#if st.lastStatus}<p class="muted">Last message on screen: “{st.lastStatus}”</p>{/if}
+			{#if st.userAgent}<p class="muted small">{st.userAgent}</p>{/if}
+			<form method="POST" action="?/resolveFeedback">
+				<input type="hidden" name="id" value={fb.id} /><input type="hidden" name="resolved" value={fb.resolvedAt ? 'false' : 'true'} />
+				<button class="small">{fb.resolvedAt ? 'Reopen' : 'Mark done'}</button>
+			</form>
+		</div>
+	{:else}<p class="muted">Nothing here. Testers send feedback with the Feedback button or Shift+F1.</p>{/each}
 </section>
+
+<style>
+	.filter a { margin-right: 1ch; }
+	.filter a[aria-current='page'] { background: var(--fg); color: var(--bg); padding: 0 0.5ch; text-decoration: none; }
+	.fb { border-top: 1px dotted var(--dim); padding: 0.5rem 0; }
+	.fb.done { opacity: 0.6; }
+	.fb p { margin: 0.15rem 0; }
+	.fb .text { white-space: pre-wrap; }
+	.small { font-size: 0.85em; }
+</style>

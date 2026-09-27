@@ -3,11 +3,12 @@
 import type { ResolvedCV } from '$lib/domain/content';
 import { h, raw } from './html';
 import { modern } from './designs/modern';
+import { classic } from './designs/classic';
 import type { Design } from './designs/types';
 
-export const DESIGNS: Record<string, Design> = { modern };
+export const DESIGNS: Record<string, Design> = { modern, classic };
 export const DEFAULT_DESIGN = 'modern';
-export const designList = () => Object.values(DESIGNS).map((d) => ({ key: d.key, name: d.name }));
+export const designList = () => Object.values(DESIGNS).map((d) => ({ key: d.key, name: d.name, description: d.description }));
 
 /** Unknown keys (e.g. the placeholder 'default' from step 3) fall back to the default design. */
 export const getDesign = (key: string | null | undefined) => DESIGNS[key ?? ''] ?? DESIGNS[DEFAULT_DESIGN];

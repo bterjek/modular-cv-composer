@@ -12,11 +12,15 @@ ResolvedCV ──► renderDocument(cv, design, fonts) ──► one standalone 
 
 ## Designs
 - Live in `src/lib/render/designs/`, registered in `src/lib/render/index.ts`.
-- A design is `{ key, name, css, render(cv) }`. `render` builds HTML with the `h` template tag
+- A design is `{ key, name, description, fonts, css, render(cv) }`; the section logic is shared (`designs/shared.ts`), a design only supplies its look and entry layout. The server embeds or links exactly the font families a design lists (`src/lib/server/render/fonts.ts`). `render` builds HTML with the `h` template tag
   (`src/lib/render/html.ts`), which escapes every interpolated value — there is no way to insert raw user text.
 - Links are rendered only for `http`, `https` and `mailto` URLs.
 - Credentials are labelled from their `kind` field (Course / Certification / …), never guessed from the name.
 - Unknown design keys fall back to `modern`.
+
+### `classic`
+Serif (Source Serif 4, latin + latin-ext, 400/600/400 italic), centred header, title-case headings with a rule, no colour.
+Small caps were tried and dropped: synthesised small caps extract as “P rofile”, and lower-cased headings extract lower-case.
 
 ### `modern`
 Single column, A4, Inter (SIL OFL 1.1, latin + latin-ext subsets, 400/600/700), one accent colour.

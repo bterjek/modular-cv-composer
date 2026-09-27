@@ -92,3 +92,18 @@ describe('download file names', () => {
 		expect(asciiFileName('日本')).toBe('CV');
 	});
 });
+
+import { DESIGNS } from './index';
+describe('every design', () => {
+	for (const d of Object.values(DESIGNS)) {
+		it(`${d.key}: escapes, labels credentials, no scripts, no non-web links`, () => {
+			const html = renderDocument(cv(), { designKey: d.key, fontCss: '', fontSrc: 'data:' });
+			expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+			expect(html).not.toMatch(/<script/i);
+			expect(html).not.toContain('javascript:');
+			expect(html).toContain('>Course<');
+			expect(html).toContain('>Certification<');
+			expect(html).toContain('Mar 2023 – present');
+		});
+	}
+});

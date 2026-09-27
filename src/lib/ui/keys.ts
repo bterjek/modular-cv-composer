@@ -9,7 +9,7 @@ export function saveCurrentForm() {
 }
 
 export function handleHotkey(e: KeyboardEvent, actions: KeyAction[]): boolean {
-	if (e.altKey || e.metaKey) return false;
+	if (e.altKey || e.metaKey || e.shiftKey) return false; // Shift+F1 is feedback, handled elsewhere
 	const combo = (e.ctrlKey ? 'Ctrl+' : '') + e.key.toUpperCase().replace(/^([A-Z])$/, '$1');
 	const hit = actions.find((a) => a.key.toUpperCase() === combo.toUpperCase());
 	if (!hit) return false;

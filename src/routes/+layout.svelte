@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '$lib/ui/dos.css';
 	import { page } from '$app/state';
+	import Feedback from '$lib/ui/Feedback.svelte';
 	let { data, children } = $props();
 	const here = (p: string) => (page.url.pathname === p ? 'page' : undefined);
 </script>
@@ -18,7 +19,7 @@
 		{#if data.flags.includes('editor.dos-shell')}<a href="/edit" aria-current={page.url.pathname.startsWith('/edit') ? 'page' : undefined}>Editor</a>{/if}
 		<a href="/assemble" aria-current={here('/assemble')}>Assemble</a>
 		<a href="/account" aria-current={here('/account')}>Account</a>
-		{#if data.user.role === 'admin'}<a href="/admin" aria-current={here('/admin')}>Admin</a>{/if}
+		{#if data.user.role === 'admin'}<a href="/admin" aria-current={here('/admin')}>Admin{data.openFeedback ? ` (${data.openFeedback})` : ''}</a>{/if}
 		<span class="grow"></span>
 		<span>{data.user.email}</span>
 		<form method="POST" action="/logout"><button>Log out</button></form>
@@ -27,7 +28,9 @@
 
 <main id="main" class:wide={page.url.pathname.startsWith('/edit')}>{@render children()}</main>
 
-{#if !page.url.pathname.startsWith('/edit')}<p class="legal"><a href="/privacy">Privacy</a></p>{/if}
+{#if !page.url.pathname.startsWith('/edit')}<p class="legal"><a href="/privacy">Privacy</a> · version {data.appVersion}</p>{/if}
+
+{#if data.user}<Feedback appVersion={data.appVersion} />{/if}
 
 <style>
 	.skip { position: absolute; left: -999px; }

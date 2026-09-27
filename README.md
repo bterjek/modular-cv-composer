@@ -5,7 +5,7 @@ A hosted app for building CVs from reusable modules. Content is written once
 into tailored CVs through job-category recipes. The editor has a keyboard-driven,
 DOS-style interface; the CVs it produces are modern HTML (and PDF from the same HTML).
 
-**Status:** build step 6 of 7 — snapshots, share links, data export and account deletion. Test mode (invite-only) until all features are confirmed.
+**Status:** all 7 build steps done — ready for invite-only testing. Deploy with [`docs/DEPLOY.md`](docs/DEPLOY.md). Test mode (invite-only) until all features are confirmed.
 
 ## Documents
 
@@ -14,6 +14,7 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 - [`docs/RENDERING.md`](docs/RENDERING.md) — designs, live preview, HTML and PDF export, output safety.
 - [`docs/EDITOR.md`](docs/EDITOR.md) — the editor: keys, screens, live preview.
 - [`docs/SNAPSHOTS-AND-PRIVACY.md`](docs/SNAPSHOTS-AND-PRIVACY.md) — snapshots, share links, GDPR export/deletion, privacy notice.
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — hosting checklist, backups, first start, updating.
 
 ## Stack
 
@@ -23,7 +24,7 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 | Database | SQLite in a file on the `/data` volume, via Drizzle ORM (Postgres-ready) |
 | Validation | Zod — every JSON column is validated on write |
 | PDF | Chromium in the same image, driven by playwright-core |
-| Fonts | Inter (SIL OFL 1.1) via @fontsource, embedded in exports |
+| Fonts | Inter and Source Serif 4 (SIL OFL 1.1) via @fontsource, embedded in exports |
 | Delivery | One container image, tested, built, smoke-tested and pushed to GHCR by GitHub Actions |
 
 ## Run locally
@@ -34,6 +35,7 @@ npm run db:migrate   # creates ./data/dev.sqlite
 ADMIN_EMAIL=you@example.com npm run dev   # prints your first-admin sign-up link
 npm test             # schema, auth, engine, isolation, rendering and boundary tests
                      # PDF tests run when CHROMIUM_PATH points at a Chromium/Chrome binary
+npm run build && CHROMIUM_PATH=… npm run e2e   # browser regression, see e2e/README.md
 ```
 
 ## Run the container
@@ -71,4 +73,4 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
 4. ✅ Rendering: first modern HTML design, preview iframe, HTML + PDF export
 5. ✅ DOS-style editor: profile, content, wordings, tags, categories, job tailoring, live preview
 6. ✅ Snapshots, share links, export and account deletion, privacy notice
-7. Remaining designs, feedback tool → testers in
+7. ✅ Second design (Classic), in-app feedback (Shift+F1) with admin triage, built-in backups, version stamping, error page → **testers in**

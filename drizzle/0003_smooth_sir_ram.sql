@@ -1,0 +1,1 @@
+ALTER TABLE `feedback` ADD `resolved_at` integer;

@@ -109,6 +109,7 @@ export const feedback = sqliteTable('feedback', {
 	message: text('message').notNull(),
 	route: text('route'),
 	screenState: text('screen_state', { mode: 'json' }),
+	resolvedAt: ms('resolved_at'),
 	createdAt: createdAt()
 });
 

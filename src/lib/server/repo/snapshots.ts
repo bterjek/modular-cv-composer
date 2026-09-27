@@ -6,7 +6,7 @@ import { uuidv7 } from 'uuidv7';
 import { db } from '../db';
 import { shareLinks, snapshots, user } from '../db/schema';
 import { renderDocument, getDesign } from '$lib/render';
-import { embeddedFontCss } from '../render/fonts';
+import { fontsFor } from '../render/fonts';
 import { newToken, sha256 } from '../auth/tokens';
 import { getCategory, getJobTarget, resolveCategory, resolveJobTarget, updateJobTarget } from './assembly';
 import { InvalidError, NotFoundError } from './errors';
@@ -31,7 +31,7 @@ export function createSnapshot(ownerId: string, source: SnapshotSource, opts: { 
 	}
 	if (cv.sections.length === 0) throw new InvalidError('Nothing to freeze yet — this CV has no content.');
 	const designKey = getDesign(getCategory(ownerId, categoryId).designKey).key;
-	const html = renderDocument(cv, { designKey, fontCss: embeddedFontCss, fontSrc: 'data:' });
+	const html = renderDocument(cv, { designKey, ...fontsFor(designKey, 'embedded') });
 	const id = uuidv7();
 	const now = Date.now();
 	const label = (opts.label?.trim() || `${defaultLabel}, ${new Date(now).toISOString().slice(0, 10)}`).slice(0, 160);
