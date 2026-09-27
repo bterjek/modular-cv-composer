@@ -15,6 +15,7 @@
 	<strong>MODULAR CV COMPOSER</strong>
 	{#if data.user}
 		<a href="/" aria-current={here('/')}>Home</a>
+		<a href="/assemble" aria-current={here('/assemble')}>Assemble</a>
 		<a href="/account" aria-current={here('/account')}>Account</a>
 		{#if data.user.role === 'admin'}<a href="/admin" aria-current={here('/admin')}>Admin</a>{/if}
 		<span class="grow"></span>

@@ -1,0 +1,454 @@
+{
+	"engineVersion": "1.0.0",
+	"profile": {
+		"fullName": "Alex Example",
+		"email": "alex@example.com",
+		"phone": null,
+		"location": "Budapest, Hungary",
+		"links": [
+			{
+				"label": "LinkedIn",
+				"url": "https://www.linkedin.com/in/example"
+			}
+		]
+	},
+	"sections": [
+		{
+			"module": "headline",
+			"title": null,
+			"entries": [
+				{
+					"id": "01a0e1c1-c5c6-7053-a797-81894f613afe",
+					"module": "headline",
+					"data": {},
+					"variantId": "01a0e1c1-c5c9-7c5a-bb64-cee7f5e96180",
+					"text": "IT operations leader — governance, audit readiness and service stability",
+					"items": []
+				}
+			]
+		},
+		{
+			"module": "summary",
+			"title": "Profile",
+			"entries": [
+				{
+					"id": "01a0e1c1-c5cf-7f16-a4c6-2260927cc03b",
+					"module": "summary",
+					"data": {},
+					"variantId": "01a0e1c1-c5d2-7183-81ea-b6e7075dbbfd",
+					"text": "Ten years running regulated IT services, most recently taking a network operation through NIS2 readiness. Controls live in daily work, not in audit week.",
+					"items": []
+				}
+			]
+		},
+		{
+			"module": "credentials",
+			"title": "Certifications & training",
+			"entries": [
+				{
+					"id": "01a0e1c1-c5e8-7f40-92fa-9ff587855444",
+					"module": "credentials",
+					"data": {
+						"name": "Information Security Management (online course)",
+						"issuer": "Example Academy",
+						"kind": "course",
+						"issued": "2024-02"
+					},
+					"variantId": null,
+					"text": null,
+					"items": []
+				},
+				{
+					"id": "01a0e1c1-c5e7-7a9f-a10b-67e3ab555ed0",
+					"module": "credentials",
+					"data": {
+						"name": "ITIL 4 Strategic Leader",
+						"issuer": "PeopleCert",
+						"kind": "certification",
+						"issued": "2022-11"
+					},
+					"variantId": null,
+					"text": null,
+					"items": []
+				}
+			]
+		},
+		{
+			"module": "experience",
+			"title": "Experience",
+			"entries": [
+				{
+					"id": "01a0e1c1-c5d5-7b1f-a53b-1bfb556dcf0a",
+					"module": "experience",
+					"data": {
+						"organization": "Northwind Bank (via Contoso Services)",
+						"title": "Head of Network Operations",
+						"location": "Frankfurt, remote",
+						"start": "2023-03",
+						"end": null
+					},
+					"variantId": null,
+					"text": null,
+					"items": [
+						{
+							"id": "01a0e1c1-c5d5-7b1f-a53b-1bfc2df47e79",
+							"variantId": "01a0e1c1-c5d7-702f-b616-0848908ed9a8",
+							"text": "Closed the annual SOC 2 audit with zero findings, from 11 the year before."
+						},
+						{
+							"id": "01a0e1c1-c5d9-7fe2-9dc5-048bb5e3c68e",
+							"variantId": "01a0e1c1-c5da-7cef-9876-655a9e843cf2",
+							"text": "Lead 28 engineers in four teams across four countries."
+						},
+						{
+							"id": "01a0e1c1-c5db-703a-87bf-f96c375e60c4",
+							"variantId": "01a0e1c1-c5dc-78a2-9fa5-f4a47f7dfd07",
+							"text": "Mapped network operations to NIS2 requirements and closed the gaps before the deadline."
+						}
+					]
+				},
+				{
+					"id": "01a0e1c1-c5dd-721e-99b9-6bcac507065f",
+					"module": "experience",
+					"data": {
+						"organization": "Fabrikam Telecom",
+						"title": "IT Service Manager",
+						"start": "2019-06",
+						"end": "2023-02"
+					},
+					"variantId": null,
+					"text": null,
+					"items": [
+						{
+							"id": "01a0e1c1-c5e0-7efe-b26f-ded40899fb6b",
+							"variantId": "01a0e1c1-c5e1-7172-8cc6-e4bd24a9b633",
+							"text": "Introduced change advisory reviews; failed changes dropped by 60 %."
+						},
+						{
+							"id": "01a0e1c1-c5e1-7172-8cc6-e4be1e0667d2",
+							"variantId": "01a0e1c1-c5e2-780e-bf70-950541271e10",
+							"text": "Rebuilt a team of 12 after mass resignations; attrition fell to single digits."
+						}
+					]
+				}
+			]
+		},
+		{
+			"module": "skills",
+			"title": "Skills",
+			"entries": [
+				{
+					"id": "01a0e1c1-c5ea-711b-877d-3a5eae579859",
+					"module": "skills",
+					"data": {
+						"group": "Core"
+					},
+					"variantId": null,
+					"text": null,
+					"items": [
+						{
+							"id": "01a0e1c1-c5ea-711b-877d-3a5f6f84c096",
+							"variantId": "01a0e1c1-c5eb-7b0c-b9f5-2bbf7ee20613",
+							"text": "IT governance frameworks (ITIL, COBIT)"
+						},
+						{
+							"id": "01a0e1c1-c5eb-7b0c-b9f5-2bc09a72d553",
+							"variantId": "01a0e1c1-c5ed-796e-99cb-f79b04e01d56",
+							"text": "Audit preparation (SOC 2, ISO 27001)"
+						},
+						{
+							"id": "01a0e1c1-c5ef-710f-895f-2ae6de80a9e5",
+							"variantId": "01a0e1c1-c5f0-7525-992f-a486f253f7b2",
+							"text": "Vendor management"
+						}
+					]
+				}
+			]
+		},
+		{
+			"module": "education",
+			"title": "Education",
+			"entries": [
+				{
+					"id": "01a0e1c1-c5e9-7b0e-abef-dfb008f070ea",
+					"module": "education",
+					"data": {
+						"institution": "Example University",
+						"degree": "BA",
+						"field": "Philosophy",
+						"start": "2011-09",
+						"end": "2014-06"
+					},
+					"variantId": null,
+					"text": null,
+					"items": []
+				}
+			]
+		},
+		{
+			"module": "languages",
+			"title": "Languages",
+			"entries": [
+				{
+					"id": "01a0e1c1-c5f6-7465-9822-1de98ed06ba2",
+					"module": "languages",
+					"data": {
+						"language": "Hungarian",
+						"level": "native"
+					},
+					"variantId": null,
+					"text": null,
+					"items": []
+				},
+				{
+					"id": "01a0e1c1-c5f6-7465-9822-1dea1d6da363",
+					"module": "languages",
+					"data": {
+						"language": "English",
+						"level": "C1"
+					},
+					"variantId": null,
+					"text": null,
+					"items": []
+				}
+			]
+		}
+	],
+	"trace": [
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5c6-7053-a797-81894f613afe",
+			"outcome": "kept",
+			"reason": "in section"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5c9-7c5a-bb64-cee7f5e96180",
+			"outcome": "chosen",
+			"reason": "matches category tags: governance"
+		},
+		{
+			"kind": "section",
+			"id": "headline",
+			"outcome": "kept",
+			"reason": "1 entries"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5cf-7f16-a4c6-2260927cc03b",
+			"outcome": "kept",
+			"reason": "in section"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5d2-7183-81ea-b6e7075dbbfd",
+			"outcome": "chosen",
+			"reason": "matches job tags: nis2"
+		},
+		{
+			"kind": "section",
+			"id": "summary",
+			"outcome": "kept",
+			"reason": "1 entries"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5e8-7f40-92fa-9ff587855444",
+			"outcome": "kept",
+			"reason": "in section"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5e7-7a9f-a10b-67e3ab555ed0",
+			"outcome": "kept",
+			"reason": "in section"
+		},
+		{
+			"kind": "section",
+			"id": "credentials",
+			"outcome": "kept",
+			"reason": "2 entries"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5e3-77b6-9c44-b664f29b2f81",
+			"outcome": "dropped",
+			"reason": "has excluded tag: early-career"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5d5-7b1f-a53b-1bfb556dcf0a",
+			"outcome": "kept",
+			"reason": "some of its items match the section tags"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5d7-702f-b616-0849d1842433",
+			"outcome": "dropped",
+			"reason": "no matching tag (entry itself does not match)"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5d5-7b1f-a53b-1bfc2df47e79",
+			"outcome": "kept",
+			"reason": "matches preferred tags"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5d7-702f-b616-0848908ed9a8",
+			"outcome": "chosen",
+			"reason": "only wording"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5d9-7fe2-9dc5-048bb5e3c68e",
+			"outcome": "kept",
+			"reason": "in entry"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5da-7cef-9876-655a9e843cf2",
+			"outcome": "chosen",
+			"reason": "only wording"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5db-703a-87bf-f96c375e60c4",
+			"outcome": "kept",
+			"reason": "matches preferred tags"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5dc-78a2-9fa5-f4a47f7dfd07",
+			"outcome": "chosen",
+			"reason": "only wording"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5dd-721e-99b9-6bcac507065f",
+			"outcome": "kept",
+			"reason": "some of its items match the section tags"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5de-7706-b8d6-2109f500aa29",
+			"outcome": "dropped",
+			"reason": "no matching tag (entry itself does not match)"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5e0-7efe-b26f-ded40899fb6b",
+			"outcome": "kept",
+			"reason": "matches preferred tags"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5e1-7172-8cc6-e4bd24a9b633",
+			"outcome": "chosen",
+			"reason": "only wording"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5e1-7172-8cc6-e4be1e0667d2",
+			"outcome": "kept",
+			"reason": "in entry"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5e2-780e-bf70-950541271e10",
+			"outcome": "chosen",
+			"reason": "only wording"
+		},
+		{
+			"kind": "section",
+			"id": "experience",
+			"outcome": "kept",
+			"reason": "2 entries"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5ea-711b-877d-3a5eae579859",
+			"outcome": "kept",
+			"reason": "some of its items match the section tags"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5ed-796e-99cb-f79ce009d345",
+			"outcome": "dropped",
+			"reason": "no matching tag (entry itself does not match)"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5ea-711b-877d-3a5f6f84c096",
+			"outcome": "kept",
+			"reason": "matches preferred tags"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5eb-7b0c-b9f5-2bbf7ee20613",
+			"outcome": "chosen",
+			"reason": "only wording"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5eb-7b0c-b9f5-2bc09a72d553",
+			"outcome": "kept",
+			"reason": "matches preferred tags"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5ed-796e-99cb-f79b04e01d56",
+			"outcome": "chosen",
+			"reason": "only wording"
+		},
+		{
+			"kind": "item",
+			"id": "01a0e1c1-c5ef-710f-895f-2ae6de80a9e5",
+			"outcome": "kept",
+			"reason": "matches preferred tags"
+		},
+		{
+			"kind": "variant",
+			"id": "01a0e1c1-c5f0-7525-992f-a486f253f7b2",
+			"outcome": "chosen",
+			"reason": "only wording"
+		},
+		{
+			"kind": "section",
+			"id": "skills",
+			"outcome": "kept",
+			"reason": "1 entries"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5e9-7b0e-abef-dfb008f070ea",
+			"outcome": "kept",
+			"reason": "in section"
+		},
+		{
+			"kind": "section",
+			"id": "education",
+			"outcome": "kept",
+			"reason": "1 entries"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5f6-7465-9822-1de98ed06ba2",
+			"outcome": "kept",
+			"reason": "in section"
+		},
+		{
+			"kind": "entry",
+			"id": "01a0e1c1-c5f6-7465-9822-1dea1d6da363",
+			"outcome": "kept",
+			"reason": "in section"
+		},
+		{
+			"kind": "section",
+			"id": "languages",
+			"outcome": "kept",
+			"reason": "2 entries"
+		}
+	],
+	"warnings": []
+}

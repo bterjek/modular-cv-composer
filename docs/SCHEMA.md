@@ -124,31 +124,40 @@ Overrides (stored on a job target) — all optional:
 
 ## 5. Resolution rules (the assembly engine)
 
-Pure function: `resolve(content, recipe, overrides) → ResolvedCV`. Deterministic:
-same input, same output. No database access inside.
+Pure function in `src/lib/domain/engine.ts`: `resolve(content, recipe, overrides) → ResolvedCV`.
+Deterministic: same input, same output. No database access inside. Tags are
+case-insensitive (stored trimmed and lower-cased); a recipe lists each module at most once.
 
-1. **Modules**: `overrides.moduleOrder` if given, else recipe order. Modules not in the recipe are not rendered.
-2. **Entries**: not archived, not in `excludeEntries`. If the module has `includeTags`, keep entries where the entry *or any of its items* has one of them. Drop entries with an `excludeTags` tag. Order: `position`, then `sort_key` descending. Truncate to `maxEntries`.
-3. **Items**: not archived, not in `excludeItems`, same tag filters. Rank by number of matching `preferTags` (desc), then `position`. Truncate to `maxItemsPerEntry`. Then add `includeItems` that belong to kept entries, even if over the limit.
-4. **Variant choice** per entry/item, first match wins:
+1. **Modules**: recipe order, or `overrides.moduleOrder` first followed by any recipe modules it left out. Modules not in the recipe are never rendered. Sections that end up empty are dropped.
+2. **Entries**: skip archived and `excludeEntries`. Drop entries with an `excludeTags` tag. If the module has `includeTags`, keep entries where the entry *or any of its items* has one of them. Order: `position`, then `sort_key` descending (newest first), then id. Truncate to `maxEntries`.
+3. **Items**:
+   - `includeItems` always wins (even over `excludeItems`, tag filters and the cap).
+   - Otherwise skip archived, `excludeItems`, items with an `excludeTags` tag, and — when `includeTags` is set and the entry itself does not carry one — items without one.
+   - Items with no wording yet are skipped.
+   - **Selection** ranks by job-tag matches, then all preferred-tag matches, then `position`; the top `maxItemsPerEntry` are kept. **Display** is always in the author's `position` order.
+4. **Variant choice** per entry/item, first rule that separates them wins:
    1. `pinVariants`
-   2. highest count of matching `preferTags` (override tags weigh before recipe tags), tie → preferred `length`
-   3. preferred `length`
-   4. `is_default`
-   5. lowest `position`
-5. An entry or item with **no variants** is rendered from its structured data only (e.g. a skill with no wording).
-6. The result carries a `trace` (why each item was kept/dropped, which rule chose each variant) so the UI can explain "why is this bullet here?".
+   2. most matching job tags (`overrides.preferTags`)
+   3. most matching category tags (`recipe.preferTags`)
+   4. preferred `length` (`overrides.length`, else `recipe.length`)
+   5. `is_default`
+   6. lowest `position`, then id
+5. **Entries without wordings** (e.g. a language with its level) are rendered from their structured data only.
+6. **Trace**: every section, entry, item and chosen wording is recorded as kept/dropped/chosen with a reason, so the UI can answer "why is this here?".
+7. **Warnings**: override ids that no longer exist (deleted item, a pinned wording from another target, a module not in the recipe) are reported, never fatal.
 
-`ResolvedCV` is what templates receive and what snapshots store. Templates never
-query the database.
+`ResolvedCV` (`src/lib/domain/content.ts`) is what templates receive and what snapshots
+store. Templates never query the database. Worked examples produced from the demo
+content: `docs/examples/resolved-*.json`.
 
 ## 6. Data isolation (replaces Postgres row-level security)
 
 SQLite has no row-level security, so isolation is enforced in code:
 
-- **One door**: all domain queries go through `src/lib/server/repo/`, which requires an `ownerId` for every call and adds `WHERE owner_id = ?` itself. Route handlers never import the Drizzle client directly (enforced by a lint rule).
+- **One door**: all domain queries go through `src/lib/server/repo/`, which requires an `ownerId` for every call and adds `WHERE owner_id = ?` itself. Route handlers never import the database client (enforced by `src/lib/server/boundaries.test.ts`).
 - **Writes check parents**: creating an item/variant verifies the parent entry belongs to the same owner in the same transaction.
-- **Tests**: every repo function has a test where user B tries to read/update/delete user A's rows and must get "not found" (never "forbidden" — do not leak existence).
+- **Tests**: every repo function has a test where user B tries to read/update/delete/attach to user A's rows and must get "not found" (never "forbidden" — do not leak existence). See `src/lib/server/repo/repo.test.ts`.
+- **Updates never reset unsent fields**: update schemas carry no defaults (Zod 4 would otherwise fill them in on partial updates).
 - **Admin** reads of other users' content are not possible through the repo; admin screens only see invite codes, flags, feedback and user accounts.
 
 ## 7. GDPR hooks

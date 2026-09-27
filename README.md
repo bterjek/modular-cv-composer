@@ -5,7 +5,7 @@ A hosted app for building CVs from reusable modules. Content is written once
 into tailored CVs through job-category recipes. The editor has a keyboard-driven,
 DOS-style interface; the CVs it produces are modern HTML (and PDF from the same HTML).
 
-**Status:** build step 2 of 7 — accounts, invites and admin screen. Test mode (invite-only) until all features are confirmed.
+**Status:** build step 3 of 7 — assembly engine (see it at **Assemble** in the app). Test mode (invite-only) until all features are confirmed.
 
 ## Documents
 
@@ -28,7 +28,7 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 npm install
 npm run db:migrate   # creates ./data/dev.sqlite
 ADMIN_EMAIL=you@example.com npm run dev   # prints your first-admin sign-up link
-npm test             # schema, auth, invite, flag and boundary tests
+npm test             # schema, auth, engine, isolation and boundary tests
 ```
 
 ## Run the container
@@ -62,7 +62,7 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
 
 1. ✅ Data model + container skeleton
 2. ✅ Auth, invite gate, admin screen, feature flags, environments
-3. Assembly engine (recipe + overrides → resolved CV, with trace)
+3. ✅ Assembly engine (recipe + overrides → resolved CV, with trace), owner-scoped content repository, example content
 4. Rendering: first modern HTML design, preview iframe, PDF via Chromium
 5. DOS-style editor shell
 6. Snapshots, share links, export and account deletion

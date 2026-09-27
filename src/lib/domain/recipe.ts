@@ -2,7 +2,9 @@
 import { z } from 'zod';
 import { MODULES, VARIANT_LENGTHS } from './modules';
 
-const tagList = z.array(z.string().min(1)).default([]);
+/** Tags are case-insensitive: stored and compared trimmed and lower-cased. */
+export const tagName = z.string().trim().min(1).max(40).toLowerCase();
+const tagList = z.array(tagName).default([]);
 
 export const moduleRule = z.object({
 	module: z.enum(MODULES),
@@ -15,7 +17,10 @@ export const moduleRule = z.object({
 
 export const recipe = z.object({
 	version: z.literal(1),
-	modules: z.array(moduleRule).min(1),
+	modules: z
+		.array(moduleRule)
+		.min(1)
+		.refine((ms) => new Set(ms.map((m) => m.module)).size === ms.length, 'Each module may appear only once'),
 	preferTags: tagList,
 	length: z.enum(VARIANT_LENGTHS).default('standard')
 });
@@ -27,7 +32,7 @@ export const overrides = z.object({
 	excludeItems: z.array(z.string()).optional(),
 	excludeEntries: z.array(z.string()).optional(),
 	pinVariants: z.record(z.string(), z.string()).optional(),
-	preferTags: z.array(z.string()).optional(),
+	preferTags: z.array(tagName).optional(),
 	length: z.enum(VARIANT_LENGTHS).optional()
 });
 export type Overrides = z.infer<typeof overrides>;
