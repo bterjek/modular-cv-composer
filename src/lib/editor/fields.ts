@@ -21,8 +21,8 @@ export const MODULE_LABELS: Record<Module, string> = {
 };
 
 export const MODULE_HELP: Record<Module, string> = {
-	headline: 'One line under your name. Write a wording per kind of job and tag each one.',
-	summary: 'A short profile paragraph. Add short and long wordings; tag them by job category.',
+	headline: 'One line under your name. Add a version per kind of job and tag it (e.g. compliance, operations) — each CV shows only the one that fits best.',
+	summary: 'A short profile paragraph. Add a version per kind of job and tag it — each CV shows only the one that fits best.',
 	experience: 'One entry per role. Bullets are items; each bullet can have several wordings.',
 	education: 'Degrees and schools.',
 	credentials: 'Certificates, courses, licences and memberships — the kind decides the label on the CV.',

@@ -129,7 +129,8 @@ Deterministic: same input, same output. No database access inside. Tags are
 case-insensitive (stored trimmed and lower-cased); a recipe lists each module at most once.
 
 1. **Modules**: recipe order, or `overrides.moduleOrder` first followed by any recipe modules it left out. Modules not in the recipe are never rendered. Sections that end up empty are dropped.
-2. **Entries**: skip archived and `excludeEntries`. Drop entries with an `excludeTags` tag. If the module has `includeTags`, keep entries where the entry *or any of its items* has one of them. Order: `position`, then `sort_key` descending (newest first), then id. Truncate to `maxEntries`.
+2. **Headline and summary are pick-one**: after filtering, only the best-fitting entry is kept (pinned wording, then job tags, then category tags — counting the entry's and its wordings' tags — then preferred length, then author order).
+3. **Entries**: skip archived and `excludeEntries`. Drop entries with an `excludeTags` tag. If the module has `includeTags`, keep entries where the entry *or any of its items* has one of them. Order: `position`, then `sort_key` descending (newest first), then id. Truncate to `maxEntries`.
 3. **Items**:
    - `includeItems` always wins (even over `excludeItems`, tag filters and the cap).
    - Otherwise skip archived, `excludeItems`, items with an `excludeTags` tag, and — when `includeTags` is set and the entry itself does not carry one — items without one.

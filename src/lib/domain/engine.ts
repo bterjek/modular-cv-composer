@@ -15,7 +15,10 @@ import type {
 	VariantIn
 } from './content';
 
-export const ENGINE_VERSION = '1.0.0';
+export const ENGINE_VERSION = '1.1.0';
+
+/** Sections where several entries are alternatives and the CV shows only the best fit. */
+const SINGLE_CHOICE = new Set<Module>(['headline', 'summary']);
 
 export const DEFAULT_TITLES: Record<Module, string | null> = {
 	headline: null,
@@ -126,6 +129,20 @@ export function resolve(content: Content, recipe: Recipe, overrides: Overrides =
 				drop(`no tag from: ${rule.includeTags.join(', ')}`);
 			else if (rule.maxEntries !== undefined && kept.length >= rule.maxEntries) drop(`over the limit of ${rule.maxEntries} entries`);
 			else kept.push(e);
+		}
+
+		// Headline and summary are "pick one": several entries are alternatives, the best fit wins.
+		if (SINGLE_CHOICE.has(module) && kept.length > 1) {
+			const fit = (e: EntryIn) => {
+				const tagSets = e.variants.length ? e.variants.map((v) => [...e.tags, ...v.tags]) : [e.tags];
+				const best = (w: Set<string>) => Math.max(...tagSets.map((t) => count(t, w)));
+				return [Number(e.id in pins), best(overrideTags), best(recipeTags), Number(e.variants.some((v) => v.length === length))];
+			};
+			const ranked = kept
+				.map((e, i) => ({ e, f: fit(e), i }))
+				.sort((a, b) => b.f.reduce((d, x, k) => d || x - a.f[k], 0) || a.i - b.i);
+			for (const { e } of ranked.slice(1)) note({ kind: 'entry', id: e.id, outcome: 'dropped', reason: `another ${module} fits better` });
+			kept.splice(0, kept.length, ranked[0].e);
 		}
 
 		const resolvedEntries: ResolvedEntry[] = [];

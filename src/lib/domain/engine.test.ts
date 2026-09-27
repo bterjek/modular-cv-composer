@@ -147,3 +147,28 @@ describe('resolve', () => {
 		expect(() => recipe({ version: 1, modules: [{ module: 'skills' }, { module: 'skills' }] })).toThrow();
 	});
 });
+
+describe('headline and summary are pick-one', () => {
+	const c: Content = {
+		profile: null,
+		entries: [
+			entry('s-ops', 'summary', [], { variants: [v('Ops summary', { tags: ['ops'] })] }),
+			entry('s-comp', 'summary', [], { tags: ['compliance'], variants: [v('Compliance summary')] }),
+			entry('s-gen', 'summary', [], { variants: [v('General summary')] })
+		]
+	};
+	const r = (preferTags: string[]) => recipe({ version: 1, modules: [{ module: 'summary' }], preferTags });
+	const shown = (cv: ReturnType<typeof resolve>) => cv.sections[0].entries.map((e) => e.text);
+	it('shows only the best-matching entry (wording or entry tags)', () => {
+		expect(shown(resolve(c, r(['ops'])))).toEqual(['Ops summary']);
+		expect(shown(resolve(c, r(['compliance'])))).toEqual(['Compliance summary']);
+		expect(shown(resolve(c, r([])))).toEqual(['Compliance summary']); // no match → first in author order (ids here sort alphabetically)
+	});
+	it('job tags and pins win; reason is traced', () => {
+		expect(shown(resolve(c, r(['ops']), { preferTags: ['compliance'] }))).toEqual(['Compliance summary']);
+		const pinnedId = c.entries[2].variants[0].id;
+		const cv = resolve(c, r(['ops']), { pinVariants: { 's-gen': pinnedId } });
+		expect(shown(cv)).toEqual(['General summary']);
+		expect(cv.trace.find((t) => t.id === 's-ops')?.reason).toBe('another summary fits better');
+	});
+});
