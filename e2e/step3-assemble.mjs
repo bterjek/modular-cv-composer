@@ -6,7 +6,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PAT
 const p = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
 const errs = []; p.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
 const check = (c, l) => { console.log(`${c ? 'PASS' : 'FAIL'} ${l}`); if (!c) process.exitCode = 1; };
-await p.goto(bootUrl);
+await p.goto(bootUrl); await p.waitForLoadState('networkidle');
 await p.fill('#name', 'Admin'); await p.fill('#email', 'admin@example.test'); await p.fill('#password', PW); await p.fill('#confirm', PW);
 await p.click('button.primary'); await p.waitForURL(B + '/');
 await p.click('text=Assemble'); await p.click('text=Load example content');

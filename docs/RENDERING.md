@@ -30,7 +30,7 @@ no layout tables. Checked with `pdftotext`: headings and bullets extract as plai
 
 ## Safety of the output
 - The document has its own CSP: no scripts, no external resources except the fonts.
-- The preview iframe uses `sandbox="allow-same-origin"` without `allow-scripts`: fonts load, nothing runs.
+- The editor's preview iframe uses `sandbox="allow-scripts"` **without** `allow-same-origin`: only one inline click script runs, allowed by its SHA-256 in the CSP; it can only `postMessage` which piece was clicked (`data-src` markers). The editor accepts messages only from that iframe. Markers and script exist only in this preview; every export strips them. Fonts are embedded here because an opaque-origin sandbox cannot load same-origin fonts.
 - PDF rendering: the page's network is fully blocked, scripts are forbidden by CSP; Chromium runs
   with `--no-sandbox` because the container user lacks the namespaces its sandbox needs — acceptable
   only because of the two previous points.

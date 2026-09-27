@@ -22,6 +22,10 @@ alone on purpose: browsers reserve them (reload, address bar, caret browsing, me
 - **Job categories** — the recipe as one table: tick sections, number them, optional title, limits, “only” and “never” tags; preferred tags and length on top; design; duplicate.
 - **Jobs** — details (company, role, link, ad text, status) and tailoring: extra preferred tags, length, section positions, and for every entry and bullet the current **IN/OUT with the reason**, a leave-out switch, auto/always/never per bullet, and a wording pin where there is more than one.
 
+## Click-to-edit
+Click any part of the live preview (name, headline, summary, a role, a bullet, a skill, a language) and the editor
+opens that item, scrolls to it and puts the cursor in its text.
+
 ## Live preview
 The right pane renders the selected job or category through the same renderer as the downloads.
 Its URL carries a content revision (`contentRevision()` — counts and last-change times of everything that affects a CV),

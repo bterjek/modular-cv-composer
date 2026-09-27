@@ -107,3 +107,24 @@ describe('every design', () => {
 		});
 	}
 });
+
+describe('click-to-edit markers', () => {
+	it('are stripped from every export but kept (with the hashed script) in the clickable preview', () => {
+		const plain = renderDocument(cv(), { fontCss: '', fontSrc: 'data:' });
+		expect(plain).not.toContain('data-src');
+		expect(plain).not.toMatch(/<script/i);
+		const click = renderDocument(cv(), { fontCss: '', fontSrc: 'data:', clickable: { scriptHash: 'abc' } });
+		expect(click).toContain('data-src="item:e:i"');
+		expect(click).toContain('data-src="entry:h"');
+		expect(click).toContain('data-src="profile"');
+		expect(click.replace(/&#39;/g, "'")).toContain("script-src 'sha256-abc'");
+		expect(click.match(/<script>/g)).toHaveLength(1);
+	});
+	it('user text cannot forge a marker', () => {
+		const c = cv();
+		c.sections[1].entries[0].items[0].text = 'x" data-src="profile';
+		const html = renderDocument(c, { fontCss: '', fontSrc: 'data:', clickable: { scriptHash: 'abc' } });
+		expect(html).toContain('x&quot; data-src=&quot;profile'); // stays inert text
+		expect(html.match(/data-src="profile"/g)).toHaveLength(2); // only the real header markers (name + contact)
+	});
+});

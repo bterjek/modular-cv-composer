@@ -14,7 +14,7 @@ await admin.goto(B + '/admin');
 check(admin.url().startsWith(B + '/login'), 'anonymous /admin redirects to login');
 await admin.screenshot({ path: `${process.env.OUT}/shot-1-login.png` });
 
-await admin.goto(bootUrl);
+await admin.goto(bootUrl); await admin.waitForLoadState('networkidle');
 check((await admin.inputValue('#code')).length > 0, 'bootstrap code prefilled from link');
 await admin.fill('#name', 'Admin'); await admin.fill('#email', 'admin@example.test');
 await admin.fill('#password', PW); await admin.fill('#confirm', PW);
@@ -30,7 +30,7 @@ check(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/.test(code), `tester invite created (${cod
 await admin.screenshot({ path: `${process.env.OUT}/shot-2-admin.png`, fullPage: true });
 
 const t = await (await browser.newContext()).newPage();
-await t.goto(B + '/signup');
+await t.goto(B + '/signup'); await t.waitForLoadState('networkidle');
 await t.fill('#code', code.toLowerCase().replace(/-/g, ' '));
 await t.fill('#name', 'Tess'); await t.fill('#email', 'someone.else@example.test');
 await t.fill('#password', PW); await t.fill('#confirm', PW);

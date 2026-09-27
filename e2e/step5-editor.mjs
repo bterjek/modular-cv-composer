@@ -11,7 +11,7 @@ const status = async () => (await p.locator('.status').textContent())?.trim();
 const saved = async (text) => { await p.locator('.status .msg').filter({ hasText: text }).waitFor({ timeout: 8000 }); };
 const frame = () => p.frameLocator('aside.preview iframe');
 
-await p.goto(bootUrl);
+await p.goto(bootUrl); await p.waitForLoadState('networkidle');
 await p.fill('#name', 'Ádám Tester'); await p.fill('#email', 'admin@example.test'); await p.fill('#password', PW); await p.fill('#confirm', PW);
 await p.click('button.primary'); await p.waitForURL(B + '/');
 
@@ -101,7 +101,7 @@ await p.keyboard.press('Escape'); check(!(await p.locator('[role=dialog]').isVis
 const tid = p.url().split('/').pop();
 await p.goto(B + '/admin'); await p.click('text=Create invite'); const code = (await p.locator('code.code').first().textContent()).trim();
 const o = await (await browser.newContext()).newPage();
-await o.goto(B + '/signup?code=' + code); await o.fill('#name', 'T'); await o.fill('#email', 't@example.test'); await o.fill('#password', PW); await o.fill('#confirm', PW);
+await o.goto(B + '/signup?code=' + code); await o.waitForLoadState('networkidle'); await o.fill('#name', 'T'); await o.fill('#email', 't@example.test'); await o.fill('#password', PW); await o.fill('#confirm', PW);
 await o.click('button.primary'); await o.waitForURL(B + '/', { timeout: 8000 }).catch(async () => { console.log('SIGNUP-ALERT', await o.textContent('main')); throw new Error('signup failed'); });
 const r1 = await o.goto(`${B}/edit/jobs/${tid}`); check(r1.status() === 404, `other user: job page 404 (${r1.status()})`);
 const post = await o.request.post(`${B}/edit/jobs/${tid}?/delete`, { form: {}, headers: { origin: B } });

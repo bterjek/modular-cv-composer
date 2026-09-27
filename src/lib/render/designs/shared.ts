@@ -1,7 +1,7 @@
 // Section logic shared by all designs: what goes into each section and in which order.
 // A design supplies only its look: CSS and how one entry block is laid out.
 import type { ProfileIn, ResolvedEntry, ResolvedSection } from '$lib/domain/content';
-import { h, safeHref, type SafeHtml } from '../html';
+import { h, raw, safeHref, type SafeHtml } from '../html';
 import { CREDENTIAL_KIND_LABEL, LANGUAGE_LEVEL_LABEL, range, str, month } from '../format';
 
 /** Lays out one entry: headline part, secondary part ("where"), date text, the entry itself. */
@@ -11,7 +11,11 @@ export type EntryBlock = (what: SafeHtml | string, where: string, when: string, 
 export const joinWithSep = (parts: (SafeHtml | string)[]) =>
 	parts.map((p, i) => (i === 0 ? h`<span class="nowrap">${p}</span>` : h` <span class="sep" aria-hidden="true">·</span> <span class="nowrap">${p}</span>`));
 
-export const bullets = (e: ResolvedEntry) => (e.items.length ? h`<ul>${e.items.map((i) => h`<li>${i.text}</li>`)}</ul>` : '');
+/** data-src marks where a piece came from; renderDocument strips it except in the clickable preview. */
+export const src = (kind: 'entry' | 'item' | 'profile', ...ids: string[]) => raw(` data-src="${[kind, ...ids].join(':')}"`);
+
+export const bullets = (e: ResolvedEntry) =>
+	e.items.length ? h`<ul>${e.items.map((i) => h`<li${src('item', e.id, i.id)}>${i.text}</li>`)}</ul>` : '';
 
 export function contactParts(p: ProfileIn | null): SafeHtml[] {
 	if (!p) return [];
@@ -29,7 +33,7 @@ export function contactParts(p: ProfileIn | null): SafeHtml[] {
 export function sectionBody(s: ResolvedSection, block: EntryBlock): SafeHtml {
 	switch (s.module) {
 		case 'summary':
-			return h`${s.entries.map((e) => h`<p class="lead">${e.text}</p>${bullets(e)}`)}`;
+			return h`${s.entries.map((e) => h`<p class="lead"${src('entry', e.id)}>${e.text}</p>${bullets(e)}`)}`;
 		case 'experience':
 			return h`${s.entries.map((e) => {
 				const where = [str(e.data, 'organization'), str(e.data, 'location')].filter(Boolean).join(', ');
@@ -58,11 +62,11 @@ export function sectionBody(s: ResolvedSection, block: EntryBlock): SafeHtml {
 		case 'skills':
 			return h`${s.entries.map((e) => {
 				const group = str(e.data, 'group');
-				return h`<p class="inline">${group ? h`<span class="group">${group}:</span> ` : ''}${joinWithSep(e.items.map((i) => i.text))}</p>`;
+				return h`<p class="inline">${group ? h`<span class="group">${group}:</span> ` : ''}${joinWithSep(e.items.map((i) => h`<span${src('item', e.id, i.id)}>${i.text}</span>`))}</p>`;
 			})}`;
 		case 'languages':
 			return h`<p class="inline">${joinWithSep(
-				s.entries.map((e) => `${str(e.data, 'language')} (${LANGUAGE_LEVEL_LABEL[str(e.data, 'level')] ?? str(e.data, 'level')})`)
+				s.entries.map((e) => h`<span${src('entry', e.id)}>${str(e.data, 'language')} (${LANGUAGE_LEVEL_LABEL[str(e.data, 'level')] ?? str(e.data, 'level')})</span>`)
 			)}</p>`;
 		case 'custom':
 			return h`${s.entries.map((e) => block(str(e.data, 'heading'), '', '', e))}`;
@@ -71,5 +75,8 @@ export function sectionBody(s: ResolvedSection, block: EntryBlock): SafeHtml {
 	}
 }
 
-export const headlineOf = (sections: ResolvedSection[]) => sections.find((s) => s.module === 'headline')?.entries[0]?.text;
+export const headlineOf = (sections: ResolvedSection[]) => {
+	const e = sections.find((s) => s.module === 'headline')?.entries[0];
+	return e?.text ? h`<p class="headline"${src('entry', e.id)}>${e.text}</p>` : '';
+};
 export const bodySections = (sections: ResolvedSection[]) => sections.filter((s) => s.module !== 'headline');

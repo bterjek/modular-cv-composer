@@ -36,5 +36,7 @@ Needed for Oracle Always Free, AWS Graviton, or running the published image on A
 ## Verify CI
 The GitHub Actions image build has not been confirmed green from here (no access to the Actions tab).
 
-## Known flaky e2e step
-Twice in ~10 full runs a second user's sign-up timed out; never reproduced since. Scripts log `SIGNUP-ALERT` with the page text if it recurs.
+## Form values typed before the page has loaded can be reset
+Found via the formerly flaky e2e step: typing into the sign-up form before its scripts finished loading left the
+fields empty after hydration, so the submit was blocked silently. Tests now wait for load. Real users rarely type
+that fast, but browser/password-manager autofill could be wiped the same way — worth a check on real devices.

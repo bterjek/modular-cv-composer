@@ -4,7 +4,7 @@
 import type { ResolvedCV } from '$lib/domain/content';
 import { h, type SafeHtml } from '../html';
 import type { Design } from './types';
-import { bodySections, bullets, contactParts, headlineOf, sectionBody, type EntryBlock } from './shared';
+import { bodySections, bullets, contactParts, headlineOf, sectionBody, src, type EntryBlock } from './shared';
 
 const css = /* css */ `
 :root {
@@ -76,7 +76,7 @@ li::before { content: ''; position: absolute; left: 0.6mm; top: 0.5em; width: 1.
 `;
 
 const entryBlock: EntryBlock = (what, where, when, e) =>
-	h`<div class="entry">
+	h`<div class="entry"${src('entry', e.id)}>
 		<div class="row"><div><span class="what">${what}</span>${where ? h`<span class="where"> · ${where}</span>` : ''}</div>${when ? h`<div class="when">${when}</div>` : ''}</div>
 		${e.text ? h`<p class="desc">${e.text}</p>` : ''}${bullets(e)}
 	</div>`;
@@ -87,9 +87,9 @@ function render(cv: ResolvedCV): SafeHtml {
 	const contact = contactParts(p);
 	return h`<main class="page">
 	<header>
-		<h1>${p?.fullName ?? 'Your name'}</h1>
-		${headline ? h`<p class="headline">${headline}</p>` : ''}
-		${contact.length ? h`<div class="contact">${contact.map((c) => h`<span>${c}</span>`)}</div>` : ''}
+		<h1${src('profile')}>${p?.fullName ?? 'Your name'}</h1>
+		${headline}
+		${contact.length ? h`<div class="contact"${src('profile')}>${contact.map((c) => h`<span>${c}</span>`)}</div>` : ''}
 	</header>
 	${bodySections(cv.sections).map((s) => h`<section class="${s.module}">${s.title ? h`<h2>${s.title}</h2>` : ''}${sectionBody(s, entryBlock)}</section>`)}
 </main>`;

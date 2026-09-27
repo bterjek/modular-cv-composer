@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { afterNavigate } from '$app/navigation';
+	import { tick } from 'svelte';
 	import { keep } from '$lib/ui/enhance';
 	import Status from '$lib/ui/Status.svelte';
 	import EntryFields from '$lib/editor/EntryFields.svelte';
@@ -8,13 +10,25 @@
 	let { data, form } = $props();
 	const e = $derived(data.entry);
 	const itemWord = $derived(e.module === 'skills' ? 'skill' : 'bullet');
+
+	// Arriving from a click in the preview (#item-…): scroll to it, highlight it, put the cursor in its text.
+	afterNavigate(async ({ to }) => {
+		const id = to?.url.hash.slice(1);
+		if (!id?.startsWith('item-')) return;
+		await tick();
+		const el = document.getElementById(id);
+		if (!el) return;
+		el.scrollIntoView({ block: 'center' });
+		el.classList.add('hit');
+		el.querySelector('textarea')?.focus({ preventScroll: true });
+	});
 </script>
 
 <svelte:head><title>{e.label} · Editor</title></svelte:head>
 
 <Status {form} />
 
-<p class="crumbs"><a href="/edit/content/{e.module}">← {MODULE_LABELS[e.module]}</a>{#if e.archived} · <b>ARCHIVED</b>{/if}</p>
+<p class="crumbs" id="top"><a href="/edit/content/{e.module}">← {MODULE_LABELS[e.module]}</a>{#if e.archived} · <b>ARCHIVED</b>{/if}</p>
 
 <section class="window">
 	<h1>{e.label}</h1>
@@ -41,7 +55,7 @@
 	<section class="window">
 		<h2>{e.module === 'skills' ? 'Skills' : 'Bullets'}</h2>
 		{#each e.items as item, i (item.id)}
-			<div class="item" class:archived={item.archived}>
+			<div class="item" class:archived={item.archived} id="item-{item.id}">
 				<div class="item-head">
 					<b>{i + 1}.</b>
 					<form method="POST" action="?/itemTags" use:enhance={keep} class="row tagform">
@@ -92,6 +106,7 @@
 	.crumbs { margin: 0 0 1rem; }
 	.item { border-top: 1px dotted var(--dim); padding: 0.5rem 0; }
 	.item.archived { opacity: 0.55; }
+	.item:global(.hit) { outline: 2px solid var(--focus); outline-offset: 4px; }
 	.item-head { display: flex; gap: 1.5ch; align-items: end; flex-wrap: wrap; }
 	.tagform { flex: 1; margin: 0; }
 	.item-tools { display: flex; gap: 0.5ch; }

@@ -7,7 +7,7 @@ const p = await (await browser.newContext({ viewport: { width: 1600, height: 100
 const errs = []; p.on('console', (m) => m.type() === 'error' && errs.push(m.text())); p.on('pageerror', (e) => errs.push(e.message));
 const check = (c, l) => { console.log(`${c ? 'PASS' : 'FAIL'} ${l}`); if (!c) process.exitCode = 1; };
 
-await p.goto(bootUrl); await p.fill('#name', 'Admin'); await p.fill('#email', 'admin@example.test'); await p.fill('#password', PW); await p.fill('#confirm', PW);
+await p.goto(bootUrl); await p.waitForLoadState('networkidle'); await p.fill('#name', 'Admin'); await p.fill('#email', 'admin@example.test'); await p.fill('#password', PW); await p.fill('#confirm', PW);
 await p.click('button.primary'); await p.waitForURL(B + '/');
 check((await p.textContent('.legal')).includes('version e2e-test'), 'version shown in footer');
 await p.goto(B + '/admin'); await p.locator('tr', { hasText: 'editor.dos-shell' }).locator('button').click(); await p.waitForLoadState('networkidle');
@@ -55,6 +55,19 @@ check((await p.locator('.fb').count()) === 1, 'done feedback listed under "done"
 await p.goto(B + '/edit/jobs'); await p.locator('.list a').first().click(); await p.waitForURL(/jobs\/[\w-]+$/);
 await p.click('text=Freeze this version'); await p.waitForURL(/snapshots\/[\w-]+$/);
 check((await p.textContent('.window')).includes('design classic'), 'snapshot records the Classic design');
+
+// Click-to-edit: clicking a bullet in the preview opens it in the editor
+await p.goto(B + '/edit/content');
+const pv = p.frameLocator('aside.preview iframe');
+await pv.locator('li').first().waitFor();
+const bulletText = (await pv.locator('li').first().textContent()).trim();
+await pv.locator('li').first().click();
+await p.waitForURL(/\/edit\/content\/entry\/[\w-]+#item-[\w-]+/);
+const target = p.locator('.item.hit');
+await target.waitFor({ timeout: 5000 }).catch(() => {});
+check((await target.count()) === 1 && (await target.locator('textarea').first().inputValue()) === bulletText, `clicking a preview bullet opens that bullet (${bulletText.slice(0, 30)}…)`);
+await pv.locator('h1').click(); await p.waitForURL(/\/edit\/profile/);
+check(true, 'clicking the name opens the profile');
 
 // Error page
 const r = await p.goto(B + '/edit/content/nonsense');

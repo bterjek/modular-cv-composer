@@ -15,7 +15,7 @@ await anon.goto(B + '/privacy');
 check((await anon.textContent('main')).includes('Test Operator') && (await anon.textContent('main')).includes('privacy@example.test'), 'privacy notice public, operator from env');
 
 // admin: sign up, flags on, example content
-await p.goto(bootUrl); await p.fill('#name', 'Admin'); await p.fill('#email', 'admin@example.test'); await p.fill('#password', PW); await p.fill('#confirm', PW);
+await p.goto(bootUrl); await p.waitForLoadState('networkidle'); await p.fill('#name', 'Admin'); await p.fill('#email', 'admin@example.test'); await p.fill('#password', PW); await p.fill('#confirm', PW);
 await p.click('button.primary'); await p.waitForURL(B + '/');
 await p.goto(B + '/admin');
 for (const f of ['editor.dos-shell', 'render.pdf', 'snapshots.share-links']) {
@@ -60,7 +60,7 @@ check(junk.status() === 404, 'unknown token looks the same (404)');
 // other user cannot reach the snapshot
 await p.goto(B + '/admin'); await p.click('text=Create invite'); const code = (await p.locator('code.code').first().textContent()).trim();
 const t = await (await browser.newContext({ acceptDownloads: true })).newPage();
-await t.goto(B + '/signup?code=' + code); await t.fill('#name', 'Tess'); await t.fill('#email', 'tess@example.test'); await t.fill('#password', PW); await t.fill('#confirm', PW);
+await t.goto(B + '/signup?code=' + code); await t.waitForLoadState('networkidle'); await t.fill('#name', 'Tess'); await t.fill('#email', 'tess@example.test'); await t.fill('#password', PW); await t.fill('#confirm', PW);
 await t.click('button.primary'); await t.waitForURL(B + '/', { timeout: 8000 }).catch(async () => { console.log('SIGNUP-ALERT', t.url(), (await t.textContent('main')).slice(0, 300)); throw new Error('signup failed'); });
 const sid = snapUrl.split('/').pop();
 for (const u of [`/edit/snapshots/${sid}`, `/cv/snapshot/${sid}?format=html`]) {

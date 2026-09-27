@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { handleHotkey, saveCurrentForm, type KeyAction } from '$lib/ui/keys';
+	import { onMount } from 'svelte';
 	import { arrowNav } from '$lib/ui/arrowNav';
 	import { MODULES } from '$lib/domain/modules';
 	import { MODULE_LABELS } from '$lib/editor/fields';
@@ -32,10 +33,25 @@
 
 	const here = (p: string) => (page.url.pathname === p || page.url.pathname.startsWith(p + '/') ? 'page' : undefined);
 	const previewSrc = $derived(
-		data.preview ? `/cv/render?${data.preview.kind}=${encodeURIComponent(data.preview.id)}&format=preview&rev=${encodeURIComponent(data.revision)}` : null
+		data.preview ? `/cv/render?${data.preview.kind}=${encodeURIComponent(data.preview.id)}&format=preview&click=1&rev=${encodeURIComponent(data.revision)}` : null
 	);
 	const selValue = $derived(data.preview ? `${data.preview.kind}:${data.preview.id}` : '');
 	let previewForm: HTMLFormElement | undefined = $state();
+	let frame: HTMLIFrameElement | undefined = $state();
+
+	// Click-to-edit: the preview posts which piece was clicked; only messages from our own iframe count.
+	onMount(() => {
+		const onMessage = (e: MessageEvent) => {
+			if (!frame || e.source !== frame.contentWindow || e.data?.type !== 'cv-click') return;
+			const m = /^(entry|item|profile)(?::([\w-]+))?(?::([\w-]+))?$/.exec(String(e.data.src ?? ''));
+			if (!m) return;
+			if (m[1] === 'profile') goto('/edit/profile');
+			else if (m[1] === 'entry') goto(`/edit/content/entry/${m[2]}#top`);
+			else goto(`/edit/content/entry/${m[2]}#item-${m[3]}`);
+		};
+		window.addEventListener('message', onMessage);
+		return () => window.removeEventListener('message', onMessage);
+	});
 </script>
 
 <svelte:window onkeydown={onKey} />
@@ -70,8 +86,10 @@
 			{#if data.preview}<a class="why" href="/assemble?{data.preview.kind}={data.preview.id}">Why?</a>{/if}
 		</form>
 		{#if previewSrc}
-			<!-- allow-same-origin without allow-scripts: fonts load, nothing can run. The rev parameter reloads it after every change. -->
-			<iframe sandbox="allow-same-origin" title="Live CV preview" src={previewSrc}></iframe>
+			<!-- allow-scripts WITHOUT allow-same-origin: only the hashed click script runs, and it can do nothing but post
+			     "this was clicked". The rev parameter reloads the preview after every change. -->
+			<iframe sandbox="allow-scripts" title="Live CV preview — click any part to edit it" src={previewSrc} bind:this={frame}></iframe>
+			<p class="hint pad small">Click any part of the CV to edit it.</p>
 		{:else}
 			<p class="muted pad">The preview appears once you have a job category. Add content first, then create a category under <a href="/edit/categories">Job categories</a>.</p>
 		{/if}
@@ -131,6 +149,7 @@
 	.why { white-space: nowrap; }
 	.preview iframe { width: 100%; height: calc(100vh - 7rem); border: 0; display: block; }
 	.pad { padding: 1rem 2ch; background: var(--bg); margin: 0; }
+	.small { padding: 0.25rem 1ch; font-size: 0.85em; }
 	.fkeys button { background: none; color: var(--dim); border: 0; box-shadow: none; margin: 0; padding: 0; font: inherit; cursor: pointer; }
 	.fkeys button:hover, .fkeys button:focus-visible { color: var(--fg); }
 	.overlay { position: fixed; inset: 0; background: rgb(0 0 0 / 0.6); display: grid; place-items: center; z-index: 20; }

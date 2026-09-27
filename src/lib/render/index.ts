@@ -5,6 +5,7 @@ import { h, raw } from './html';
 import { modern } from './designs/modern';
 import { classic } from './designs/classic';
 import type { Design } from './designs/types';
+import { CLICK_CSS, CLICK_SCRIPT, stripSourceMarkers } from './clickable';
 
 export const DESIGNS: Record<string, Design> = { modern, classic };
 export const DEFAULT_DESIGN = 'modern';
@@ -19,12 +20,15 @@ export type RenderOptions = {
 	fontCss: string;
 	/** Value for the CSP font-src directive matching fontCss. */
 	fontSrc: "data:" | "'self'";
+	/** Editor preview only: keep source markers and add the click script (allowed by its sha256). */
+	clickable?: { scriptHash: string };
 };
 
 export function renderDocument(cv: ResolvedCV, opts: RenderOptions): string {
 	const design = getDesign(opts.designKey);
 	const title = cv.profile?.fullName ? `${cv.profile.fullName} — CV` : 'CV';
-	const csp = `default-src 'none'; style-src 'unsafe-inline'; font-src ${opts.fontSrc}; img-src data:; script-src 'none'; base-uri 'none'; form-action 'none'`;
+	const scriptSrc = opts.clickable ? `'sha256-${opts.clickable.scriptHash}'` : "'none'";
+	const csp = `default-src 'none'; style-src 'unsafe-inline'; font-src ${opts.fontSrc}; img-src data:; script-src ${scriptSrc}; base-uri 'none'; form-action 'none'`;
 	return (
 		'<!doctype html>\n' +
 		h`<html lang="en">
@@ -34,10 +38,11 @@ export function renderDocument(cv: ResolvedCV, opts: RenderOptions): string {
 <meta http-equiv="Content-Security-Policy" content="${csp}" />
 <meta name="generator" content="Modular CV Composer (${design.key}, engine ${cv.engineVersion})" />
 <title>${title}</title>
-<style>${raw(opts.fontCss)}${raw(design.css)}</style>
+<style>${raw(opts.fontCss)}${raw(design.css)}${opts.clickable ? raw(CLICK_CSS) : ''}</style>
 </head>
 <body>
-${design.render(cv)}
+${opts.clickable ? design.render(cv) : raw(stripSourceMarkers(design.render(cv).value))}
+${opts.clickable ? raw(`<script>${CLICK_SCRIPT}</script>`) : ''}
 </body>
 </html>
 `.value

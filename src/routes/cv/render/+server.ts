@@ -6,6 +6,7 @@ import { error } from '@sveltejs/kit';
 import * as repo from '$lib/server/repo';
 import { renderDocument } from '$lib/render';
 import { fontsFor } from '$lib/server/render/fonts';
+import { CLICK_SCRIPT_HASH } from '$lib/server/render/clickable';
 import { renderPdf } from '$lib/server/render/pdf';
 import { isEnabled } from '$lib/server/flags';
 import { hit } from '$lib/server/auth/rate-limit';
@@ -44,12 +45,15 @@ export async function GET({ locals, url }) {
 	const common = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' };
 
 	if (format === 'preview') {
-		const html = renderDocument(cv, { designKey, ...fontsFor(designKey, 'linked') });
+		const clickable = url.searchParams.get('click') === '1';
+		// A script-enabled sandbox has an opaque origin and cannot load same-origin fonts, so the clickable preview embeds them.
+		const fonts = fontsFor(designKey, clickable ? 'embedded' : 'linked');
+		const html = renderDocument(cv, { designKey, ...fonts, ...(clickable && { clickable: { scriptHash: CLICK_SCRIPT_HASH } }) });
 		return new Response(html, {
 			headers: {
 				...common,
 				'Content-Type': 'text/html; charset=utf-8',
-				'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; font-src 'self'; img-src data:; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
+				'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline'; font-src ${fonts.fontSrc}; img-src data:; script-src ${clickable ? `'sha256-${CLICK_SCRIPT_HASH}'` : "'none'"}; base-uri 'none'; form-action 'none'; frame-ancestors 'self'`
 			}
 		});
 	}
