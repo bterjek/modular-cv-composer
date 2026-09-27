@@ -1,0 +1,75 @@
+/* DOS-style shell for the editor. Never loaded inside CV previews (those render in an iframe). */
+:root {
+	--bg: #0000aa;
+	--fg: #ffffff;
+	--dim: #aaaaaa;
+	--accent: #55ffff;
+	--hi-bg: #00aaaa;
+	--hi-fg: #000000;
+	--field-bg: #000055;
+	--warn-bg: #aa5500;
+	--error: #ff5555;
+	--ok: #55ff55;
+	--focus: #ffff55;
+	--ch: 1ch;
+	color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body {
+	font-family: 'Cascadia Mono', 'DejaVu Sans Mono', 'Liberation Mono', ui-monospace, Menlo, Consolas, monospace;
+	font-size: 16px;
+	line-height: 1.5;
+}
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.bar { background: var(--hi-bg); color: var(--hi-fg); padding: 0 1ch; display: flex; gap: 2ch; flex-wrap: wrap; align-items: center; }
+.bar a, .bar button { color: var(--hi-fg); text-decoration: none; background: none; border: 0; font: inherit; padding: 0; margin: 0; box-shadow: none; cursor: pointer; }
+.bar a[aria-current='page'] { background: var(--hi-fg); color: var(--hi-bg); padding: 0 1ch; }
+.bar .grow { flex: 1; }
+.env { background: var(--warn-bg); color: #fff; padding: 0 1ch; text-align: center; }
+
+main { padding: 1.5rem 2ch 4rem; max-width: 110ch; margin: 0 auto; }
+.window { border: 3px double var(--fg); padding: 1rem 2ch; margin: 0 0 1.5rem; position: relative; }
+.window > h1, .window > h2 {
+	position: absolute; top: -0.8em; left: 2ch; margin: 0; padding: 0 1ch;
+	background: var(--bg); font-size: 1em; font-weight: bold;
+}
+.window.narrow { max-width: 60ch; margin-left: auto; margin-right: auto; }
+
+label { display: block; margin: 0.75rem 0 0.25rem; color: var(--dim); }
+input, select, textarea {
+	font: inherit; color: var(--fg); background: var(--field-bg);
+	border: 1px solid var(--dim); padding: 0.25rem 1ch; width: 100%;
+}
+input[type='checkbox'] { width: auto; }
+.row { display: flex; gap: 2ch; flex-wrap: wrap; align-items: end; }
+.row > * { flex: 1 1 14ch; }
+.row > .auto { flex: 0 0 auto; }
+
+button, .btn {
+	font: inherit; background: var(--dim); color: #000; border: 0; padding: 0.15rem 2ch;
+	cursor: pointer; box-shadow: 1ch 0.35em 0 #000; margin: 0.75rem 1.5ch 0.5rem 0;
+}
+button:active { box-shadow: none; transform: translate(1ch, 0.35em); }
+button.primary { background: var(--hi-bg); }
+button.small { padding: 0 1ch; margin: 0; box-shadow: none; }
+button.danger { background: var(--error); }
+
+.msg { padding: 0.25rem 1ch; margin: 0.75rem 0; }
+.msg.error { background: var(--error); color: #000; }
+.msg.ok { background: var(--ok); color: #000; }
+.code { background: #000; color: var(--ok); padding: 0.5rem 1ch; display: block; overflow-wrap: anywhere; user-select: all; }
+.hint { color: var(--dim); font-size: 0.9em; }
+
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.2rem 1ch; vertical-align: top; }
+th { color: var(--accent); border-bottom: 1px solid var(--dim); font-weight: normal; }
+tr:nth-child(even) td { background: #00008a; }
+.muted { color: var(--dim); }
+.scroll { overflow-x: auto; }
+
+.fkeys { position: fixed; bottom: 0; left: 0; right: 0; background: #000; color: var(--dim); padding: 0 1ch; display: flex; gap: 2ch; flex-wrap: wrap; }
+.fkeys b { color: var(--fg); }
+@media (prefers-reduced-motion: reduce) { button:active { transform: none; } }

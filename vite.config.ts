@@ -3,5 +3,9 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	plugins: [sveltekit()],
-	test: { include: ['src/**/*.test.ts'] }
+	test: {
+		include: ['src/**/*.test.ts'],
+		setupFiles: ['src/test-setup.ts'],
+		testTimeout: 20_000
+	}
 });

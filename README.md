@@ -5,11 +5,12 @@ A hosted app for building CVs from reusable modules. Content is written once
 into tailored CVs through job-category recipes. The editor has a keyboard-driven,
 DOS-style interface; the CVs it produces are modern HTML (and PDF from the same HTML).
 
-**Status:** build step 1 of 7 — data model and container skeleton. Test mode (invite-only) until all features are confirmed.
+**Status:** build step 2 of 7 — accounts, invites and admin screen. Test mode (invite-only) until all features are confirmed.
 
 ## Documents
 
 - [`docs/SCHEMA.md`](docs/SCHEMA.md) — the data model. Everything depends on it; change it first.
+- [`docs/AUTH.md`](docs/AUTH.md) — accounts, sessions, invites, first admin, resets, feature flags.
 
 ## Stack
 
@@ -26,17 +27,26 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 ```sh
 npm install
 npm run db:migrate   # creates ./data/dev.sqlite
-npm run dev
-npm test             # schema + database constraint tests
+ADMIN_EMAIL=you@example.com npm run dev   # prints your first-admin sign-up link
+npm test             # schema, auth, invite, flag and boundary tests
 ```
 
 ## Run the container
 
 ```sh
-cp .env.example .env   # fill in values
+cp .env.example .env   # for a local try: APP_ENV=development, ORIGIN=http://localhost:3000, your ADMIN_EMAIL
 docker compose up --build
 # http://localhost:3000/healthz → {"status":"ok"}
 ```
+
+The first start prints a one-time admin sign-up link to the container log
+(`docker compose logs app`). Open it, create your admin account, then invite testers from **Admin**.
+
+## Environments
+
+`APP_ENV` is `development`, `staging` (test mode with testers) or `production`.
+Each environment is its own container with its **own volume** — staging data never
+becomes production data. Non-production environments show a banner on every page.
 
 On a host you need only: the image (`ghcr.io/bterjek/modular-cv-composer:latest`),
 a **persistent volume at `/data`**, HTTPS in front, the env vars from `.env.example`,
@@ -51,7 +61,7 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
 ## Build plan
 
 1. ✅ Data model + container skeleton
-2. Auth, invite gate, admin screen, feature flags, environments
+2. ✅ Auth, invite gate, admin screen, feature flags, environments
 3. Assembly engine (recipe + overrides → resolved CV, with trace)
 4. Rendering: first modern HTML design, preview iframe, PDF via Chromium
 5. DOS-style editor shell

@@ -47,7 +47,7 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Smoke test the image
         run: |
-          docker run -d --name app -p 3000:3000 -e ORIGIN=http://localhost:3000 ghcr.io/${{ github.repository }}:${{ github.sha }}
+          docker run -d --name app -p 3000:3000 -e APP_ENV=development -e ORIGIN=http://localhost:3000 ghcr.io/${{ github.repository }}:${{ github.sha }}
           for i in $(seq 1 30); do curl -fs localhost:3000/healthz && exit 0; sleep 2; done
           docker logs app; exit 1
       - name: Push (main only, after smoke test passes)

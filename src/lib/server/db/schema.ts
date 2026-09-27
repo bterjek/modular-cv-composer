@@ -12,6 +12,7 @@ import {
 } from 'drizzle-orm/sqlite-core';
 import { MODULES, VARIANT_LENGTHS } from '../../domain/modules';
 import type { Recipe, Overrides } from '../../domain/recipe';
+import { ROLES, type Role } from '../../domain/roles';
 
 const id = () => text('id').primaryKey();
 const ms = (name: string) => integer(name, { mode: 'number' });
@@ -22,16 +23,49 @@ const ownerId = () =>
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' });
 
-// ── Auth (core user row; session/account/verification arrive with the auth library in step 2)
+// Timestamps are always set explicitly from application code (Date.now()); the SQL
+// defaults are only a fallback for manual inserts.
+
+// ── Auth (own implementation, see docs/SCHEMA.md §3 "Auth")
+export { ROLES, type Role };
+
 export const user = sqliteTable('user', {
 	id: id(),
 	name: text('name').notNull(),
-	email: text('email').notNull().unique(),
+	email: text('email').notNull().unique(), // stored lower-cased
 	emailVerified: integer('email_verified', { mode: 'boolean' }).notNull().default(false),
 	image: text('image'),
-	role: text('role', { enum: ['admin', 'tester', 'user'] }).notNull().default('tester'),
+	role: text('role', { enum: ROLES }).notNull().default('tester'),
+	passwordHash: text('password_hash').notNull(),
+	lastLoginAt: ms('last_login_at'),
+	disabledAt: ms('disabled_at'),
 	createdAt: createdAt(),
 	updatedAt: updatedAt()
+});
+
+export const session = sqliteTable(
+	'session',
+	{
+		id: text('id').primaryKey(), // sha256(token); the token itself only lives in the cookie
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		expiresAt: ms('expires_at').notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [index('session_user').on(t.userId)]
+);
+
+export const passwordResets = sqliteTable('password_resets', {
+	id: id(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	codeHash: text('code_hash').notNull().unique(),
+	createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+	expiresAt: ms('expires_at').notNull(),
+	usedAt: ms('used_at'),
+	createdAt: createdAt()
 });
 
 // ── Admin / test mode
@@ -39,6 +73,9 @@ export const inviteCodes = sqliteTable('invite_codes', {
 	id: id(),
 	codeHash: text('code_hash').notNull().unique(),
 	createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+	role: text('role', { enum: ROLES }).notNull().default('tester'),
+	email: text('email'), // if set, only this address can use the code
+	note: text('note'),
 	maxUses: integer('max_uses').notNull().default(1),
 	uses: integer('uses').notNull().default(0),
 	expiresAt: ms('expires_at'),

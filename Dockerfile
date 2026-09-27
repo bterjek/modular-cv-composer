@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		tini chromium fonts-liberation fonts-noto-core fonts-dejavu-core \
 	&& rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production \
+	APP_ENV=production \
 	PORT=3000 \
 	DATABASE_PATH=/data/composer.sqlite \
 	CHROMIUM_PATH=/usr/bin/chromium
