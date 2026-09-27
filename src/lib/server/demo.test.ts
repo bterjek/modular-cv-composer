@@ -3,9 +3,12 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { sqlite } from './db';
 import * as repo from './repo';
 import { seedDemo, hasContent } from './demo';
+import { renderDocument } from '$lib/render';
+import { embeddedFontCss } from './render/fonts';
+import { renderPdf, closePdfBrowser } from './render/pdf';
 
 describe('demo content', () => {
-	it('one pool of facts, two different CVs, plus a tailored one', () => {
+	it('one pool of facts, two different CVs, plus a tailored one', async () => {
 		sqlite.prepare(`insert into user (id, name, email) values ('demo','Demo','demo@x.test')`).run();
 		expect(hasContent('demo')).toBe(false);
 		seedDemo('demo');
@@ -35,6 +38,16 @@ describe('demo content', () => {
 		expect(creds).toEqual(['course', 'certification']);
 		expect(tailored.warnings).toEqual([]);
 
+		if (process.env.RENDER_OUT) {
+			// Visual review: standalone HTML of each example CV
+			mkdirSync(process.env.RENDER_OUT, { recursive: true });
+			for (const [name, cv] of [['governance', govCv], ['delivery', delCv], ['job-target', tailored]] as const) {
+				const html = renderDocument(cv, { fontCss: embeddedFontCss, fontSrc: 'data:' });
+				writeFileSync(`${process.env.RENDER_OUT}/${name}.html`, html);
+				if (process.env.CHROMIUM_PATH) writeFileSync(`${process.env.RENDER_OUT}/${name}.pdf`, await renderPdf(html));
+			}
+			await closePdfBrowser();
+		}
 		if (process.env.WRITE_EXAMPLES) {
 			mkdirSync('docs/examples', { recursive: true });
 			const out = (name: string, cv: unknown) => writeFileSync(`docs/examples/${name}.json`, JSON.stringify(cv, null, '\t') + '\n');

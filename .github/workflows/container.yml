@@ -23,6 +23,9 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+        env:
+          # GitHub's Ubuntu runners ship Google Chrome; the PDF tests skip if it is absent
+          CHROMIUM_PATH: /usr/bin/google-chrome
 
   image:
     needs: test
@@ -50,7 +53,9 @@ jobs:
           docker run -d --name app -p 3000:3000 -e APP_ENV=development -e ORIGIN=http://localhost:3000 ghcr.io/${{ github.repository }}:${{ github.sha }}
           for i in $(seq 1 30); do curl -fs localhost:3000/healthz && exit 0; sleep 2; done
           docker logs app; exit 1
-      - name: Push (main only, after smoke test passes)
+      - name: PDF rendering works inside the image
+        run: docker run --rm --entrypoint node ghcr.io/${{ github.repository }}:${{ github.sha }} scripts/pdf-smoke.js
+      - name: Push (main only, after smoke tests pass)
         if: github.ref == 'refs/heads/main'
         run: |
           docker push ghcr.io/${{ github.repository }}:${{ github.sha }}

@@ -1,8 +1,9 @@
 // Read-only view of the assembly engine: pick a category or job target, see the
-// resolved CV as text and why each piece is in or out. Replaced by the editor + preview in steps 4–5.
+// designed CV (live preview) and why each piece is in or out. Becomes part of the editor in step 5.
 import { error, fail } from '@sveltejs/kit';
 import * as repo from '$lib/server/repo';
 import { hasContent, seedDemo } from '$lib/server/demo';
+import { isEnabled } from '$lib/server/flags';
 
 export function load({ locals, url }) {
 	const ownerId = locals.user!.id;
@@ -34,6 +35,7 @@ export function load({ locals, url }) {
 		categories: repo.listCategories(ownerId).map((c) => ({ id: c.id, name: c.name })),
 		targets: repo.listJobTargets(ownerId).map((t) => ({ id: t.id, name: `${t.company} — ${t.roleTitle}` })),
 		selected: { categoryId, targetId },
+		pdfEnabled: isEnabled('render.pdf', ownerId),
 		cv,
 		labels
 	};

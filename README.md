@@ -5,12 +5,13 @@ A hosted app for building CVs from reusable modules. Content is written once
 into tailored CVs through job-category recipes. The editor has a keyboard-driven,
 DOS-style interface; the CVs it produces are modern HTML (and PDF from the same HTML).
 
-**Status:** build step 3 of 7 — assembly engine (see it at **Assemble** in the app). Test mode (invite-only) until all features are confirmed.
+**Status:** build step 4 of 7 — designed CV preview, HTML and PDF export (see **Assemble** in the app). Test mode (invite-only) until all features are confirmed.
 
 ## Documents
 
 - [`docs/SCHEMA.md`](docs/SCHEMA.md) — the data model. Everything depends on it; change it first.
 - [`docs/AUTH.md`](docs/AUTH.md) — accounts, sessions, invites, first admin, resets, feature flags.
+- [`docs/RENDERING.md`](docs/RENDERING.md) — designs, live preview, HTML and PDF export, output safety.
 
 ## Stack
 
@@ -19,7 +20,8 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 | App | SvelteKit (Node adapter), TypeScript |
 | Database | SQLite in a file on the `/data` volume, via Drizzle ORM (Postgres-ready) |
 | Validation | Zod — every JSON column is validated on write |
-| PDF | Chromium in the same image (used from step 4) |
+| PDF | Chromium in the same image, driven by playwright-core |
+| Fonts | Inter (SIL OFL 1.1) via @fontsource, embedded in exports |
 | Delivery | One container image, tested, built, smoke-tested and pushed to GHCR by GitHub Actions |
 
 ## Run locally
@@ -28,7 +30,8 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 npm install
 npm run db:migrate   # creates ./data/dev.sqlite
 ADMIN_EMAIL=you@example.com npm run dev   # prints your first-admin sign-up link
-npm test             # schema, auth, engine, isolation and boundary tests
+npm test             # schema, auth, engine, isolation, rendering and boundary tests
+                     # PDF tests run when CHROMIUM_PATH points at a Chromium/Chrome binary
 ```
 
 ## Run the container
@@ -63,7 +66,7 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
 1. ✅ Data model + container skeleton
 2. ✅ Auth, invite gate, admin screen, feature flags, environments
 3. ✅ Assembly engine (recipe + overrides → resolved CV, with trace), owner-scoped content repository, example content
-4. Rendering: first modern HTML design, preview iframe, PDF via Chromium
+4. ✅ Rendering: first modern HTML design, preview iframe, HTML + PDF export
 5. DOS-style editor shell
 6. Snapshots, share links, export and account deletion
 7. Remaining designs, feedback tool → testers in

@@ -3,10 +3,13 @@ import { env } from '$lib/server/env';
 import { bootstrap } from '$lib/server/bootstrap';
 import { SESSION_COOKIE, validateSession } from '$lib/server/auth/session';
 import { setSessionCookie, clearSessionCookie } from '$lib/server/auth/cookies';
+import { closePdfBrowser } from '$lib/server/render/pdf';
 
 export const init: ServerInit = () => {
 	console.log(`[startup] APP_ENV=${env.appEnv} ORIGIN=${env.origin}`);
 	bootstrap({ adminEmail: env.adminEmail, origin: env.origin });
+	// adapter-node emits this on SIGTERM/SIGINT after in-flight requests finish
+	process.on('sveltekit:shutdown', () => void closePdfBrowser());
 };
 
 const PUBLIC = ['/login', '/signup', '/reset', '/healthz'];

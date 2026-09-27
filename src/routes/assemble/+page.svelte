@@ -1,15 +1,10 @@
 <script lang="ts">
 	let { data, form } = $props();
-	const fmtData = (d: Record<string, unknown>) => {
-		const s = (k: string) => (typeof d[k] === 'string' ? (d[k] as string) : '');
-		const dates = (a: string, b: unknown) => (a ? `${a} – ${b === null ? 'present' : (b ?? '')}` : '');
-		if ('organization' in d) return `${s('title')}, ${s('organization')}  ${dates(s('start'), d.end)}`;
-		if ('institution' in d) return `${s('degree')} ${s('field')}, ${s('institution')}  ${dates(s('start'), d.end)}`;
-		if ('issuer' in d) return `${s('name')} — ${s('issuer')} (${s('kind')}${s('issued') ? ', ' + s('issued') : ''})`;
-		if ('language' in d) return `${s('language')} — ${s('level')}`;
-		if ('group' in d) return s('group');
-		return '';
-	};
+	const q = $derived(
+		data.selected.targetId
+			? `target=${encodeURIComponent(data.selected.targetId)}`
+			: `category=${encodeURIComponent(data.selected.categoryId ?? '')}`
+	);
 	const shown = $derived(data.cv ? data.cv.trace.filter((t) => t.kind !== 'variant' || t.outcome === 'chosen') : []);
 </script>
 
@@ -48,17 +43,17 @@
 	{/if}
 
 	<section class="window">
-		<h2>Result (plain text — the designed version arrives in step 4)</h2>
-		{#if data.cv.profile}<p><strong>{data.cv.profile.fullName}</strong> · {data.cv.profile.email} · {data.cv.profile.location ?? ''}</p>{/if}
-		{#each data.cv.sections as s}
-			{#if s.title}<h3 class="sec">{s.title.toUpperCase()}</h3>{/if}
-			{#each s.entries as e}
-				{@const head = fmtData(e.data)}
-				{#if head}<p class="head">{head}</p>{/if}
-				{#if e.text}<p>{e.text}</p>{/if}
-				{#if e.items.length}<ul>{#each e.items as i}<li>{i.text}</li>{/each}</ul>{/if}
-			{/each}
-		{/each}
+		<h2>Preview</h2>
+		<p class="row">
+			<a class="btn" data-sveltekit-reload href="/cv/render?{q}&format=html">Download HTML</a>
+			{#if data.pdfEnabled}
+				<a class="btn primary" data-sveltekit-reload href="/cv/render?{q}&format=pdf">Download PDF</a>
+			{:else}
+				<span class="hint">PDF export is behind the <code>render.pdf</code> feature flag while testing.</span>
+			{/if}
+		</p>
+		<!-- allow-same-origin without allow-scripts: fonts load from this server, nothing can run -->
+		<iframe class="preview" sandbox="allow-same-origin" title="CV preview" src="/cv/render?{q}&format=preview"></iframe>
 	</section>
 
 	<section class="window">
@@ -79,8 +74,9 @@
 {/if}
 
 <style>
-	.sec { color: var(--accent); font-size: 1em; margin: 1.25rem 0 0.25rem; border-bottom: 1px solid var(--dim); }
-	.head { color: var(--fg); font-weight: bold; margin: 0.5rem 0 0; }
-	ul { margin: 0.25rem 0; padding-left: 3ch; }
+	.preview { width: 100%; height: 1180px; border: 0; background: #e9ecf0; display: block; }
+	.btn { display: inline-block; text-decoration: none; flex: 0 0 auto; }
+	.btn.primary { background: var(--hi-bg); }
+	.row { align-items: center; }
 	tr.dropped td { color: var(--dim); }
 </style>
