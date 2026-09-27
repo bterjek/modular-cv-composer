@@ -18,7 +18,10 @@ Rule-based, no AI, nothing leaves the server:
 3. Phrases ending in management / governance / operations / security / … (“capacity planning”, “IT service operations”),
    including lists like “incident, problem and change management”.
 Matching is whole-word and case-insensitive; archived content never counts as coverage.
+Before extraction: everything from a “What we offer / Benefits / How to apply / About us” heading on is dropped, the
+job's company name is excluded, line breaks end phrases, and all-caps heading lines are not read as acronyms.
 
 ## Tuning
-Real ads are the best test set. Add missed terms or aliases to `VOCAB`, noise to `ACRONYM_STOP` / `PHRASE_STOP`, and a
+Tuned on three real ads (Nilfisk IT Security & Compliance Manager, Liferay Security Operations Manager, MOL E&P IT
+Operations Manager), kept as fixtures in `src/lib/domain/fixtures/ads.ts`. Real ads are the best test set. Add missed terms or aliases to `VOCAB`, noise to `ACRONYM_STOP` / `PHRASE_STOP`, and a
 case to `terms.test.ts`. AI-assisted matching (synonyms, rewording suggestions) is planned behind the `ai.tailoring` flag.

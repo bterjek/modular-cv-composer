@@ -22,7 +22,7 @@ export type JobTermRow = Term & { status: 'ignored' | 'in-cv' | 'available' | 'g
 /** Terms of one job's ad, with where your content covers them and whether that part is in the CV now. */
 export function jobTerms(ownerId: string, jobId: string) {
 	const job = getJobTarget(ownerId, jobId);
-	const terms = extractTerms(job.jobAdText ?? '');
+	const terms = extractTerms(job.jobAdText ?? '', { exclude: [job.company] });
 	if (!terms.length) return { terms: [] as JobTermRow[], suggestion: null };
 	const cv = resolveJobTarget(ownerId, jobId);
 	const inCvEntries = new Set(cv.sections.flatMap((s) => s.entries.map((e) => e.id)));
@@ -92,7 +92,7 @@ export function gapLog(ownerId: string) {
 	const ignored = ignoredKeys(ownerId);
 	const agg = new Map<string, { term: Term; jobs: { id: string; name: string }[] }>();
 	for (const j of jobs) {
-		for (const t of extractTerms(j.jobAdText!)) {
+		for (const t of extractTerms(j.jobAdText!, { exclude: [j.company] })) {
 			const a = agg.get(t.key) ?? { term: t, jobs: [] };
 			a.jobs.push({ id: j.id, name: `${j.company} — ${j.roleTitle}` });
 			agg.set(t.key, a);

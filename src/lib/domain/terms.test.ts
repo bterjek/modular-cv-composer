@@ -82,3 +82,18 @@ describe('real ads (tuning fixtures)', () => {
 		expect(k.filter((x) => NOISE.test(x))).toEqual([]);
 	});
 });
+
+import { MOL_EP_IT_OPS } from './fixtures/ads';
+describe('real ads — MOL E&P IT Operations Manager', () => {
+	const k = extractTerms(MOL_EP_IT_OPS, { exclude: ['MOL Group'] }).map((t) => t.key);
+	it('finds the operations terms', () => {
+		for (const t of ['it operations', 'application operations', 'data operations', 'data governance', 'service level management',
+			'vendor management', 'budget management', 'internal audit', 'compliance', 'escalation management', 'incident management',
+			'business continuity', 'kpi', 'team leadership', 'stakeholder management', 'automation', 'monitoring']) expect(k, t).toContain(t);
+	});
+	it('ignores the company name, heading words, E&P, benefits and cross-line phrases', () => {
+		for (const t of ['mol', 'e&p', 'position', 'purpose', 'responsibilities- people management', 'balance operations', 'infrastructure architecture'])
+			expect(k, t).not.toContain(t);
+		expect(k.some((x) => /fitness|insurance|flexi|bonus/.test(x))).toBe(false);
+	});
+});

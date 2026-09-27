@@ -40,7 +40,11 @@ const VOCAB: Record<string, string[]> = {
 	'risk management': ['it risk', 'risk assessment', 'risk assessments', 'risk mitigation'],
 	'vendor management': ['supplier management', 'third-party management', 'third party risk', 'outsourcing management', 'third-party vendor', 'third-party vendors', 'vendor contracts', 'vendors', 'suppliers'],
 	'stakeholder management': ['stakeholder engagement', 'stakeholders', 'stakeholder'],
-	'budget management': ['budget ownership', 'budgeting', 'cost management', 'p&l'],
+	'budget management': ['budget ownership', 'budgeting', 'cost management', 'p&l', 'opex', 'capex', 'cost-efficiency', 'cost efficiency'],
+	'escalation management': ['escalation point', 'escalations'],
+	'data governance': [],
+	'data operations': ['data platforms', 'data pipelines'],
+	'application operations': ['application operation', 'application management', 'application support'],
 	'team leadership': ['people management', 'line management', 'people leadership', 'leading teams', 'team lead', 'people manager', 'leadership skills', 'lead and direct', 'manage personnel'],
 	'business continuity': ['bcm', 'business continuity management', 'bcp'],
 	'disaster recovery': ['drp'],
@@ -53,7 +57,7 @@ const VOCAB: Record<string, string[]> = {
 	'IT governance': ['it-governance'],
 	'internal audit': ['audit', 'audits', 'audit readiness', 'external audit'],
 	compliance: ['regulatory compliance', 'compliance management'],
-	'KPI': ['kpis', 'key performance indicators', 'key metrics', 'performance targets'],
+	'KPI': ['kpis', 'key performance indicators', 'key metrics', 'performance targets', 'performance metrics'],
 	'OKR': ['okrs'],
 	'transformation': ['digital transformation', 'it transformation', 'operational transformation'],
 	'transition management': ['service transition'],
@@ -106,11 +110,27 @@ const PHRASE_STOP = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'f
 	// verbs that start phrases in ads ("ensure management", "oversee management")
 	'ensure', 'oversee', 'direct', 'enhance', 'handling', 'handle', 'aligning', 'align', 'improve', 'improving', 'improvement', 'strengthen', 'lead', 'leading',
 	'manage', 'managing', 'drive', 'driving', 'support', 'supporting', 'provide', 'providing', 'develop', 'developing', 'implement', 'design', 'deliver',
-	'run', 'running', 'own', 'owning', 'facilitate', 'coordinate', 'perform', 'response', 'responsible', 'accountable', 'help', 'build', 'building']);
+	'run', 'running', 'own', 'owning', 'facilitate', 'coordinate', 'perform', 'response', 'responsible', 'accountable', 'help', 'build', 'building',
+	'balance', 'uninterrupted', 'operation', 'main', 'responsibilities', 'requirements', 'new']);
 
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 export const normalize = (s: string) =>
-	' ' + s.toLowerCase().replace(/[‐-―]/g, '-').replace(/[’`´]/g, "'").replace(/\s+/g, ' ') + ' ';
+	' ' +
+	s
+		.toLowerCase()
+		.replace(/[‐-―]/g, '-')
+		.replace(/[’`´]/g, "'")
+		.replace(/(\p{L})-(\s)/gu, '$1 .$2') // "Responsibilities- People" → a boundary, not a word
+		.replace(/\s*\n\s*/g, ' . ') // a line break ends a phrase
+		.replace(/\s+/g, ' ') +
+	' ';
+
+/** Everything from a benefits / how-to-apply heading on is about the employer, not the job. */
+const TAIL = /^\s*(what we offer|we offer|our offer|benefits|perks|how to apply|about us|about the company)\b/im;
+export const jobPart = (ad: string) => {
+	const m = TAIL.exec(ad);
+	return m && m.index > 200 ? ad.slice(0, m.index) : ad;
+};
 
 /** Whole-word, case-insensitive matcher for a term and its aliases. */
 function matcher(words: string[]) {
@@ -129,8 +149,11 @@ export function termKey(raw: string): string {
 }
 
 /** Terms in one job ad, most frequent first. */
-export function extractTerms(ad: string): Term[] {
+export function extractTerms(fullAd: string, opts: { exclude?: string[] } = {}): Term[] {
+	const ad = jobPart(fullAd);
 	const text = expandLists(normalize(ad));
+	// company name words are not terms ("MOL", "Nilfisk")
+	const excluded = new Set((opts.exclude ?? []).flatMap((w) => w.toLowerCase().split(/[^\p{L}\p{N}&]+/u)).filter((w) => w.length > 1));
 	const found = new Map<string, Term>();
 	const add = (key: string, label: string, n: number, source: Term['source']) => {
 		const t = found.get(key);
@@ -142,9 +165,11 @@ export function extractTerms(ad: string): Term[] {
 		if (n) add(v.key, v.label, n, 'vocab');
 	}
 	// Acronyms (as written in the original text): 2–8 capitals/digits, e.g. CMDB, BGP, ISO
+	const headingLines = new Set(ad.split('\n').filter((l) => /\p{L}{3}/u.test(l) && l === l.toUpperCase()).map((l) => l.trim()));
 	for (const m of ad.matchAll(/(?<![\p{L}\p{N}])([A-Z][A-Z0-9&+/-]{1,7})(?![\p{L}\p{N}])/gu)) {
 		const a = m[1].replace(/[-/+&]+$/, '');
-		if (a.length < 2 || ACRONYM_STOP.has(a) || /^\d/.test(a)) continue;
+		const line = ad.slice(ad.lastIndexOf('\n', m.index) + 1, ad.indexOf('\n', m.index) === -1 ? undefined : ad.indexOf('\n', m.index)).trim();
+		if (a.length < 2 || ACRONYM_STOP.has(a) || /^\d/.test(a) || a.includes('&') || excluded.has(a.toLowerCase()) || headingLines.has(line)) continue;
 		const key = termKey(a);
 		if (found.has(key)) continue;
 		add(key, a, text.match(matcher([a]))?.length ?? 1, 'acronym');
@@ -152,8 +177,11 @@ export function extractTerms(ad: string): Term[] {
 	// "<modifier> <modifier>? <head>" phrases, e.g. "capacity planning", "cloud cost management"
 	const headRe = new RegExp(`(?:^|[^\\p{L}])((?:[\\p{L}][\\p{L}-]+ ){1,2})(${PHRASE_HEADS.join('|')})(?![\\p{L}])`, 'giu');
 	for (const m of text.matchAll(headRe)) {
-		const mods = m[1].trim().split(' ').filter((w) => !PHRASE_STOP.has(w));
-		if (!mods.length) continue;
+		const words = m[1].trim().split(' ');
+		let lastStop = -1;
+		words.forEach((w, i) => (PHRASE_STOP.has(w) || excluded.has(w) ? (lastStop = i) : null));
+		const mods = words.slice(lastStop + 1);
+		if (!mods.length || mods.some((w) => w.startsWith(m[2].slice(0, 6)))) continue;
 		const phrase = `${mods.join(' ')} ${m[2]}`;
 		const key = termKey(phrase);
 		if ([...found.keys()].some((k) => k === key || k.endsWith(' ' + key) || key.endsWith(' ' + k))) continue;
