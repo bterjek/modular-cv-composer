@@ -69,6 +69,23 @@ check((await target.count()) === 1 && (await target.locator('textarea').first().
 await pv.locator('h1').click(); await p.waitForURL(/\/edit\/profile/);
 check(true, 'clicking the name opens the profile');
 
+// Job-ad terms: paste an ad, see coverage and gaps, apply suggestions, gap log, write-a-bullet
+await p.goto(B + '/edit/jobs'); await p.locator('.list a').first().click(); await p.waitForURL(/jobs\/[\w-]+$/);
+await p.fill('#jobAdText', 'Own incident backlog reduction on our ITSM platform. NIS2 and SOC 2 audits. ServiceNow and SIEM required.');
+await p.click('text=Save details'); await p.locator('.status .msg', { hasText: 'Job saved' }).waitFor();
+const termRow = (label) => p.locator('#terms tr', { has: p.locator('td:first-child', { hasText: new RegExp(`^${label}$`) }) });
+await termRow('ServiceNow').waitFor();
+check((await termRow('ServiceNow').locator('.st').textContent()) === 'GAP', 'ServiceNow shown as GAP');
+check((await termRow('NIS2').locator('.st').textContent()) === 'IN CV', 'NIS2 shown as IN CV');
+check((await termRow('ITSM').locator('.st').textContent()) === 'LEFT OUT', 'ITSM shown as LEFT OUT (bullet exists, not in this CV)');
+await p.click('text=Apply suggestions'); await p.locator('.status .msg', { hasText: 'Applied' }).waitFor();
+check((await termRow('ITSM').locator('.st').textContent()) === 'IN CV', 'after applying suggestions ITSM is IN CV');
+await p.goto(B + '/edit/terms');
+check((await p.locator('tr', { hasText: 'SIEM' }).locator('.st').textContent()) === 'GAP', 'gap log lists SIEM as a gap');
+await p.locator('tr', { hasText: 'SIEM' }).locator('text=write a bullet').click();
+await p.waitForURL(/\?add=SIEM#add-item/);
+check((await p.inputValue('#new-item')).startsWith('SIEM: '), 'write-a-bullet opens the new bullet box prefilled with the term');
+
 // Error page
 const r = await p.goto(B + '/edit/content/nonsense');
 check(r.status() === 404 && (await p.textContent('main')).includes('ERROR 404'), 'styled 404 page');

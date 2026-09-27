@@ -36,6 +36,13 @@
       "when": 1790505814154,
       "tag": "0004_previous_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1790506215881,
+      "tag": "0005_misty_stature",
+      "breakpoints": true
     }
   ]
 }

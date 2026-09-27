@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { afterNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import { tick } from 'svelte';
 	import { keep } from '$lib/ui/enhance';
 	import Status from '$lib/ui/Status.svelte';
@@ -14,6 +15,14 @@
 	// Arriving from a click in the preview (#item-…): scroll to it, highlight it, put the cursor in its text.
 	afterNavigate(async ({ to }) => {
 		const id = to?.url.hash.slice(1);
+		if (id === 'add-item') {
+			await tick();
+			const box = document.getElementById('new-item') as HTMLTextAreaElement | null;
+			box?.scrollIntoView({ block: 'center' });
+			box?.focus();
+			box?.setSelectionRange(box.value.length, box.value.length);
+			return;
+		}
 		if (!id?.startsWith('item-')) return;
 		await tick();
 		const el = document.getElementById(id);
@@ -75,9 +84,9 @@
 			</div>
 		{/each}
 
-		<form method="POST" action="?/addItem" use:enhance class="add-item">
+		<form method="POST" action="?/addItem" use:enhance class="add-item" id="add-item">
 			<label for="new-item">New {itemWord}</label>
-			<textarea id="new-item" name="text" rows="2" required></textarea>
+			<textarea id="new-item" name="text" rows="2" required value={page.url.searchParams.get('add') ? `${page.url.searchParams.get('add')}: ` : ''}></textarea>
 			<div class="row">
 				<div><label for="new-item-tags">{itemWord === 'skill' ? 'Skill' : 'Bullet'} tags <span class="hint">(use it or not)</span></label><input id="new-item-tags" name="tags" /></div>
 				<div class="auto"><button class="primary">Add {itemWord}</button></div>

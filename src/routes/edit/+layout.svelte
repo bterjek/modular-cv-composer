@@ -68,6 +68,7 @@
 		<p class="menu-title">ASSEMBLY</p>
 		<a data-nav href="/edit/categories" aria-current={here('/edit/categories')}>Job categories</a>
 		<a data-nav href="/edit/jobs" aria-current={here('/edit/jobs')}>Jobs</a>
+		<a data-nav href="/edit/terms" aria-current={here('/edit/terms')}>Terms &amp; gaps</a>
 		<a data-nav href="/edit/snapshots" aria-current={here('/edit/snapshots')}>Snapshots</a>
 	</nav>
 

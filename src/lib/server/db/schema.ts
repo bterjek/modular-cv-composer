@@ -291,3 +291,15 @@ export const aiRuns = sqliteTable('ai_runs', {
 	createdAt: createdAt()
 });
 
+
+// ── Job-ad terms: only the user's "not applicable" marks are stored; terms themselves come from ad texts.
+export const termStatus = sqliteTable(
+	'term_status',
+	{
+		ownerId: ownerId(),
+		termKey: text('term_key').notNull(),
+		status: text('status', { enum: ['ignored'] }).notNull(),
+		createdAt: createdAt()
+	},
+	(t) => [primaryKey({ columns: [t.ownerId, t.termKey] })]
+);

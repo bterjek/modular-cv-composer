@@ -4,7 +4,7 @@ import { recipe as recipeSchema, overrides as overridesSchema } from '$lib/domai
 import { entryOrder, itemOrder } from '$lib/domain/order';
 import { overridesFromForm } from '$lib/editor/forms';
 import { MODULE_LABELS } from '$lib/editor/fields';
-import { attempt, str, optStr } from '$lib/server/editor';
+import { attempt, str, optStr, latestExperienceId } from '$lib/server/editor';
 
 function get(ownerId: string, id: string) {
 	try {
@@ -68,6 +68,8 @@ export function load({ locals, params }) {
 		categoryDefaults: { preferTags: recipe.preferTags.join(', '), length: recipe.length },
 		sections,
 		warnings: cv.warnings,
+		adTerms: repo.jobTerms(ownerId, job.id),
+		writeTarget: latestExperienceId(ownerId),
 		snapshots: repo.listSnapshots(ownerId, { jobTargetId: job.id }).map((x) => ({ id: x.id, label: x.label, createdAt: x.createdAt }))
 	};
 }
@@ -94,6 +96,15 @@ export const actions = {
 		const overrides = overridesFromForm(await request.formData(), recipe.modules.map((m) => m.module));
 		const r = attempt(() => repo.updateJobTarget(ownerId, params.id, { overrides }));
 		return r.ok ? { saved: 'Tailoring saved.' } : r.failure;
+	},
+	applyTerms: async ({ locals, params }) => {
+		const r = attempt(() => repo.applyTermSuggestion(locals.user!.id, params.id));
+		return r.ok ? { saved: r.value ? `Applied ${r.value} suggested change${r.value === 1 ? '' : 's'}.` : 'Nothing to apply.' } : r.failure;
+	},
+	ignoreTerm: async ({ request, locals }) => {
+		const f = await request.formData();
+		repo.setTermIgnored(locals.user!.id, str(f, 'key'), str(f, 'ignored') === 'true');
+		return { saved: 'Term updated.' };
 	},
 	freeze: async ({ request, locals, params }) => {
 		const f = await request.formData();

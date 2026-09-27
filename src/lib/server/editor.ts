@@ -34,3 +34,11 @@ export function setPreview(cookies: Cookies, sel: string) {
 	if (!/^(category|target):[\w-]{1,64}$/.test(sel)) return;
 	cookies.set('cvc_preview', sel, { path: '/edit', httpOnly: true, sameSite: 'lax', secure: env.secureCookies, maxAge: 60 * 60 * 24 * 365 });
 }
+
+import * as repoAll from './repo';
+import { entryOrder } from '$lib/domain/order';
+
+/** Where "write a bullet" for a missing term goes: the most recent role, if any. */
+export function latestExperienceId(ownerId: string) {
+	return repoAll.loadContent(ownerId).entries.filter((e) => e.module === 'experience' && !e.archived).sort(entryOrder)[0]?.id ?? null;
+}

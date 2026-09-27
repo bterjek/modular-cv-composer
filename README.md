@@ -17,6 +17,7 @@ DOS-style interface; the CVs it produces are modern HTML (and PDF from the same 
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — hosting checklist, backups, first start, updating.
 - [`docs/LOCAL-HOSTING.md`](docs/LOCAL-HOSTING.md) — running on your own Mac; what testers-via-tunnel would need.
 - [`docs/BACKUP-OPTIONS.md`](docs/BACKUP-OPTIONS.md) — backup options for going public, and the recommended build.
+- [`docs/TERMS.md`](docs/TERMS.md) — job-ad terms, coverage, suggestions and the gap log.
 - [`docs/BACKLOG.md`](docs/BACKLOG.md) — agreed ideas and open items not yet scheduled.
 
 ## Stack
@@ -98,3 +99,5 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
 5. ✅ DOS-style editor: profile, content, wordings, tags, categories, job tailoring, live preview
 6. ✅ Snapshots, share links, export and account deletion, privacy notice
 7. ✅ Second design (Classic), in-app feedback (Shift+F1) with admin triage, built-in backups, version stamping, error page → **testers in**
+
+After first use: headline/summary pick one · click-to-edit in the preview · Business/Executive/Bold designs + style panel · job-ad terms, suggestions and gap log.

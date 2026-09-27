@@ -4,6 +4,7 @@
 	import Status from '$lib/ui/Status.svelte';
 	import { VARIANT_LENGTHS } from '$lib/domain/modules';
 	import { page } from '$app/state';
+	import TermStatus from '$lib/editor/TermStatus.svelte';
 	let { data, form } = $props();
 	const j = $derived(data.job);
 	const previewing = $derived(page.data.preview?.kind === 'target' && page.data.preview?.id === j.id);
@@ -42,6 +43,39 @@
 		<textarea id="jobAdText" name="jobAdText" rows="4">{j.jobAdText ?? ''}</textarea>
 		<button>Save details</button>
 	</form>
+</section>
+
+<section class="window" id="terms">
+	<h2>Job ad terms</h2>
+	{#if !data.adTerms.terms.length}
+		<p class="hint">Paste the job ad text into “Job ad text” above and save — the terms it asks for appear here, with where your content covers them.</p>
+	{:else}
+		<p class="hint">IN CV: this CV already says it · LEFT OUT: you have it, but not in this CV · GAP: nothing in your content yet · N/A: marked as not applicable.</p>
+		{#if data.adTerms.suggestion}
+			<form method="POST" action="?/applyTerms" use:enhance class="inline">
+				<button class="primary">Apply suggestions</button>
+				<span class="hint">brings in {data.adTerms.suggestion.includeItems.length} bullet(s) and picks {Object.keys(data.adTerms.suggestion.pinVariants).length} better-matching wording(s)</span>
+			</form>
+		{/if}
+		<div class="scroll"><table>
+			<thead><tr><th>Term</th><th>×</th><th>Status</th><th>Where you have it</th><th></th></tr></thead>
+			<tbody>
+				{#each data.adTerms.terms as t (t.key)}
+					<tr>
+						<td>{t.label}</td><td>{t.count}</td><td><TermStatus status={t.status} /></td>
+						<td class="small">
+							{#each t.where.slice(0, 2) as w}<div><a href="/edit/content/entry/{w.entryId}{w.itemId ? `#item-${w.itemId}` : '#top'}">{w.text.slice(0, 70)}{w.text.length > 70 ? '…' : ''}</a>{w.inCv ? '' : ' (not in CV)'}</div>{/each}
+							{#if t.status === 'gap' && data.writeTarget}<a href="/edit/content/entry/{data.writeTarget}?add={encodeURIComponent(t.label)}#add-item">write a bullet →</a>{/if}
+						</td>
+						<td><form method="POST" action="?/ignoreTerm" use:enhance>
+							<input type="hidden" name="key" value={t.key} /><input type="hidden" name="ignored" value={t.status === 'ignored' ? 'false' : 'true'} />
+							<button class="small">{t.status === 'ignored' ? 'Undo N/A' : 'N/A'}</button></form></td>
+					</tr>
+				{/each}
+			</tbody>
+		</table></div>
+		<p class="hint"><a href="/edit/terms">All terms across your job ads →</a></p>
+	{/if}
 </section>
 
 <form method="POST" action="?/tailor" use:enhance={keep} data-primary>
@@ -137,5 +171,6 @@
 	.item.out .txt { color: var(--dim); }
 	.itempin { grid-column: 3; margin-top: 0.2rem; }
 	.inline { display: flex; gap: 2ch; align-items: center; }
+	td.small { font-size: 0.9em; }
 	summary { cursor: pointer; color: var(--error); margin-top: 0.75rem; }
 </style>
