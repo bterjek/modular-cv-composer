@@ -1,0 +1,6 @@
+PASS running image restores visual header/summary/experience order
+PASS running image keeps independent section columns separate
+PASS /healthz responds 200
+PASS /login responds 200
+PASS /edit/cvs responds 303
+PASS app version matches the import-fix checkpoint
