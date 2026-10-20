@@ -1,0 +1,65 @@
+
+ RUN  v5.0.2 /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer
+
+ ✓ src/lib/server/import-extract.test.ts (4 tests) 686ms
+ ✓ src/lib/server/repo/snapshots.test.ts (8 tests) 302ms
+ ✓ src/lib/server/repo/terms.test.ts (4 tests) 250ms
+ ✓ src/lib/server/repo/account.test.ts (3 tests) 236ms
+ ✓ src/lib/server/repo/composer.test.ts (12 tests) 103ms
+ ✓ src/lib/server/repo/reconcile.test.ts (10 tests) 183ms
+ ✓ src/lib/server/repo/repo.test.ts (13 tests) 113ms
+ ✓ src/lib/server/demo.test.ts (1 test) 79ms
+ ✓ src/lib/server/repo/imports.test.ts (5 tests) 429ms
+ ✓ src/lib/server/repo/library.test.ts (5 tests) 296ms
+ ✓ src/lib/server/boundaries.test.ts (1 test) 109ms
+ ✓ src/lib/server/import-forms.test.ts (2 tests) 70ms
+ ✓ src/lib/server/db/library-migration.test.ts (3 tests) 154ms
+ ✓ src/lib/domain/reconcile.test.ts (5 tests) 58ms
+ ✓ src/lib/editor/forms.test.ts (4 tests) 36ms
+ ✓ src/lib/server/render/pdf.test.ts (3 tests) 9008ms
+   ✓ renderPdf (3)
+     ✓ produces a one-page A4 PDF with the document title 4708ms
+     ✓ blocks network access from the rendered page 785ms
+     ✓ handles parallel renders 2870ms
+ ✓ src/lib/server/render/classical.test.ts (3 tests) 8710ms
+   ✓ measured Classical A4 pagination (3)
+     ✓ produces matching two-page HTML and PDF at fixed size with embedded accented text 5666ms
+     ✓ shows content beyond page two and refuses export rather than shrinking or removing text 879ms
+     ✓ splits an oversized paragraph without losing any characters, and leaves no orphan section heading 1833ms
+ ✓ src/lib/server/db/constraints.test.ts (3 tests) 24ms
+ ✓ src/lib/domain/engine.test.ts (16 tests) 26ms
+ ✓ src/lib/domain/import.test.ts (5 tests) 13ms
+ ✓ src/lib/render/render.test.ts (19 tests) 10ms
+ ✓ src/lib/server/backup.test.ts (1 test) 9ms
+ ✓ src/lib/server/feedback.test.ts (2 tests) 14ms
+ ✓ src/lib/render/classical.test.ts (4 tests) 5ms
+ ✓ src/lib/domain/terms.test.ts (11 tests) 32ms
+ ✓ src/lib/domain/recipe.test.ts (5 tests) 11ms
+ ✓ src/lib/server/flags.test.ts (1 test) 5ms
+ ✓ src/lib/server/render/fonts.test.ts (2 tests) 4ms
+ ↓ src/lib/server/render/visual.test.ts (1 test | 1 skipped)
+ ✓ src/lib/server/auth/auth.test.ts (15 tests) 13465ms
+   ✓ passwords and codes (2)
+     ✓ hashes and verifies 1175ms
+   ✓ invites and sign-up (5)
+     ✓ signs up with a valid code and grants its role 388ms
+     ✓ rejects a used-up, revoked or expired code 342ms
+     ✓ enforces an e-mail-bound code 344ms
+     ✓ does not use up the code when the e-mail already exists 1207ms
+   ✓ login and sessions (4)
+     ✓ logs in, with the same message for unknown e-mail and wrong password 4351ms
+     ✓ expires, renews and invalidates sessions 1240ms
+     ✓ password change logs out other sessions only 1983ms
+     ✓ disabled users cannot log in and lose their sessions 693ms
+   ✓ admin-issued resets (2)
+     ✓ works once, only for the right e-mail, and logs out everywhere 761ms
+     ✓ a newer reset code cancels the older one 393ms
+   ✓ last admin protection (1)
+     ✓ cannot demote or disable the only active admin 388ms
+
+ Test Files  29 passed | 1 skipped (30)
+      Tests  170 passed | 1 skipped (171)
+   Start at  08:08:54
+   Duration  14.43s (tests 59%, setup 31%, import 5%, transform 4%)
+
+JSON report written to /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/tests/e72cf4c0ec89781f76bf7aeed08b483a44830985/2026-10-20T06-08-48-058Z-working-tree/results/unit.json

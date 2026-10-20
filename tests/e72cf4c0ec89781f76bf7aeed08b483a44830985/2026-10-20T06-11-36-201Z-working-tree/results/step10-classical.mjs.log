@@ -1,0 +1,20 @@
+PASS typical imported CV fits the two-page target
+PASS page status reports readiness
+PASS preview displays real page boundaries
+PASS preview sheets use A4 physical dimensions
+PASS body text stays at 11 pt without clipped content
+PASS PDF export respects the existing feature flag
+PASS standalone HTML download is available
+PASS HTML is script-free and carries its own fonts
+PASS PDF download works
+PASS PDF and preview page counts match
+PASS overlong content is measured beyond two pages
+PASS overflow feedback identifies content on later pages
+PASS normal export links are withheld for overflow
+PASS last bullet remains visible in the overflow preview
+PASS HTML export refuses an overlong CV
+PASS PDF export refuses an overlong CV
+PASS layout and export do not modify saved composition content
+PASS unknown or unowned composition is not exposed
+PASS rendered CVs require authentication
+PASS no browser errors 

@@ -1,0 +1,72 @@
+ M .env.example
+ M Dockerfile
+ M README.md
+ M docs/DEPLOY.md
+ M docs/SCHEMA.md
+ M docs/TERMS.md
+ M drizzle/meta/_journal.json
+ M e2e/run-all.sh
+ M e2e/step3-assemble.mjs
+ M e2e/step5-editor.mjs
+ M package-lock.json
+ M package.json
+ M src/lib/domain/content.ts
+ M src/lib/domain/modules.ts
+ M src/lib/editor/EntryFields.svelte
+ M src/lib/editor/fields.ts
+ M src/lib/render/designs/shared.ts
+ M src/lib/render/render.test.ts
+ M src/lib/server/auth/rate-limit.ts
+ M src/lib/server/auth/session.ts
+ M src/lib/server/db/schema.ts
+ M src/lib/server/editor.ts
+ M src/lib/server/flags.ts
+ M src/lib/server/render/pdf.ts
+ M src/lib/server/repo/account.test.ts
+ M src/lib/server/repo/account.ts
+ M src/lib/server/repo/content.ts
+ M src/lib/server/repo/index.ts
+ M src/routes/assemble/+page.server.ts
+ M src/routes/assemble/+page.svelte
+ M src/routes/edit/+layout.svelte
+ M src/routes/edit/+page.server.ts
+ M src/routes/edit/content/+page.svelte
+ M src/routes/privacy/+page.svelte
+?? docs/CLASSICAL-A4.md
+?? docs/IMPORTING.md
+?? docs/LIBRARY.md
+?? docs/MIDPOINT-AUDIT.md
+?? docs/RECONCILIATION.md
+?? drizzle/0006_striped_grandmaster.sql
+?? drizzle/0007_great_william_stryker.sql
+?? drizzle/meta/0006_snapshot.json
+?? drizzle/meta/0007_snapshot.json
+?? e2e/step10-classical.mjs
+?? e2e/step8-import.mjs
+?? e2e/step9-reconcile.mjs
+?? scripts/extract-cv.mjs
+?? src/lib/domain/import.test.ts
+?? src/lib/domain/import.ts
+?? src/lib/domain/library.ts
+?? src/lib/domain/reconcile.test.ts
+?? src/lib/domain/reconcile.ts
+?? src/lib/editor/ReconcileBlock.svelte
+?? src/lib/render/classical.test.ts
+?? src/lib/render/classical.ts
+?? src/lib/server/db/library-migration.test.ts
+?? src/lib/server/import-extract.test.ts
+?? src/lib/server/import-extract.ts
+?? src/lib/server/import-forms.test.ts
+?? src/lib/server/import-forms.ts
+?? src/lib/server/render/classical.test.ts
+?? src/lib/server/render/classical.ts
+?? src/lib/server/render/paginate.ts
+?? src/lib/server/repo/imports.test.ts
+?? src/lib/server/repo/imports.ts
+?? src/lib/server/repo/library.test.ts
+?? src/lib/server/repo/library.ts
+?? src/lib/server/repo/reconcile.test.ts
+?? src/routes/cv/composition/
+?? src/routes/edit/cvs/
+?? src/routes/edit/imports/
+?? tests/

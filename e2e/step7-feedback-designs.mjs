@@ -65,7 +65,7 @@ await pv.locator('li').first().click();
 await p.waitForURL(/\/edit\/content\/entry\/[\w-]+#item-[\w-]+/);
 const target = p.locator('.item.hit');
 await target.waitFor({ timeout: 5000 }).catch(() => {});
-check((await target.count()) === 1 && (await target.locator('textarea').first().inputValue()) === bulletText, `clicking a preview bullet opens that bullet (${bulletText.slice(0, 30)}…)`);
+check((await target.count()) === 1 && (await target.locator('form.wording textarea').first().inputValue()) === bulletText, `clicking a preview bullet opens that bullet (${bulletText.slice(0, 30)}…)`);
 await pv.locator('h1').click(); await p.waitForURL(/\/edit\/profile/);
 check(true, 'clicking the name opens the profile');
 

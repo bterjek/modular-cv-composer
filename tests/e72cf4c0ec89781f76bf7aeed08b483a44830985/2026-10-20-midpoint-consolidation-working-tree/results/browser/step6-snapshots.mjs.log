@@ -1,0 +1,21 @@
+PASS privacy notice public, operator from env
+PASS snapshot shows the frozen CV
+PASS snapshot unchanged after editing the profile
+PASS job marked as sent
+PASS share URL shown once
+PASS anonymous visitor sees the frozen CV
+PASS share page: noindex + no-referrer
+PASS share page cannot be framed elsewhere
+PASS visitor can download the PDF
+PASS view count shows 2 (page + PDF)
+PASS withdrawn link shows “not available”
+PASS unknown token looks the same (404)
+PASS other user: /edit/snapshots/01a157d7-0391-7240-aa76-880307c1513f → 404
+PASS other user: /cv/snapshot/01a157d7-0391-7240-aa76-880307c1513f → 404
+PASS export has own data only (11 entries)
+PASS wrong password refuses deletion
+PASS account deleted, confirmation shown
+PASS deleted account cannot log in
+PASS admin no longer sees the deleted user
+PASS last admin cannot delete their account
+PASS no unexpected console errors 

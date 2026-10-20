@@ -18,6 +18,7 @@
 	<ul>
 		<li><b>Your account:</b> name, e-mail address, role, a scrypt hash of your password (never the password itself), when you joined and last logged in.</li>
 		<li><b>What you write:</b> your profile, CV content, wordings, tags, job categories, jobs (including job-ad text you paste in) and the snapshots you save.</li>
+		<li><b>CV imports:</b> original PDF/Word files, extracted text, review drafts, source references and saved compositions. Extraction runs on this server.</li>
 		<li><b>Share links:</b> for each link you create, how often it was opened and when last. Nothing about the visitor (no IP address, no browser details).</li>
 		<li><b>Feedback</b> you send from inside the app.</li>
 	</ul>

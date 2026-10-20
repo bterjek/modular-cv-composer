@@ -5,10 +5,9 @@ import { db } from './db';
 import { featureFlagOverrides, featureFlags } from './db/schema';
 
 export const FLAGS = {
-	'editor.dos-shell': 'DOS-style content editor (step 5)',
+	'editor.dos-shell': 'Default DOS appearance (optional; editor access is always available)',
 	'render.pdf': 'PDF export via Chromium (step 4)',
-	'snapshots.share-links': 'Public share links for snapshots (step 6)',
-	'ai.tailoring': 'AI job-ad tailoring (after test phase)'
+	'snapshots.share-links': 'Public share links for snapshots (step 6)'
 } as const;
 export type FlagKey = keyof typeof FLAGS;
 

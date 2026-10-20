@@ -39,3 +39,7 @@ export const styleOptions = z
 	})
 	.partial();
 export type StyleOptions = z.infer<typeof styleOptions>;
+
+/** Supported choices for measured, single-column reference templates. */
+export const templateStyleSchema = styleOptions.omit({ dates: true }).strict();
+export type TemplateStyle = z.infer<typeof templateStyleSchema>;

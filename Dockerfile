@@ -22,6 +22,7 @@ ENV NODE_ENV=production \
 	APP_ENV=production \
 	APP_VERSION=${APP_VERSION} \
 	PORT=3000 \
+	BODY_SIZE_LIMIT=6M \
 	DATABASE_PATH=/data/composer.sqlite \
 	CHROMIUM_PATH=/usr/bin/chromium
 WORKDIR /app

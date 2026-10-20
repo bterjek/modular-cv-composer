@@ -1,0 +1,12 @@
+PASS preview iframe shows the designed CV
+PASS Inter loaded inside the sandboxed preview (true)
+PASS PDF button hidden while flag is off
+PASS PDF refused while flag is off (403)
+PASS HTML filename (Alex Example - CV (Example Insurance plc).html)
+PASS standalone HTML embeds fonts, has no scripts
+PASS PDF downloaded (39900 bytes, Alex Example - CV (Example Insurance plc).pdf)
+PASS other user gets 404 for preview (404)
+PASS other user gets 404 for html (404)
+PASS other user gets 404 for pdf (404)
+PASS anonymous is redirected to login (303)
+PASS no console errors 

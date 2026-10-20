@@ -65,7 +65,10 @@
 		<h2>{e.module === 'skills' ? 'Skills' : 'Bullets'}</h2>
 		{#each e.items as item, i (item.id)}
 			<div class="item" class:archived={item.archived} id="item-{item.id}">
-				<div class="item-head">
+				<form method="POST" action="?/saveItemFacts" use:enhance={keep}>
+                    <input type="hidden" name="itemId" value={item.id}/><label>Neutral achievement facts<textarea name="facts" rows="2" maxlength="10000">{item.facts??''}</textarea></label><button class="small">Save facts</button>
+                </form>
+                <div class="item-head">
 					<b>{i + 1}.</b>
 					<form method="POST" action="?/itemTags" use:enhance={keep} class="row tagform">
 						<input type="hidden" name="itemId" value={item.id} />

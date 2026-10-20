@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { db } from '../db';
 import { entries, entryTags, items, itemTags, profiles, tags, variantTags, variants } from '../db/schema';
 import { MODULES, VARIANT_LENGTHS, entryData, webUrl, type Module, type VariantLength } from '$lib/domain/modules';
+import { targetingSchema } from '$lib/domain/library';
 import { tagName } from '$lib/domain/recipe';
 import type { Content, EntryIn, ItemIn, VariantIn } from '$lib/domain/content';
 import { entryOrder, itemOrder } from '$lib/domain/order';
@@ -129,7 +130,7 @@ export function deleteEntry(ownerId: string, id: string) {
 // ── items
 // Update schemas never carry .default(): with Zod 4, defaults also fill fields left out of a
 // .partial() parse, which would silently reset them on every update.
-const itemFields = z.object({ position: z.number().int(), note: z.string().max(500).nullish() });
+const itemFields = z.object({ position: z.number().int(), note: z.string().max(500).nullish(), facts: z.string().trim().max(10000).optional() });
 const itemCreate = itemFields.partial({ position: true });
 const itemPatch = itemFields.partial();
 
@@ -140,7 +141,7 @@ export function createItem(ownerId: string, entryId: string, input: unknown = {}
 		ownedEntry(tx, ownerId, entryId);
 		const now = Date.now();
 		const position = i.position ?? nextPosition(tx, items, eq(items.entryId, entryId));
-		tx.insert(items).values({ id, ownerId, entryId, position, note: i.note ?? null, createdAt: now, updatedAt: now }).run();
+		tx.insert(items).values({ id, ownerId, entryId, position, note: i.note ?? null, facts: i.facts ?? '', createdAt: now, updatedAt: now }).run();
 	});
 	return id;
 }
@@ -149,7 +150,7 @@ export function updateItem(ownerId: string, id: string, input: unknown) {
 	const p = parse(itemPatch, input);
 	const r = db
 		.update(items)
-		.set({ ...(p.position !== undefined && { position: p.position }), ...(p.note !== undefined && { note: p.note ?? null }), updatedAt: Date.now() })
+		.set({ ...(p.position !== undefined && { position: p.position }), ...(p.note !== undefined && { note: p.note ?? null }), ...(p.facts !== undefined && { facts: p.facts }), updatedAt: Date.now() })
 		.where(and(eq(items.id, id), eq(items.ownerId, ownerId)))
 		.run();
 	if (r.changes !== 1) throw new NotFoundError('Item not found');
@@ -175,6 +176,7 @@ const variantCreate = z
 		entryId: z.string().optional(),
 		itemId: z.string().optional(),
 		text: z.string().trim().min(1).max(2000),
+		targeting: targetingSchema.default(() => targetingSchema.parse({})),
 		length: z.enum(VARIANT_LENGTHS).default('standard'),
 		isDefault: z.boolean().default(false),
 		position: z.number().int().optional()
@@ -201,13 +203,14 @@ export function createVariant(ownerId: string, input: unknown): string {
 		const now = Date.now();
 		const position = v.position ?? nextPosition(tx, variants, target.entryId ? eq(variants.entryId, target.entryId) : eq(variants.itemId, target.itemId!));
 		tx.insert(variants)
-			.values({ id, ownerId, ...target, text: v.text, length: v.length, isDefault: v.isDefault, position, createdAt: now, updatedAt: now })
+			.values({ id, ownerId, ...target, text: v.text, targeting: v.targeting, length: v.length, isDefault: v.isDefault, position, createdAt: now, updatedAt: now })
 			.run();
 	});
 	return id;
 }
 
 const variantPatch = z.object({
+	targeting: targetingSchema.optional(),
 	text: z.string().trim().min(1).max(2000).optional(),
 	length: z.enum(VARIANT_LENGTHS).optional(),
 	isDefault: z.boolean().optional(),
@@ -295,6 +298,7 @@ export function loadContent(ownerId: string): Content {
 	const toVariant = (v: (typeof vRows)[number]): VariantIn => ({
 		id: v.id,
 		text: v.text,
+		targeting: v.targeting,
 		length: v.length as VariantLength,
 		isDefault: v.isDefault,
 		position: v.position,
@@ -309,7 +313,7 @@ export function loadContent(ownerId: string): Content {
 
 	const itemsByEntry = new Map<string, ItemIn[]>();
 	for (const i of db.select().from(items).where(eq(items.ownerId, ownerId)).all()) {
-		const it: ItemIn = { id: i.id, position: i.position, archived: i.archivedAt !== null, tags: iTags.get(i.id) ?? [], variants: byItem.get(i.id) ?? [] };
+		const it: ItemIn = { id: i.id, facts: i.facts, position: i.position, archived: i.archivedAt !== null, tags: iTags.get(i.id) ?? [], variants: byItem.get(i.id) ?? [] };
 		itemsByEntry.set(i.entryId, [...(itemsByEntry.get(i.entryId) ?? []), it]);
 	}
 

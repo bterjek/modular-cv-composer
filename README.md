@@ -1,13 +1,20 @@
 # Modular CV Composer
 
-A hosted app for building CVs from reusable modules. Content is written once
-(entries, items and their alternative wordings), grouped by tags, and assembled
-into tailored CVs through job-category recipes. The editor has a keyboard-driven,
-DOS-style interface; the CVs it produces are modern HTML (and PDF from the same HTML).
+A CV library and composer built around reusable facts, alternative wordings and independently saved CVs. Import PDF or DOCX CVs, review the extraction, reconcile matching experience and export through a measured Classical A4 template with a two-page limit.
 
-**Status:** all 7 build steps done — ready for invite-only testing. Deploy with [`docs/DEPLOY.md`](docs/DEPLOY.md). Test mode (invite-only) until all features are confirmed.
+**Status:** tasks 1–8 of the redesign are implemented: reviewed imports/reconciliation, independent CV editing, chat exchange, reusable reference styles and simplified navigation. Reference styles are reviewed adaptations to supported settings, not automatic clones of arbitrary documents. Verified: 170 automated tests and 184 browser checks passed; one optional visual-export test skipped. See [the workflow guide](docs/COMPOSER.md).
 
 ## Documents
+
+- [`docs/COMPOSER.md`](docs/COMPOSER.md) — saved CV editing, chat comparison exchange, reference styles, navigation and retained test results.
+
+- [`docs/CLASSICAL-A4.md`](docs/CLASSICAL-A4.md) — measured two-page A4 preview and HTML/PDF export for saved CVs.
+
+- [`docs/RECONCILIATION.md`](docs/RECONCILIATION.md) — reconcile another CV against shared facts and wordings, resolve conflicts and inspect saved CVs.
+
+- [`docs/IMPORTING.md`](docs/IMPORTING.md) — upload PDF/Word CVs, review extraction, approve content and retain originals.
+
+- [`docs/LIBRARY.md`](docs/LIBRARY.md) — phase 1 of the CV-library redesign: facts, targeting, source provenance and independent compositions (data layer; import/editor screens follow).
 
 - [`docs/SCHEMA.md`](docs/SCHEMA.md) — the data model. Everything depends on it; change it first.
 - [`docs/AUTH.md`](docs/AUTH.md) — accounts, sessions, invites, first admin, resets, feature flags.
@@ -90,7 +97,7 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
 2. Update `src/lib/server/db/schema.ts`
 3. `npm run db:generate` and commit the new file in `drizzle/`
 
-## Build plan
+## Original build history (before the redesign)
 
 1. ✅ Data model + container skeleton
 2. ✅ Auth, invite gate, admin screen, feature flags, environments

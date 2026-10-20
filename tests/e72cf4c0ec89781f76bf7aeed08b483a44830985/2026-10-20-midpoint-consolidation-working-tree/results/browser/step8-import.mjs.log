@@ -1,0 +1,15 @@
+PASS Word import creates a summary suggestion
+PASS skills extracted into items
+PASS original download retains exact bytes
+PASS original download requires authentication
+PASS bullets support adding new lines while typing
+PASS review corrections survive save
+PASS new bullet survives draft save
+PASS approval adds content and saves composition
+PASS only approved entries are added
+PASS composition is saved
+PASS account export includes the original
+PASS imported content is accessible in current editor
+PASS skills descriptions can be added and edited in the library
+PASS revisiting approval does not duplicate content
+PASS no browser errors 

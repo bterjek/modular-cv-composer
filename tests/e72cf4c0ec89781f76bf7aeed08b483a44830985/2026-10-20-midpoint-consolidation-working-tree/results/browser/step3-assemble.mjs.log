@@ -1,0 +1,11 @@
+PASS example content loaded
+PASS governance CV: governance headline, early career dropped
+PASS job target: NIS2 summary, credentials before experience
+PASS trace explains the job-tag choice
+PASS example cannot be loaded twice
+PASS unknown/foreign target gives 404
+PASS legacy job can be copied into an independent saved CV
+PASS copy preserves the selected job wording
+PASS copy leaves library and legacy job untouched
+PASS copy rejects an unknown or foreign job
+PASS no console errors 

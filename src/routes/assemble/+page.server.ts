@@ -1,6 +1,5 @@
-// Read-only view of the assembly engine: pick a category or job target, see the
-// designed CV (live preview) and why each piece is in or out. Becomes part of the editor in step 5.
-import { error, fail } from '@sveltejs/kit';
+// Legacy assembly view, with an explicit copy into independent saved CVs.
+import { error, fail, redirect } from '@sveltejs/kit';
 import * as repo from '$lib/server/repo';
 import { hasContent, seedDemo } from '$lib/server/demo';
 import { isEnabled } from '$lib/server/flags';
@@ -42,6 +41,25 @@ export function load({ locals, url }) {
 }
 
 export const actions = {
+ saveCopy: async ({ locals, request }) => {
+  const ownerId = locals.user!.id;
+  const form = await request.formData();
+  const targetId = String(form.get('target') ?? '').trim();
+  const categoryId = String(form.get('category') ?? '').trim();
+  if (!targetId && !categoryId) return fail(400, { error: 'Choose a category or job first.' });
+  let id: string;
+  try {
+   const cv = targetId ? repo.resolveJobTarget(ownerId, targetId) : repo.resolveCategory(ownerId, categoryId);
+   const target = targetId ? repo.getJobTarget(ownerId, targetId) : null;
+   const name = target ? `${target.company} — ${target.roleTitle}` : repo.getCategory(ownerId, categoryId).name;
+   id = repo.createComposition(ownerId, { name: name.slice(0, 200), document: repo.compositionDocumentFromCV(cv) });
+  } catch (e) {
+   if (e instanceof repo.NotFoundError) error(404, 'Not found');
+   if (e instanceof repo.InvalidError) return fail(400, { error: e.message });
+   throw e;
+  }
+  redirect(303, `/edit/cvs/${id}`);
+ },
 	loadDemo: async ({ locals }) => {
 		if (hasContent(locals.user!.id)) return fail(400, { error: 'Example content can only be loaded into an empty account.' });
 		seedDemo(locals.user!.id);

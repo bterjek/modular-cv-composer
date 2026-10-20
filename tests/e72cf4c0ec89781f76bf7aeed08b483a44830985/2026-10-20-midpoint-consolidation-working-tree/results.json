@@ -1,0 +1,24 @@
+{
+  "baseCommit": "e72cf4c0ec89781f76bf7aeed08b483a44830985",
+  "testedState": "uncommitted working tree based on this commit; NOT the clean commit",
+  "date": "2026-10-20",
+  "timezone": "Europe/Budapest",
+  "unitTests": {
+    "passed": 157,
+    "skipped": 1,
+    "failed": 0,
+    "evidence": "Completed test run reported in this chat; raw unit-run log was not retained. The static inventory is not an expanded execution report."
+  },
+  "browserChecks": {
+    "passed": 163,
+    "failed": 0,
+    "evidence": "results/browser/*.log"
+  },
+  "typeCheck": {
+    "errors": 0,
+    "warnings": 0,
+    "evidence": "Completed check reported in this chat; raw log was not retained."
+  },
+  "productionBuild": "passed",
+  "sourceSnapshotCount": 42
+}

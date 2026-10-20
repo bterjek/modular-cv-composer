@@ -1,7 +1,9 @@
 // The engine's input and output shapes. Pure data: no database, no framework.
+import type { Targeting } from './library';
 import type { Module, VariantLength } from './modules';
 
 export type VariantIn = {
+	targeting?: Targeting;
 	id: string;
 	text: string;
 	length: VariantLength;
@@ -11,6 +13,7 @@ export type VariantIn = {
 };
 
 export type ItemIn = {
+	facts?: string;
 	id: string;
 	position: number;
 	archived: boolean;

@@ -9,6 +9,7 @@
 
 <section class="window">
 	<h1>Content</h1>
+	<p><a href="/edit/imports">Import an existing CV →</a></p>
 	<p class="hint">Write each fact once. Pick a section (↑ ↓ and Enter work here too).</p>
 	<ul class="list" use:arrowNav>
 		{#each MODULES as m}

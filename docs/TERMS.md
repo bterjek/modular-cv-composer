@@ -24,4 +24,4 @@ job's company name is excluded, line breaks end phrases, and all-caps heading li
 ## Tuning
 Tuned on three real ads (Nilfisk IT Security & Compliance Manager, Liferay Security Operations Manager, MOL E&P IT
 Operations Manager), kept as fixtures in `src/lib/domain/fixtures/ads.ts`. Real ads are the best test set. Add missed terms or aliases to `VOCAB`, noise to `ACRONYM_STOP` / `PHRASE_STOP`, and a
-case to `terms.test.ts`. AI-assisted matching (synonyms, rewording suggestions) is planned behind the `ai.tailoring` flag.
+case to `terms.test.ts`. Job comparison and rewording can be handled in external chat; a dedicated exchange workflow is planned in task 6 of the redesign.

@@ -1,7 +1,7 @@
 // PDF export: one shared headless Chromium, at most two renders at a time.
 // The page gets our own escaped HTML, runs no scripts (the document's CSP forbids them),
 // and every network request is blocked, so rendering cannot be used to reach other hosts.
-import { chromium, type Browser } from 'playwright-core';
+import { chromium, type Browser, type Page } from 'playwright-core';
 
 const CHROMIUM_PATH = process.env.CHROMIUM_PATH ?? '/usr/bin/chromium';
 const MAX_PARALLEL = 2;
@@ -43,29 +43,26 @@ async function slot<T>(fn: () => Promise<T>): Promise<T> {
 	}
 }
 
+/** One bounded, offline print context shared by PDF rendering and measured CV layout. */
+export async function withPrintPage<T>(html: string, inspect: (page: Page) => Promise<T>): Promise<T> {
+ return slot(async () => {
+  const b = await getBrowser();
+  const context = await b.newContext({ offline: true });
+  try {
+   await context.route('**/*', (route) => route.abort());
+   const page = await context.newPage();
+   page.setDefaultTimeout(TIMEOUT_MS);
+   await page.setContent(html, { waitUntil: 'load' });
+   await page.evaluate(() => document.fonts.ready);
+   await page.emulateMedia({ media: 'print' });
+   return await inspect(page);
+  } finally { await context.close(); }
+ });
+}
+
 /** The PDF's title metadata comes from the document's <title>. */
 export async function renderPdf(html: string): Promise<Buffer> {
-	return slot(async () => {
-		const b = await getBrowser();
-		const context = await b.newContext({ offline: true });
-		try {
-			await context.route('**/*', (route) => route.abort());
-			const page = await context.newPage();
-			page.setDefaultTimeout(TIMEOUT_MS);
-			await page.setContent(html, { waitUntil: 'load' });
-			await page.evaluate(() => document.fonts.ready); // CDP evaluation is not subject to the page's CSP
-			await page.emulateMedia({ media: 'print' });
-			return await page.pdf({
-				format: 'A4',
-				printBackground: true,
-				preferCSSPageSize: true,
-				tagged: true, // accessible PDF structure (headings, lists)
-				outline: true
-			});
-		} finally {
-			await context.close();
-		}
-	});
+ return withPrintPage(html, (page) => page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true, tagged: true, outline: true }));
 }
 
 export async function closePdfBrowser() {

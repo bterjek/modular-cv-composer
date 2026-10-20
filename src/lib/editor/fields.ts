@@ -71,31 +71,7 @@ export const MODULE_FIELDS: Record<Module, Field[]> = {
 	custom: [{ name: 'heading', label: 'Heading', kind: 'text', required: true }]
 };
 
-/** Modules whose entries carry prose wordings of their own (not just bullets). */
-export const ENTRY_WORDINGS: Record<Module, 'required' | 'optional' | 'none'> = {
-	headline: 'required',
-	summary: 'required',
-	experience: 'optional',
-	education: 'optional',
-	credentials: 'none',
-	skills: 'none',
-	languages: 'none',
-	projects: 'optional',
-	custom: 'optional'
-};
-
-/** Modules whose entries have items (bullets / skills). */
-export const HAS_ITEMS: Record<Module, boolean> = {
-	headline: false,
-	summary: false,
-	experience: true,
-	education: true,
-	credentials: false,
-	skills: true,
-	languages: false,
-	projects: true,
-	custom: true
-};
+export { ENTRY_WORDINGS, HAS_ITEMS } from '$lib/domain/modules';
 
 /** Turns submitted form fields into the module's data object (empty → omitted, end "present" → null). */
 export function dataFromForm(module: Module, form: FormData): Record<string, unknown> {

@@ -1,0 +1,45 @@
+import {chromium} from 'playwright-core';
+import {readFileSync} from 'node:fs';
+const B='http://localhost:3123',boot=readFileSync(process.env.SERVER_LOG,'utf8').match(/http:\/\/localhost:3123\/signup\?code=[\w-]+/)[0];
+const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH});
+const context=await browser.newContext({viewport:{width:1600,height:1000}}),page=await context.newPage();
+const errors=[];page.on('pageerror',e=>errors.push(e.stack??e.message));
+const check=(ok,label)=>{console.log(`${ok?'PASS':'FAIL'} ${label}`);if(!ok)process.exitCode=1;};
+const exported=async()=> (await context.request.get(B+'/account/export')).json();
+try{
+ await page.goto(boot);await page.waitForLoadState('networkidle');await page.fill('#name','Composer Tester');await page.fill('#email','admin@example.test');await page.fill('#password','correct horse battery staple');await page.fill('#confirm','correct horse battery staple');await page.click('button.primary');await page.waitForURL(B+'/');
+ const access=await page.goto(B+'/edit/cvs');await page.waitForLoadState('networkidle');check(access.status()===200,'new editor does not require a DOS appearance flag');
+ await page.fill('#name','New independent CV');await page.getByRole('button',{name:'Create CV',exact:true}).click();await page.waitForURL(/\/edit\/cvs\/[\w-]+$/);await page.waitForLoadState('networkidle');
+ const cvURL=page.url(),id=cvURL.split('/').at(-1);
+ await page.selectOption('#new-section','summary');await page.getByRole('button',{name:'Add section',exact:true}).click();await page.getByRole('button',{name:'Add new entry',exact:true}).click();await page.getByLabel('Entry description',{exact:true}).fill('Original local summary');await page.getByRole('button',{name:'Save CV',exact:true}).first().click();await page.getByRole('status').filter({hasText:'CV saved.'}).waitFor();
+ check((await exported()).library.compositions.find(cv=>cv.id===id).document.sections[0].entries[0].text==='Original local summary','new CV content can be edited and saved');
+ check((await exported()).content.length===0,'saving a CV does not silently publish to library');
+ await page.getByRole('button',{name:'Duplicate CV',exact:true}).click();await page.waitForURL(url=>url.pathname.startsWith('/edit/cvs/')&&url.pathname!==new URL(cvURL).pathname);await page.waitForLoadState('networkidle');const copyURL=page.url();
+ await page.getByLabel('Entry description',{exact:true}).fill('Changed copy');await page.getByRole('button',{name:'Save CV',exact:true}).first().click();await page.getByRole('status').filter({hasText:'CV saved.'}).waitFor();
+ check((await exported()).library.compositions.find(cv=>cv.id===id).document.sections[0].entries[0].text==='Original local summary','duplicate edits leave the original CV unchanged');
+ await page.getByText('Copy saved content to the shared library',{exact:true}).click();await page.getByRole('button',{name:'Copy Summary entry 1 to library',exact:true}).click();await page.waitForLoadState('networkidle');check((await exported()).content[0].variants[0].text==='Changed copy','explicit publication creates library wording');
+ await page.goto(cvURL);await page.waitForLoadState('networkidle');await page.getByLabel('Add library entry',{exact:true}).selectOption({index:1});await page.getByRole('button',{name:'Save CV',exact:true}).first().click();await page.getByRole('status').filter({hasText:'CV saved.'}).waitFor();
+ check((await exported()).library.compositions.find(cv=>cv.id===id).document.sections[0].entries.length===2,'library entries can be selected into an existing CV');
+ const beforeChat=await exported();await page.goto(cvURL+'/chat');await page.waitForLoadState('networkidle');const exchange=await(await context.request.get(B+`/edit/cvs/${id}/exchange`)).json();
+ check(exchange.cv.document.sections[0].entries.length===2&&exchange.library.length===1,'chat export contains the selected CV and reusable library');
+ const response={format:'cv-composer/chat@1',name:'Chat reviewed CV',document:structuredClone(exchange.cv.document)};response.document.sections[0].entries[0].text='Reviewed chat wording';
+ await page.fill('#response',JSON.stringify(response));await page.getByRole('button',{name:'Review returned CV',exact:true}).click();await page.waitForLoadState('networkidle');check((await exported()).library.compositions.length===beforeChat.library.compositions.length,'reviewing chat content does not save it');
+ await page.getByRole('button',{name:'Accept as a new CV',exact:true}).click();await page.waitForURL(/\/edit\/cvs\/[\w-]+$/);await page.waitForLoadState('networkidle');const chatURL=page.url(),chatId=chatURL.split('/').at(-1);
+ check((await exported()).library.compositions.find(cv=>cv.id===chatId).document.sections[0].entries[0].libraryEntryId===null,'accepted chat content cannot forge library relationships');
+ await page.goto(chatURL+'/template');await page.waitForLoadState('networkidle');await page.fill('#template-name','Reference style');await page.selectOption('#style-font','inter');await page.selectOption('#style-accent','navy');await page.selectOption('#style-margins','wide');
+ await page.getByRole('button',{name:'Preview style',exact:true}).click();await page.frameLocator('iframe').locator('.cv-sheet').first().waitFor();check((await exported()).templates.length===0,'style preview does not create a template');
+ // Preview intentionally leaves file inputs empty; fill again for the save request.
+ await page.fill('#template-name','Reference style');await page.selectOption('#style-font','inter');await page.selectOption('#style-accent','navy');await page.selectOption('#style-margins','wide');
+ const reference=Buffer.from('%PDF-reference-style');await page.locator('#reference').setInputFiles({name:'reference.pdf',mimeType:'application/pdf',buffer:reference});
+ const contentBefore=JSON.stringify((await exported()).library.compositions.find(cv=>cv.id===chatId).document);
+ await page.getByRole('button',{name:'Save template and apply',exact:true}).click();await page.waitForURL(chatURL);await page.frameLocator('.paper-preview').locator('.cv-sheet').first().waitFor();
+ await page.screenshot({path:process.env.OUT+'/shot-composer-editor.png',fullPage:false});
+ const afterStyle=await exported(),template=afterStyle.templates[0];check(afterStyle.library.compositions.find(cv=>cv.id===chatId).style.font==='inter','reference template is applied to the saved CV');check(JSON.stringify(afterStyle.library.compositions.find(cv=>cv.id===chatId).document)===contentBefore,'restyling does not alter CV content');
+ const metrics=await page.frameLocator('.paper-preview').locator('body').evaluate(body=>({font:getComputedStyle(body).fontFamily,width:body.querySelector('.cv-content').getBoundingClientRect().width}));check(metrics.font.includes('Inter')&&Math.abs(metrics.width-619.84)<2,'reference template preview uses its saved font and margins');
+ const original=await context.request.get(B+`/edit/templates/${template.id}/original`);check(original.status()===200&&(await original.body()).equals(reference),'original style reference is retained exactly');
+ const bad=await context.request.get(B+`/cv/composition/${chatId}?format=preview&stylePreview=`+encodeURIComponent(JSON.stringify({css:'body{}'})));check(bad.status()===400,'preview rejects arbitrary style code');
+ const anon=await browser.newContext();for(const path of [`/edit/cvs/${id}/exchange`,`/edit/templates/${template.id}/original`]){const r=await anon.request.get(B+path,{maxRedirects:0});check(r.status()===303,'chat and reference downloads require authentication');}await anon.close();
+ await page.goto(B+'/edit/cvs');await page.waitForLoadState('networkidle');await page.getByRole('button',{name:'DOS appearance',exact:true}).click();await page.waitForLoadState('networkidle');check(await page.getByRole('button',{name:'Simple appearance',exact:true}).count()===1,'DOS appearance is an optional toggle');
+ await page.screenshot({path:process.env.OUT+'/shot-composer-dos.png',fullPage:true});
+ check(errors.length===0,'no browser errors '+errors.join(' | '));
+}finally{await browser.close();}

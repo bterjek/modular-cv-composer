@@ -1,5 +1,6 @@
 <script lang="ts">
 	// Edit the alternative wordings of one entry or item.
+	import TargetingFields from './TargetingFields.svelte';
 	import { enhance } from '$app/forms';
 	import { keep } from '$lib/ui/enhance';
 	import { VARIANT_LENGTHS } from '$lib/domain/modules';
@@ -16,6 +17,7 @@
 		<input type="hidden" name="id" value={v.id} />
 		<label for="{idPrefix}-t{i}" class="sr">Wording {i + 1}</label>
 		<textarea id="{idPrefix}-t{i}" name="text" rows={compact ? 2 : 3} required>{v.text}</textarea>
+		<TargetingFields value={v.targeting}/>
 		<div class="row tools">
 			<div><label for="{idPrefix}-l{i}">Length</label>
 				<select id="{idPrefix}-l{i}" name="length">{#each VARIANT_LENGTHS as l}<option selected={l === v.length}>{l}</option>{/each}</select></div>
@@ -37,6 +39,7 @@
 		{#if entryId}<input type="hidden" name="entryId" value={entryId} />{/if}
 		{#if itemId}<input type="hidden" name="itemId" value={itemId} />{/if}
 		<label for="{idPrefix}-new">New wording</label>
+		<TargetingFields/>
 		<!-- svelte-ignore a11y_autofocus -->
 		<textarea id="{idPrefix}-new" name="text" rows="2" required autofocus></textarea>
 		<div class="row tools">

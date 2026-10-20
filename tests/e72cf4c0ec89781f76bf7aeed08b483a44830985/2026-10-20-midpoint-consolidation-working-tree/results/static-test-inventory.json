@@ -1,0 +1,1170 @@
+[
+  {
+    "name": "resolve > follows recipe order and drops empty sections",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 57,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolve > picks the headline wording by category tags",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 63,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolve > filters entries by include/exclude tags, newest first",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 68,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolve > ranks items by preferred tags, caps them, shows them in author order",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 75,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolve > keeps entries without variants (structured data only)",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 84,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolve > a delivery recipe gives a different CV from the same content",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 90,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolve > overrides > force an item in over the limit and one out",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 98,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolve > overrides > job tags outrank category tags",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 106,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolve > overrides > pin a wording",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 110,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolve > overrides > reorder sections; unknown ids become warnings, not errors",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 115,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolve > overrides > exclude a whole entry",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 124,
+      "column": 3
+    }
+  },
+  {
+    "name": "resolve > prefers the requested length, then the default",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 130,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolve > is deterministic",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 142,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolve > rejects a recipe listing a module twice",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 146,
+      "column": 2
+    }
+  },
+  {
+    "name": "headline and summary are pick-one > shows only the best-matching entry (wording or entry tags)",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 162,
+      "column": 2
+    }
+  },
+  {
+    "name": "headline and summary are pick-one > job tags and pins win; reason is traced",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/engine.test.ts",
+    "location": {
+      "line": 167,
+      "column": 2
+    }
+  },
+  {
+    "name": "CV suggestions > suggests modules while preserving unclassified and instruction-like content as data",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/import.test.ts",
+    "location": {
+      "line": 5,
+      "column": 2
+    }
+  },
+  {
+    "name": "CV suggestions > leaves missing date precision for review instead of inventing January",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/import.test.ts",
+    "location": {
+      "line": 15,
+      "column": 2
+    }
+  },
+  {
+    "name": "CV suggestions > recognises explicit named and numeric months",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/import.test.ts",
+    "location": {
+      "line": 20,
+      "column": 2
+    }
+  },
+  {
+    "name": "CV suggestions > suggests facts once while preserving original headers and uncertain dates as evidence",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/import.test.ts",
+    "location": {
+      "line": 24,
+      "column": 2
+    }
+  },
+  {
+    "name": "CV suggestions > surfaces scanned or unreadable content without producing fabricated entries",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/import.test.ts",
+    "location": {
+      "line": 36,
+      "column": 2
+    }
+  },
+  {
+    "name": "recipe schema > accepts the example from docs/SCHEMA.md and fills defaults",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/recipe.test.ts",
+    "location": {
+      "line": 6,
+      "column": 2
+    }
+  },
+  {
+    "name": "recipe schema > rejects unknown modules and versions",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/recipe.test.ts",
+    "location": {
+      "line": 19,
+      "column": 2
+    }
+  },
+  {
+    "name": "recipe schema > accepts empty overrides",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/recipe.test.ts",
+    "location": {
+      "line": 23,
+      "column": 2
+    }
+  },
+  {
+    "name": "entry data > requires credential kind, so a course cannot pass as a certification",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/recipe.test.ts",
+    "location": {
+      "line": 29,
+      "column": 2
+    }
+  },
+  {
+    "name": "entry data > validates YYYY-MM dates and null end = present",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/recipe.test.ts",
+    "location": {
+      "line": 33,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciliation suggestions > explains same-role identity and exposes conflicting dates without applying a merge",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/reconcile.test.ts",
+    "location": {
+      "line": 8,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciliation suggestions > distinguishes present from missing and ignores harmless optional whitespace",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/reconcile.test.ts",
+    "location": {
+      "line": 15,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciliation suggestions > suggests achievement overlap, flags numerical differences, and only auto-reuses an unambiguous exact wording",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/reconcile.test.ts",
+    "location": {
+      "line": 20,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciliation suggestions > invalidates a reused bullet decision when text or position changes",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/reconcile.test.ts",
+    "location": {
+      "line": 28,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciliation suggestions > treats equivalent targeting lists consistently while preserving distinct emphases",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/reconcile.test.ts",
+    "location": {
+      "line": 34,
+      "column": 2
+    }
+  },
+  {
+    "name": "extractTerms > finds vocabulary terms through their aliases and merges variants",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 16,
+      "column": 2
+    }
+  },
+  {
+    "name": "extractTerms > drops generic acronyms and keeps no duplicates",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 22,
+      "column": 2
+    }
+  },
+  {
+    "name": "extractTerms > picks up unknown \\\"… operations/management\\\" phrases",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 27,
+      "column": 2
+    }
+  },
+  {
+    "name": "extractTerms > the phrase \\\"incident, problem and change management\\\" still yields change management",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 30,
+      "column": 2
+    }
+  },
+  {
+    "name": "extractTerms > ignores currencies and the ISO/IEC prefix",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 35,
+      "column": 2
+    }
+  },
+  {
+    "name": "matching and coverage > matches whole words and aliases only",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 42,
+      "column": 2
+    }
+  },
+  {
+    "name": "matching and coverage > reports which texts cover a term, ignoring archived content",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 48,
+      "column": 2
+    }
+  },
+  {
+    "name": "real ads (tuning fixtures) > Nilfisk — IT Security and Compliance Manager",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 71,
+      "column": 2
+    }
+  },
+  {
+    "name": "real ads (tuning fixtures) > Liferay — Security Operations Manager",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 77,
+      "column": 2
+    }
+  },
+  {
+    "name": "real ads — MOL E&P IT Operations Manager > finds the operations terms",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 89,
+      "column": 2
+    }
+  },
+  {
+    "name": "real ads — MOL E&P IT Operations Manager > ignores the company name, heading words, E&P, benefits and cross-line phrases",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/domain/terms.test.ts",
+    "location": {
+      "line": 94,
+      "column": 2
+    }
+  },
+  {
+    "name": "recipe form > builds a valid recipe in the numbered order and round-trips",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/forms.test.ts",
+    "location": {
+      "line": 12,
+      "column": 2
+    }
+  },
+  {
+    "name": "recipe form > an empty selection fails validation instead of saving an empty CV",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/forms.test.ts",
+    "location": {
+      "line": 29,
+      "column": 2
+    }
+  },
+  {
+    "name": "job overrides form > collects only what differs from the category",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/forms.test.ts",
+    "location": {
+      "line": 35,
+      "column": 2
+    }
+  },
+  {
+    "name": "job overrides form > maps every control",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/forms.test.ts",
+    "location": {
+      "line": 38,
+      "column": 2
+    }
+  },
+  {
+    "name": "Classical A4 source > preserves all saved wording and facts, including content the old category renderer did not display",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/classical.test.ts",
+    "location": {
+      "line": 11,
+      "column": 2
+    }
+  },
+  {
+    "name": "Classical A4 source > escapes source text and contains no executable preview script",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/classical.test.ts",
+    "location": {
+      "line": 18,
+      "column": 2
+    }
+  },
+  {
+    "name": "Classical A4 source > retains a present end date even when an optional start date is absent",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/classical.test.ts",
+    "location": {
+      "line": 23,
+      "column": 2
+    }
+  },
+  {
+    "name": "Classical A4 source > does not mutate the saved composition or insert user-specific editor markers",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/classical.test.ts",
+    "location": {
+      "line": 27,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > preserves imported skill and language descriptions in every legacy design",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 36,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > escapes every piece of user text",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 49,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > never renders non-http links",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 57,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > carries a script-free CSP and no script tags at all",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 63,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > labels credentials by kind, never by guessing",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 68,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > formats dates and languages",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 73,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > puts the headline under the name, not as a section",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 82,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > falls back to the default design for unknown keys",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 87,
+      "column": 2
+    }
+  },
+  {
+    "name": "renderDocument > helpers",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 91,
+      "column": 2
+    }
+  },
+  {
+    "name": "download file names > are ASCII-only and safe",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 101,
+      "column": 2
+    }
+  },
+  {
+    "name": "every design > ${d.key}: escapes, labels credentials, no scripts, no non-web links",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 112,
+      "column": 3
+    }
+  },
+  {
+    "name": "click-to-edit markers > are stripped from every export but kept (with the hashed script) in the clickable preview",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 125,
+      "column": 2
+    }
+  },
+  {
+    "name": "click-to-edit markers > user text cannot forge a marker",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 136,
+      "column": 2
+    }
+  },
+  {
+    "name": "style options > only fixed choices are accepted, and each maps to CSS",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 148,
+      "column": 2
+    }
+  },
+  {
+    "name": "style options > applies on top of the design in the document",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/render/render.test.ts",
+    "location": {
+      "line": 158,
+      "column": 2
+    }
+  },
+  {
+    "name": "backups > write a consistent copy and delete ones past retention",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/backup.test.ts",
+    "location": {
+      "line": 10,
+      "column": 2
+    }
+  },
+  {
+    "name": "module boundaries > no route or hook imports the database client",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/boundaries.test.ts",
+    "location": {
+      "line": 14,
+      "column": 2
+    }
+  },
+  {
+    "name": "demo content > one pool of facts, two different CVs, plus a tailored one",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/demo.test.ts",
+    "location": {
+      "line": 11,
+      "column": 2
+    }
+  },
+  {
+    "name": "feedback > stores the message with only the allowed technical facts, and can be triaged",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/feedback.test.ts",
+    "location": {
+      "line": 6,
+      "column": 2
+    }
+  },
+  {
+    "name": "feedback > ignores malformed screen state instead of failing",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/feedback.test.ts",
+    "location": {
+      "line": 21,
+      "column": 2
+    }
+  },
+  {
+    "name": "feature flags > are off by default; overrides beat the global value",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/flags.test.ts",
+    "location": {
+      "line": 6,
+      "column": 2
+    }
+  },
+  {
+    "name": "document extraction > extracts text from a real PDF binary",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/import-extract.test.ts",
+    "location": {
+      "line": 23,
+      "column": 2
+    }
+  },
+  {
+    "name": "document extraction > extracts paragraphs and accents from a DOCX binary",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/import-extract.test.ts",
+    "location": {
+      "line": 27,
+      "column": 2
+    }
+  },
+  {
+    "name": "document extraction > rejects empty, oversized, mismatched and malformed files",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/import-extract.test.ts",
+    "location": {
+      "line": 32,
+      "column": 2
+    }
+  },
+  {
+    "name": "document extraction > rejects ZIP files that are not Word documents",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/import-extract.test.ts",
+    "location": {
+      "line": 38,
+      "column": 2
+    }
+  },
+  {
+    "name": "keeps source provenance correct when a reviewed block is split and inserts shift later blocks",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/import-forms.test.ts",
+    "location": {
+      "line": 4,
+      "column": 1
+    }
+  },
+  {
+    "name": "persists explicit reconciliation choices but drops a bullet match if its reviewed text changed",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/import-forms.test.ts",
+    "location": {
+      "line": 20,
+      "column": 1
+    }
+  },
+  {
+    "name": "passwords and codes > hashes and verifies",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 26,
+      "column": 2
+    }
+  },
+  {
+    "name": "passwords and codes > normalizes typed codes",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 32,
+      "column": 2
+    }
+  },
+  {
+    "name": "invites and sign-up > signs up with a valid code and grants its role",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 41,
+      "column": 2
+    }
+  },
+  {
+    "name": "invites and sign-up > rejects a used-up, revoked or expired code",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 46,
+      "column": 2
+    }
+  },
+  {
+    "name": "invites and sign-up > enforces an e-mail-bound code",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 59,
+      "column": 2
+    }
+  },
+  {
+    "name": "invites and sign-up > does not use up the code when the e-mail already exists",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 65,
+      "column": 2
+    }
+  },
+  {
+    "name": "invites and sign-up > rejects short passwords",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 72,
+      "column": 2
+    }
+  },
+  {
+    "name": "login and sessions > logs in, with the same message for unknown e-mail and wrong password",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 80,
+      "column": 2
+    }
+  },
+  {
+    "name": "login and sessions > expires, renews and invalidates sessions",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 88,
+      "column": 2
+    }
+  },
+  {
+    "name": "login and sessions > password change logs out other sessions only",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 99,
+      "column": 2
+    }
+  },
+  {
+    "name": "login and sessions > disabled users cannot log in and lose their sessions",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 108,
+      "column": 2
+    }
+  },
+  {
+    "name": "admin-issued resets > works once, only for the right e-mail, and logs out everywhere",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 118,
+      "column": 2
+    }
+  },
+  {
+    "name": "admin-issued resets > a newer reset code cancels the older one",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 128,
+      "column": 2
+    }
+  },
+  {
+    "name": "last admin protection > cannot demote or disable the only active admin",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 138,
+      "column": 2
+    }
+  },
+  {
+    "name": "bootstrap > prints a one-time admin link only while no admin exists",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/auth/auth.test.ts",
+    "location": {
+      "line": 148,
+      "column": 2
+    }
+  },
+  {
+    "name": "export > contains all of the user’s data and nobody else’s",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/account.test.ts",
+    "location": {
+      "line": 20,
+      "column": 2
+    }
+  },
+  {
+    "name": "account deletion > removes every row the user owns, and nothing of anyone else",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/account.test.ts",
+    "location": {
+      "line": 43,
+      "column": 2
+    }
+  },
+  {
+    "name": "account deletion > the last active admin cannot delete themselves",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/account.test.ts",
+    "location": {
+      "line": 58,
+      "column": 2
+    }
+  },
+  {
+    "name": "review and approval > keeps uploads out of the library until approval, retaining exact bytes and user ownership",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/imports.test.ts",
+    "location": {
+      "line": 16,
+      "column": 2
+    }
+  },
+  {
+    "name": "review and approval > approves atomically and only once, preserving selection, wording, targeting and provenance",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/imports.test.ts",
+    "location": {
+      "line": 26,
+      "column": 2
+    }
+  },
+  {
+    "name": "review and approval > rolls back approval on invalid content and keeps excluded material only in the original/draft",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/imports.test.ts",
+    "location": {
+      "line": 40,
+      "column": 2
+    }
+  },
+  {
+    "name": "review and approval > does not overwrite an existing profile or library, and preserves approved content when removing a source",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/imports.test.ts",
+    "location": {
+      "line": 53,
+      "column": 2
+    }
+  },
+  {
+    "name": "review and approval > exports originals and drafts and deletes them with the account",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/imports.test.ts",
+    "location": {
+      "line": 69,
+      "column": 2
+    }
+  },
+  {
+    "name": "library foundation > keeps neutral facts separate from wording and targeting without resetting omitted metadata",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/library.test.ts",
+    "location": {
+      "line": 22,
+      "column": 2
+    }
+  },
+  {
+    "name": "library foundation > retains provenance and rejects wrong-owner or ambiguous references",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/library.test.ts",
+    "location": {
+      "line": 31,
+      "column": 2
+    }
+  },
+  {
+    "name": "library foundation > isolates compositions from library edits, document edits and library deletion",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/library.test.ts",
+    "location": {
+      "line": 42,
+      "column": 2
+    }
+  },
+  {
+    "name": "library foundation > validates composition lineage and ownership on reads, writes and attachments",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/library.test.ts",
+    "location": {
+      "line": 60,
+      "column": 2
+    }
+  },
+  {
+    "name": "library foundation > exports the new library data and removes it with the account",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/library.test.ts",
+    "location": {
+      "line": 76,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > reuses exact facts, achievements and wordings across two imports while keeping two compositions and sources",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 24,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > adds chosen alternative wordings and emphasis without modifying defaults, existing facts, tags or saved CVs",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 37,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > requires an explicit decision about conflicting facts and keeps disputed input in provenance",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 55,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > keeps a separate role when requested even if a match exists",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 66,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > blocks a stale selection after the library facts have changed",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 71,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > requires confirmation for changed numerical claims on an existing achievement and rolls back all writes",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 76,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > resets a stale bullet choice instead of attaching edited text to the wrong achievement",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 84,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > honours an explicit new achievement even for identical text",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 90,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > rejects another owner’s entry, an item from another role, and archived or deleted targets",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 94,
+      "column": 2
+    }
+  },
+  {
+    "name": "reconciling imports > preserves each CV’s own bullet selection and order when sharing library content",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/reconcile.test.ts",
+    "location": {
+      "line": 104,
+      "column": 2
+    }
+  },
+  {
+    "name": "content > validates module data and derives the sort key",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 26,
+      "column": 2
+    }
+  },
+  {
+    "name": "content > keeps at most one default wording per target",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 32,
+      "column": 2
+    }
+  },
+  {
+    "name": "content > tags are case-insensitive and replaced as a set",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 41,
+      "column": 2
+    }
+  },
+  {
+    "name": "content > updates never reset fields that were not sent",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 50,
+      "column": 2
+    }
+  },
+  {
+    "name": "content > a category with job targets cannot be deleted",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 66,
+      "column": 2
+    }
+  },
+  {
+    "name": "isolation: user B can never reach user A’s rows > reads",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 73,
+      "column": 2
+    }
+  },
+  {
+    "name": "isolation: user B can never reach user A’s rows > updates and deletes",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 84,
+      "column": 2
+    }
+  },
+  {
+    "name": "isolation: user B can never reach user A’s rows > attaching to someone else’s rows",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 106,
+      "column": 2
+    }
+  },
+  {
+    "name": "resolving through the database > job target overrides apply",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 127,
+      "column": 2
+    }
+  },
+  {
+    "name": "editor support > new items and wordings are appended at the end",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 139,
+      "column": 2
+    }
+  },
+  {
+    "name": "editor support > moves entries and items, and ignores moves past the ends",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 149,
+      "column": 2
+    }
+  },
+  {
+    "name": "editor support > the revision changes on every kind of change",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 170,
+      "column": 2
+    }
+  },
+  {
+    "name": "editor support > rejects non-web links everywhere",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/repo.test.ts",
+    "location": {
+      "line": 191,
+      "column": 2
+    }
+  },
+  {
+    "name": "snapshots > freezes the CV: later edits do not change it",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/snapshots.test.ts",
+    "location": {
+      "line": 18,
+      "column": 2
+    }
+  },
+  {
+    "name": "snapshots > keeps the snapshot when its job is deleted",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/snapshots.test.ts",
+    "location": {
+      "line": 32,
+      "column": 2
+    }
+  },
+  {
+    "name": "snapshots > refuses to freeze an empty CV",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/snapshots.test.ts",
+    "location": {
+      "line": 38,
+      "column": 2
+    }
+  },
+  {
+    "name": "snapshots > is invisible to other users",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/snapshots.test.ts",
+    "location": {
+      "line": 43,
+      "column": 2
+    }
+  },
+  {
+    "name": "share links > open with the token, count views, and stop working when revoked",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/snapshots.test.ts",
+    "location": {
+      "line": 55,
+      "column": 2
+    }
+  },
+  {
+    "name": "share links > expire",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/snapshots.test.ts",
+    "location": {
+      "line": 66,
+      "column": 2
+    }
+  },
+  {
+    "name": "share links > stop working when the owner is disabled or the snapshot deleted",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/snapshots.test.ts",
+    "location": {
+      "line": 74,
+      "column": 2
+    }
+  },
+  {
+    "name": "share links > only the hash is stored; junk tokens are rejected early",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/snapshots.test.ts",
+    "location": {
+      "line": 84,
+      "column": 2
+    }
+  },
+  {
+    "name": "job terms > classifies each term: in the CV, available but left out, gap, or ignored",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/terms.test.ts",
+    "location": {
+      "line": 19,
+      "column": 2
+    }
+  },
+  {
+    "name": "job terms > suggestions bring in bullets that cover missing terms, and applying them changes the CV",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/terms.test.ts",
+    "location": {
+      "line": 31,
+      "column": 2
+    }
+  },
+  {
+    "name": "job terms > is owner-scoped",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/terms.test.ts",
+    "location": {
+      "line": 41,
+      "column": 2
+    }
+  },
+  {
+    "name": "gap log across ads > counts ads per term and ranks gaps by demand",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/repo/terms.test.ts",
+    "location": {
+      "line": 48,
+      "column": 2
+    }
+  },
+  {
+    "name": "variants > must attach to exactly one of entry or item",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/db/constraints.test.ts",
+    "location": {
+      "line": 20,
+      "column": 2
+    }
+  },
+  {
+    "name": "variants > allows only one default per target",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/db/constraints.test.ts",
+    "location": {
+      "line": 26,
+      "column": 2
+    }
+  },
+  {
+    "name": "account deletion > cascades to all owned content",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/db/constraints.test.ts",
+    "location": {
+      "line": 36,
+      "column": 2
+    }
+  },
+  {
+    "name": "migration %i preserves every pre-existing column value",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/db/library-migration.test.ts",
+    "location": {
+      "line": 5,
+      "column": 16
+    }
+  },
+  {
+    "name": "fonts > embed or link exactly the families a design declares",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/render/fonts.test.ts",
+    "location": {
+      "line": 6,
+      "column": 2
+    }
+  },
+  {
+    "name": "fonts > every design has its fonts available",
+    "file": "/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/server/render/fonts.test.ts",
+    "location": {
+      "line": 15,
+      "column": 2
+    }
+  }
+]

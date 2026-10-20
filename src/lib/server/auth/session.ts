@@ -1,5 +1,5 @@
 // Sessions: random token in an httpOnly cookie, sha256(token) in the database.
-import { and, eq, gt, lt, ne } from 'drizzle-orm';
+import { and, eq, lt, ne } from 'drizzle-orm';
 import { db } from '../db';
 import { session, user, type Role } from '../db/schema';
 import { newToken, sha256 } from './tokens';
@@ -58,12 +58,4 @@ export function invalidateUserSessions(userId: string, exceptToken?: string) {
 
 export function purgeExpiredSessions(now = Date.now()) {
 	return db.delete(session).where(lt(session.expiresAt, now)).run().changes;
-}
-
-export function activeSessionCount(userId: string, now = Date.now()) {
-	return db
-		.select({ id: session.id })
-		.from(session)
-		.where(and(eq(session.userId, userId), gt(session.expiresAt, now)))
-		.all().length;
 }

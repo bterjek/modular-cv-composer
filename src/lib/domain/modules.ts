@@ -70,3 +70,29 @@ export type EntryData<M extends Module> = z.infer<(typeof entryData)[M]>;
 export function parseEntryData<M extends Module>(module: M, data: unknown): EntryData<M> {
 	return entryData[module].parse(data) as EntryData<M>;
 }
+
+/** Modules whose entries carry prose wordings of their own (not just bullets). */
+export const ENTRY_WORDINGS: Record<Module, 'required' | 'optional' | 'none'> = {
+	headline: 'required',
+	summary: 'required',
+	experience: 'optional',
+	education: 'optional',
+	credentials: 'optional',
+	skills: 'optional',
+	languages: 'optional',
+	projects: 'optional',
+	custom: 'optional'
+};
+
+/** Modules whose entries have items (bullets / skills). */
+export const HAS_ITEMS: Record<Module, boolean> = {
+	headline: false,
+	summary: false,
+	experience: true,
+	education: true,
+	credentials: false,
+	skills: true,
+	languages: false,
+	projects: true,
+	custom: true
+};

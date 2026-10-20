@@ -1,0 +1,68 @@
+No Svelte config file found in /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/tests/e72cf4c0ec89781f76bf7aeed08b483a44830985/2026-10-20-midpoint-consolidation-working-tree/test-sources - using SvelteKit's default configuration without an adapter.
+No Svelte config file found in /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/tests/e72cf4c0ec89781f76bf7aeed08b483a44830985/2026-10-20T05-57-55-382Z-working-tree/test-sources - using SvelteKit's default configuration without an adapter.
+The following Vite config options will be overridden by SvelteKit:
+  - root
+No Svelte config file found in /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/tests/e72cf4c0ec89781f76bf7aeed08b483a44830985/2026-10-20T05-58-25-293Z-working-tree/test-sources - using SvelteKit's default configuration without an adapter.
+The following Vite config options will be overridden by SvelteKit:
+  - root
+The following Vite config options will be overridden by SvelteKit:
+  - root
+Loading svelte-check in workspace: /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer
+Getting Svelte diagnostics...
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:20:45
+Error: Parameter 'entry' implicitly has an 'any' type. (ts)
+ function move<T>(array:T[],index:number,by:number){const target=index+by;if(target<0||target>=array.length)return;[array[index],array[target]]=[array[target],array[index]];}
+ const available=(m:Module)=>library.filter(entry=>entry.module===m&&!entry.archived);
+</script>
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:49:33
+Error: Parameter 'item' implicitly has an 'any' type. (ts)
+   {#each section.entries as entry,e (entry)}
+    {@const shared=library.find(item=>item.id===entry.libraryEntryId)}
+    <fieldset class="cv-entry"><legend>Entry {e+1}</legend>
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:53:154
+Error: Parameter 'v' implicitly has an 'any' type. (ts)
+     {#if shared?.variants.length}
+      <label>Choose library wording<select aria-label="Entry library wording" value={entry.variantId??''} onchange={event=>{const v=shared.variants.find(v=>v.id===event.currentTarget.value);if(v){entry.variantId=v.id;entry.text=v.text;}}}>
+       <option value="">Keep this CV's text</option>{#each shared.variants as v}<option value={v.id}>{v.text.slice(0,100)}</option>{/each}
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:59:43
+Error: Parameter 'bullet' implicitly has an 'any' type. (ts)
+     {#each entry.items as item,i (item)}
+      {@const original=shared?.items.find(bullet=>bullet.id===item.libraryItemId)}
+      {#if original?.variants.length}
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:61:156
+Error: Parameter 'v' implicitly has an 'any' type. (ts)
+      {#if original?.variants.length}
+       <label>Choose bullet wording<select aria-label="Bullet library wording" value={item.variantId??''} onchange={event=>{const v=original.variants.find(v=>v.id===event.currentTarget.value);if(v){item.variantId=v.id;item.text=v.text;}}}>
+        <option value="">Keep this CV's text</option>{#each original.variants as v}<option value={v.id}>{v.text.slice(0,100)}</option>{/each}
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:71:139
+Error: Parameter 'i' implicitly has an 'any' type. (ts)
+     {#if HAS_ITEMS[section.module]}<button type="button" onclick={()=>entry.items.push({libraryItemId:null,variantId:null,text:''})}>Add bullet</button>
+      {#if shared}<label>Add another library bullet<select aria-label="Add library bullet" onchange={event=>{const item=shared.items.find(i=>i.id===event.currentTarget.value);if(item){const v=item.variants.find(v=>v.isDefault)??item.variants[0];entry.items.push({libraryItemId:item.id,variantId:v?.id??null,text:v?.text??item.facts??''});}event.currentTarget.value='';}}>
+       <option value="">Choose…</option>{#each shared.items.filter(i=>!i.archived) as item}<option value={item.id}>{item.facts||item.variants[0]?.text||'Achievement'}</option>{/each}
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:71:212
+Error: Parameter 'v' implicitly has an 'any' type. (ts)
+     {#if HAS_ITEMS[section.module]}<button type="button" onclick={()=>entry.items.push({libraryItemId:null,variantId:null,text:''})}>Add bullet</button>
+      {#if shared}<label>Add another library bullet<select aria-label="Add library bullet" onchange={event=>{const item=shared.items.find(i=>i.id===event.currentTarget.value);if(item){const v=item.variants.find(v=>v.isDefault)??item.variants[0];entry.items.push({libraryItemId:item.id,variantId:v?.id??null,text:v?.text??item.facts??''});}event.currentTarget.value='';}}>
+       <option value="">Choose…</option>{#each shared.items.filter(i=>!i.archived) as item}<option value={item.id}>{item.facts||item.variants[0]?.text||'Achievement'}</option>{/each}
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:72:68
+Error: Parameter 'i' implicitly has an 'any' type. (ts)
+      {#if shared}<label>Add another library bullet<select aria-label="Add library bullet" onchange={event=>{const item=shared.items.find(i=>i.id===event.currentTarget.value);if(item){const v=item.variants.find(v=>v.isDefault)??item.variants[0];entry.items.push({libraryItemId:item.id,variantId:v?.id??null,text:v?.text??item.facts??''});}event.currentTarget.value='';}}>
+       <option value="">Choose…</option>{#each shared.items.filter(i=>!i.archived) as item}<option value={item.id}>{item.facts||item.variants[0]?.text||'Achievement'}</option>{/each}
+      </select></label>{/if}
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/src/lib/editor/CompositionEditor.svelte:81:127
+Error: Parameter 'e' implicitly has an 'any' type. (ts)
+   <button type="button" onclick={()=>section.entries.push(newCVEntry(section.module))}>Add new entry</button>
+   <label>Add from library<select aria-label="Add library entry" onchange={event=>{const entry=available(section.module).find(e=>e.id===event.currentTarget.value);if(entry)section.entries.push(copyLibraryEntry(entry));event.currentTarget.value='';}}>
+    <option value="">Choose…</option>{#each available(section.module) as entry}<option value={entry.id}>{entry.label}</option>{/each}
+
+====================================
+svelte-check found 9 errors and 0 warnings in 1 file

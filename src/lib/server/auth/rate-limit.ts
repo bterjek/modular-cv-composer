@@ -15,7 +15,3 @@ export function hit(key: string, limit: number, windowMs: number, now = Date.now
 	}
 	return { allowed: b.count <= limit, retryAfterMs: Math.max(0, b.resetAt - now) };
 }
-
-export function resetLimits() {
-	buckets.clear();
-}

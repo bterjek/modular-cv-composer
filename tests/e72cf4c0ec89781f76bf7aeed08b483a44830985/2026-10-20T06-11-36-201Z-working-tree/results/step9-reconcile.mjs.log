@@ -1,0 +1,18 @@
+PASS first CV establishes one shared role and two achievements
+PASS second CV gets an explained role suggestion
+PASS suggested matches are not applied automatically
+PASS conflicting imported and library dates are shown side by side
+PASS changed numerical claims are flagged
+PASS approval blocks unresolved factual differences
+PASS failed approval creates no second composition
+PASS numerical differences still require confirmation after dates are resolved
+PASS failed approval does not alter existing wordings
+PASS approved reconciliation reuses the role and achievements
+PASS incoming achievement wording becomes an alternative
+PASS existing default wording is kept
+PASS first CV remains exactly unchanged
+PASS each CV keeps its source and composition
+PASS saved CV shows explicitly chosen facts and its own wording
+PASS saved CV list contains both compositions
+PASS reconciliation review requires authentication
+PASS no browser errors 

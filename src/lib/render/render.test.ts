@@ -33,6 +33,19 @@ const cv = (over: Partial<ResolvedCV> = {}): ResolvedCV => ({
 const render = (c = cv()) => renderDocument(c, { fontCss: '', fontSrc: 'data:' });
 
 describe('renderDocument', () => {
+ it('preserves imported skill and language descriptions in every legacy design', () => {
+  const content = cv({ sections: [
+   {module:'skills',title:'Skills',entries:[{id:'s',module:'skills',data:{group:'Core'},variantId:null,text:'Applied in operational governance <daily>',items:[{id:'i',variantId:'iv',text:'ITIL'}]}]},
+   {module:'languages',title:'Languages',entries:[{id:'l',module:'languages',data:{language:'English',level:'C1'},variantId:null,text:'Used for international negotiations',items:[]}]}
+  ] });
+  for (const designKey of ['modern','classic','business','executive','bold']) {
+   const html = renderDocument(content, {designKey,fontCss:'',fontSrc:'data:'});
+   expect(html).toContain('Applied in operational governance &lt;daily&gt;');
+   expect(html).toContain('Used for international negotiations');
+   expect(html).toContain('ITIL');
+  }
+ });
+
 	it('escapes every piece of user text', () => {
 		const html = render();
 		expect(html).not.toContain('<script>');

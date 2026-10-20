@@ -11,10 +11,11 @@
 <svelte:head><title>Assemble · Modular CV Composer</title></svelte:head>
 
 <section class="window">
-	<h1>Assemble a CV</h1>
+	<h1>Legacy CV assembly</h1>
+ <p>For the new workflow, open <a href="/edit/cvs">Saved CVs</a> or <a href="/edit/imports">import an existing CV</a>. You can copy an assembled CV into Saved CVs below.</p>
 	{#if form?.error}<p class="msg error" role="alert">{form.error}</p>{/if}
 	{#if data.empty}
-		<p>Your account has no content yet. The editor arrives in step 5; until then you can load a fictional example
+		<p>Your account has no content yet. You can import your own CV or load a fictional example
 			(Alex Example: 3 roles, credentials, skills, two job categories, one tailored job target) to see how assembly works.</p>
 		<form method="POST" action="?/loadDemo"><button class="primary">Load example content</button></form>
 	{:else}
@@ -44,6 +45,12 @@
 
 	<section class="window">
 		<h2>Preview</h2>
+  <form method="POST" action="?/saveCopy">
+   <input type="hidden" name="target" value={data.selected.targetId ?? ''} />
+   <input type="hidden" name="category" value={data.selected.categoryId ?? ''} />
+   <button class="primary">Copy to Saved CVs</button>
+   <p class="hint">Creates an independent copy using the Classical A4 template. Existing categories, jobs and snapshots stay available.</p>
+  </form>
 		<p class="row">
 			<a class="btn" data-sveltekit-reload href="/cv/render?{q}&format=html">Download HTML</a>
 			{#if data.pdfEnabled}

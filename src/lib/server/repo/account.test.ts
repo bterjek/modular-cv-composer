@@ -22,7 +22,9 @@ describe('export', () => {
 		const s = repo.createSnapshot(A, { jobTargetId: j.id });
 		repo.createShareLink(A, s);
 		submitFeedback(A, 'Nice tool', '/edit', null);
+		repo.updateCategory(A, j.categoryId, { style: { accent: 'burgundy' } });
 		const e = repo.exportAccount(A);
+		expect(e.categories.find(c => c.id === j.categoryId)?.style).toEqual({ accent: 'burgundy' });
 		expect(e.format).toBe('modular-cv-composer/export@1');
 		expect(e.account.email).toBe('a@x.test');
 		expect(e.content.length).toBe(repo.loadContent(A).entries.length);

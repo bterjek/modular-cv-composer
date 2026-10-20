@@ -7,7 +7,9 @@ cd "$(dirname "$0")/.."
 : "${CHROMIUM_PATH:?Set CHROMIUM_PATH to a Chromium or Chrome binary}"
 OUT="$PWD/e2e/out"; mkdir -p "$OUT"
 PORT=3123; fails=0
-for s in e2e/step*.mjs; do
+scripts=("$@")
+if [ "${#scripts[@]}" -eq 0 ]; then scripts=(e2e/step*.mjs); fi
+for s in "${scripts[@]}"; do
 	rm -rf "$OUT/data"
 	APP_ENV=development ORIGIN=http://localhost:$PORT PORT=$PORT ADMIN_EMAIL=admin@example.test \
 	OPERATOR_NAME="Test Operator" OPERATOR_CONTACT="privacy@example.test" APP_VERSION=e2e-test BACKUP_INTERVAL_HOURS=0 \

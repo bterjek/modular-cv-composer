@@ -1,0 +1,29 @@
+{
+  "baseCommit": "e72cf4c0ec89781f76bf7aeed08b483a44830985",
+  "testedState": "uncommitted working tree",
+  "startedAt": "2026-10-20T05:59:16.700Z",
+  "status": "M .env.example\n M Dockerfile\n M README.md\n M docs/DEPLOY.md\n M docs/SCHEMA.md\n M docs/TERMS.md\n M drizzle/meta/_journal.json\n M e2e/run-all.sh\n M e2e/step3-assemble.mjs\n M e2e/step5-editor.mjs\n M package-lock.json\n M package.json\n M src/lib/domain/content.ts\n M src/lib/domain/modules.ts\n M src/lib/domain/style.ts\n M src/lib/editor/EntryFields.svelte\n M src/lib/editor/Wordings.svelte\n M src/lib/editor/fields.ts\n M src/lib/render/designs/shared.ts\n M src/lib/render/render.test.ts\n M src/lib/server/auth/rate-limit.ts\n M src/lib/server/auth/session.ts\n M src/lib/server/db/schema.ts\n M src/lib/server/editor.ts\n M src/lib/server/flags.ts\n M src/lib/server/render/pdf.ts\n M src/lib/server/repo/account.test.ts\n M src/lib/server/repo/account.ts\n M src/lib/server/repo/content.ts\n M src/lib/server/repo/index.ts\n M src/routes/+layout.server.ts\n M src/routes/+layout.svelte\n M src/routes/+page.svelte\n M src/routes/assemble/+page.server.ts\n M src/routes/assemble/+page.svelte\n M src/routes/edit/+layout.server.ts\n M src/routes/edit/+layout.svelte\n M src/routes/edit/+page.server.ts\n M src/routes/edit/content/+page.svelte\n M src/routes/edit/content/entry/[id]/+page.server.ts\n M src/routes/edit/content/entry/[id]/+page.svelte\n M src/routes/privacy/+page.svelte\n M tsconfig.json\n?? AGENTS.md\n?? docs/CLASSICAL-A4.md\n?? docs/IMPORTING.md\n?? docs/LIBRARY.md\n?? docs/MIDPOINT-AUDIT.md\n?? docs/RECONCILIATION.md\n?? drizzle/0006_striped_grandmaster.sql\n?? drizzle/0007_great_william_stryker.sql\n?? drizzle/0008_yummy_storm.sql\n?? drizzle/meta/0006_snapshot.json\n?? drizzle/meta/0007_snapshot.json\n?? drizzle/meta/0008_snapshot.json\n?? e2e/step10-classical.mjs\n?? e2e/step8-import.mjs\n?? e2e/step9-reconcile.mjs\n?? scripts/extract-cv.mjs\n?? scripts/verify-and-record.mjs\n?? src/lib/domain/composition.ts\n?? src/lib/domain/exchange.ts\n?? src/lib/domain/import.test.ts\n?? src/lib/domain/import.ts\n?? src/lib/domain/library.ts\n?? src/lib/domain/reconcile.test.ts\n?? src/lib/domain/reconcile.ts\n?? src/lib/editor/CompositionEditor.svelte\n?? src/lib/editor/ReconcileBlock.svelte\n?? src/lib/editor/TargetingFields.svelte\n?? src/lib/render/classical.test.ts\n?? src/lib/render/classical.ts\n?? src/lib/server/db/library-migration.test.ts\n?? src/lib/server/import-extract.test.ts\n?? src/lib/server/import-extract.ts\n?? src/lib/server/import-forms.test.ts\n?? src/lib/server/import-forms.ts\n?? src/lib/server/render/classical.test.ts\n?? src/lib/server/render/classical.ts\n?? src/lib/server/render/paginate.ts\n?? src/lib/server/repo/composer.test.ts\n?? src/lib/server/repo/composer.ts\n?? src/lib/server/repo/imports.test.ts\n?? src/lib/server/repo/imports.ts\n?? src/lib/server/repo/library.test.ts\n?? src/lib/server/repo/library.ts\n?? src/lib/server/repo/reconcile.test.ts\n?? src/lib/server/repo/templates.ts\n?? src/lib/server/template-forms.ts\n?? src/routes/appearance/\n?? src/routes/cv/composition/\n?? src/routes/edit/cvs/\n?? src/routes/edit/imports/\n?? src/routes/edit/templates/\n?? tests/",
+  "commands": [
+    {
+      "name": "sync",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/@sveltejs/kit/svelte-kit.js",
+        "sync"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "check",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/svelte-check/bin/svelte-check",
+        "--tsconfig",
+        "./tsconfig.json"
+      ],
+      "exitCode": 1
+    }
+  ],
+  "finishedAt": "2026-10-20T05:59:21.101Z",
+  "passed": false
+}

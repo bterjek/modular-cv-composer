@@ -16,8 +16,8 @@
 		{ key: 'F2', label: 'Save', run: saveCurrentForm },
 		{ key: 'Ctrl+S', label: 'Save', run: saveCurrentForm },
 		{ key: 'F3', label: 'Content', run: () => goto('/edit/content') },
-		{ key: 'F4', label: 'Categories', run: () => goto('/edit/categories') },
-		{ key: 'F8', label: 'Jobs', run: () => goto('/edit/jobs') },
+		{ key: 'F4', label: 'CVs', run: () => goto('/edit/cvs') },
+		{ key: 'F8', label: 'Import', run: () => goto('/edit/imports') },
 		{ key: 'F9', label: 'Profile', run: () => goto('/edit/profile') },
 		{ key: 'Escape', label: 'Close', run: () => (help = false) }
 	];
@@ -31,6 +31,8 @@
 		if (help) helpEl?.focus();
 	});
 
+	const importing = $derived(['/edit/imports','/edit/cvs','/edit/templates'].some(path=>page.url.pathname.startsWith(path)));
+ const legacy = $derived(['/edit/categories','/edit/jobs','/edit/terms','/edit/snapshots'].some(path=>page.url.pathname.startsWith(path)));
 	const here = (p: string) => (page.url.pathname === p || page.url.pathname.startsWith(p + '/') ? 'page' : undefined);
 	const previewSrc = $derived(
 		data.preview ? `/cv/render?${data.preview.kind}=${encodeURIComponent(data.preview.id)}&format=preview&click=1&rev=${encodeURIComponent(data.revision)}` : null
@@ -56,24 +58,29 @@
 
 <svelte:window onkeydown={onKey} />
 
-<div class="editor">
+<div class="editor" class:importing>
 	<nav class="side" aria-label="Editor" use:arrowNav>
-		<p class="menu-title">CONTENT</p>
+		<p class="menu-title">LIBRARY</p>
+		<a data-nav href="/edit/imports" aria-current={here('/edit/imports')}>Import CVs</a>
+		<a data-nav href="/edit/cvs" aria-current={here('/edit/cvs')}>Saved CVs</a>
+		<a data-nav href="/edit/templates" aria-current={here('/edit/templates')}>Templates</a>
+		<p class="menu-title">SHARED LIBRARY</p>
 		<a data-nav href="/edit/profile" aria-current={here('/edit/profile')}>Profile</a>
 		{#each MODULES as m}
 			<a data-nav href="/edit/content/{m}" aria-current={here(`/edit/content/${m}`)}>
 				{MODULE_LABELS[m]}<span class="count">{data.counts[m] || ''}</span>
 			</a>
 		{/each}
-		<p class="menu-title">ASSEMBLY</p>
+		<details open={legacy}><summary>Earlier assembly tools</summary>
 		<a data-nav href="/edit/categories" aria-current={here('/edit/categories')}>Job categories</a>
 		<a data-nav href="/edit/jobs" aria-current={here('/edit/jobs')}>Jobs</a>
 		<a data-nav href="/edit/terms" aria-current={here('/edit/terms')}>Terms &amp; gaps</a>
-		<a data-nav href="/edit/snapshots" aria-current={here('/edit/snapshots')}>Snapshots</a>
+		<a data-nav href="/edit/snapshots" aria-current={here('/edit/snapshots')}>Snapshots</a></details>
 	</nav>
 
 	<div class="work">{@render children()}</div>
 
+	{#if !importing}
 	<aside class="preview" aria-label="Live preview">
 		<form method="GET" action="/edit/preview" class="pick" bind:this={previewForm} data-sveltekit-reload>
 			<input type="hidden" name="back" value={page.url.pathname + page.url.search} />
@@ -95,6 +102,7 @@
 			<p class="muted pad">The preview appears once you have a job category. Add content first, then create a category under <a href="/edit/categories">Job categories</a>.</p>
 		{/if}
 	</aside>
+	{/if}
 </div>
 
 <footer class="fkeys" aria-label="Function keys">
@@ -111,7 +119,7 @@
 				<tbody>
 					<tr><td><b>F1</b></td><td>Show / hide this help</td></tr>
 					<tr><td><b>F2</b> or <b>Ctrl+S</b></td><td>Save the form you are in</td></tr>
-					<tr><td><b>F3</b> · <b>F4</b> · <b>F8</b> · <b>F9</b></td><td>Content · Job categories · Jobs · Profile</td></tr>
+					<tr><td><b>F3</b> · <b>F4</b> · <b>F8</b> · <b>F9</b></td><td>Content · Saved CVs · Import CVs · Profile</td></tr>
 					<tr><td><b>↑ ↓ Home End</b></td><td>Move through menus and lists</td></tr>
 					<tr><td><b>Tab</b> / <b>Shift+Tab</b></td><td>Next / previous field</td></tr>
 					<tr><td><b>Enter</b></td><td>Open the highlighted item</td></tr>
@@ -119,9 +127,8 @@
 					<tr><td><b>Esc</b></td><td>Close this help</td></tr>
 				</tbody>
 			</table>
-			<p class="hint">How it fits together: write facts once under Content, give their wordings tags,
-				then a Job category decides which sections, tags and lengths to use. A Job adds changes for one application.
-				The preview on the right updates after every save.</p>
+			<p class="hint">Import a CV, review its facts and wordings, then open its independent copy in Saved CVs.
+                Content holds the reusable library. Categories, jobs and their preview belong to the legacy assembly workflow.</p>
 			<p class="hint">Version {page.data.appVersion}</p>
 			<button onclick={() => (help = false)}>Close</button>
 		</section>
@@ -136,6 +143,7 @@
 		align-items: start;
 		padding-bottom: 2.5rem;
 	}
+	.editor.importing { grid-template-columns: 26ch minmax(0, 1fr); }
 	.side { display: flex; flex-direction: column; border: 3px double var(--fg); padding: 0.5rem 0; position: sticky; top: 0.5rem; }
 	.side a { color: var(--fg); text-decoration: none; padding: 0 1ch; display: flex; justify-content: space-between; }
 	.side a:focus-visible, .side a:hover { background: var(--hi-bg); color: var(--hi-fg); outline: none; }
@@ -161,7 +169,7 @@
 		.preview iframe { height: 1180px; }
 	}
 	@media (max-width: 760px) {
-		.editor { grid-template-columns: 1fr; }
+		.editor, .editor.importing { grid-template-columns: 1fr; }
 		.side { position: static; margin-bottom: 1rem; }
 	}
 </style>

@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Europe/Budapest",
+  "typeCheck": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "unit": {
+    "passed": 170,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "Optional visual-export helper needs VISUAL_OUT"
+  },
+  "browser": {
+    "passed": 184,
+    "failed": 0
+  },
+  "productionBuild": "passed",
+  "deployment": "not performed"
+}

@@ -25,7 +25,9 @@ export function load({ locals, params }) {
 /** Target of a wording form: exactly one of entryId / itemId. */
 const target = (f: FormData) => (str(f, 'itemId') ? { itemId: str(f, 'itemId') } : { entryId: str(f, 'entryId') });
 
+const targetingFromForm=(f:FormData)=>({roleFamilies:tagList(f,'roleFamilies'),competencies:tagList(f,'competencies'),keywords:tagList(f,'keywords'),basis:str(f,'basis')||'unspecified',notes:str(f,'targetingNotes')});
 export const actions = {
+ saveItemFacts:async({request,locals})=>{const f=await request.formData();const r=attempt(()=>repo.updateItem(locals.user!.id,str(f,'itemId'),{facts:str(f,'facts')}));return r.ok?{saved:'Achievement facts saved.'}:r.failure;},
 	saveFields: async ({ request, locals, params }) => {
 		const e = findEntry(locals.user!.id, params.id);
 		const f = await request.formData();
@@ -39,7 +41,7 @@ export const actions = {
 	addWording: async ({ request, locals }) => {
 		const f = await request.formData();
 		const r = attempt(() => {
-			const id = repo.createVariant(locals.user!.id, { ...target(f), text: str(f, 'text'), length: str(f, 'length') || 'standard', isDefault: f.get('isDefault') === 'on' });
+			const id = repo.createVariant(locals.user!.id, { ...target(f), text: str(f, 'text'), targeting:targetingFromForm(f), length: str(f, 'length') || 'standard', isDefault: f.get('isDefault') === 'on' });
 			const tags = tagList(f, 'tags');
 			if (tags.length) repo.setTags(locals.user!.id, { variantId: id }, tags);
 		});
@@ -51,6 +53,7 @@ export const actions = {
 		const r = attempt(() => {
 			repo.updateVariant(locals.user!.id, id, {
 				text: str(f, 'text'),
+                ...(f.has('roleFamilies')?{targeting:targetingFromForm(f)}:{}),
 				length: str(f, 'length'),
 				...(f.get('isDefault') === 'on' ? { isDefault: true } : {})
 			});

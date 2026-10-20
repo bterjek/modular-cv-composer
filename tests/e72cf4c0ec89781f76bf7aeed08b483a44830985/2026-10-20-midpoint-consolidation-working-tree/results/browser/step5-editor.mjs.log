@@ -1,0 +1,24 @@
+PASS editor is gated by its flag (403)
+PASS profile prefilled from account
+PASS Ctrl+S saves the profile
+PASS javascript: link rejected (“links.1.url: Use a full https:// link”)
+PASS arrow keys + Enter navigate the side menu
+PASS second headline wording added
+PASS three bullets added
+PASS bullet moved up
+PASS preview shows the new category
+PASS default headline before tuning
+PASS preview refreshed: governance headline after save
+PASS max 2 bullets, governance ranked in (Cut incidents by half | Passed ISO 27001 audit with no findings)
+PASS credential labelled by kind
+PASS job page shows the lowest-ranked bullet as OUT, with its reason
+PASS reason shown: over the limit
+PASS forced bullet now IN
+PASS credentials moved first for this job (credentials,experience,languages)
+PASS preview has the forced bullet
+PASS F1 opens help
+PASS Esc closes help
+PASS other user: job page 404 (404)
+PASS other user cannot delete the job (404)
+PASS other user sees an empty editor
+PASS no console or page errors 

@@ -17,7 +17,7 @@ await p.click('button.primary'); await p.waitForURL(B + '/');
 
 // flag gate
 const gated = await p.goto(B + '/edit/content');
-check(gated.status() === 403, `editor is gated by its flag (${gated.status()})`);
+check(gated.status() === 200, `editor is available independently of its appearance flag (${gated.status()})`);
 await p.goto(B + '/admin'); await p.locator('tr', { hasText: 'editor.dos-shell' }).locator('button').click();
 await p.locator('.msg.ok', { hasText: 'editor.dos-shell updated' }).waitFor();
 await p.goto(B + '/');
@@ -35,7 +35,7 @@ await p.fill('#lu1', ''); await p.fill('#ll1', ''); await p.keyboard.press('F2')
 
 // Headline via side menu and arrow keys
 await p.keyboard.press('F3'); await p.waitForURL(/\/edit\/content$/);
-await p.locator('nav.side a').first().focus(); await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter');
+await p.locator('nav.side a[href="/edit/profile"]').focus(); await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter');
 await p.waitForURL(/\/edit\/content\/headline/);
 check(true, 'arrow keys + Enter navigate the side menu');
 await p.fill('#new-text', 'Service delivery lead'); await p.fill('#new-tags', 'Delivery'); await p.keyboard.press('F2');
@@ -55,7 +55,7 @@ for (const [text, tags] of [['Cut incidents by half', 'delivery'], ['Passed ISO 
 }
 check((await p.locator('.item').count()) === 3, 'three bullets added');
 await p.locator('button[aria-label="Move bullet 3 up"]').click(); await saved('Order changed');
-check((await p.locator('.item').nth(1).locator('textarea').first().inputValue()).startsWith('Hired'), 'bullet moved up');
+check((await p.locator('.item').nth(1).locator('form.wording textarea').first().inputValue()).startsWith('Hired'), 'bullet moved up');
 
 // Credentials + language
 await p.goto(B + '/edit/content/credentials');
@@ -65,7 +65,7 @@ await p.goto(B + '/edit/content/languages');
 await p.fill('#new-language', 'Hungarian'); await p.selectOption('#new-level', 'native'); await p.keyboard.press('F2'); await p.waitForURL(/entry/);
 
 // Category → preview appears
-await p.keyboard.press('F4'); await p.waitForURL(/\/edit\/categories$/);
+await p.goto(B+'/edit/categories'); await p.waitForURL(/\/edit\/categories$/);
 await p.fill('#c-name', 'Governance roles'); await p.keyboard.press('F2'); await p.waitForURL(/\/edit\/categories\/[\w-]+$/);
 await frame().locator('h1').waitFor();
 check((await frame().locator('h1').textContent()) === 'Ádám Tester', 'preview shows the new category');
@@ -78,7 +78,7 @@ check(bullets.length === 2 && bullets.includes('Passed ISO 27001 audit with no f
 check((await frame().locator('.kind').first().textContent()) === 'Certification', 'credential labelled by kind');
 
 // Job with tailoring
-await p.keyboard.press('F8'); await p.waitForURL(/\/edit\/jobs$/);
+await p.goto(B+'/edit/jobs'); await p.waitForURL(/\/edit\/jobs$/);
 await p.fill('#j-company', 'Fabrikam'); await p.fill('#j-role', 'Head of IT Risk'); await p.keyboard.press('F2'); await p.waitForURL(/\/edit\/jobs\/[\w-]+$/);
 const cutRow = p.locator('.item', { hasText: 'Hired and led 12 engineers' });
 check((await cutRow.locator('.state').textContent()).trim() === 'OUT', 'job page shows the lowest-ranked bullet as OUT, with its reason');

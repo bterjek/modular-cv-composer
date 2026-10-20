@@ -1,15 +1,10 @@
-import { error } from '@sveltejs/kit';
 import * as repo from '$lib/server/repo';
-import { isEnabled } from '$lib/server/flags';
 import { MODULES } from '$lib/domain/modules';
 
 const PREVIEW_COOKIE = 'cvc_preview';
 
 export function load({ locals, cookies }) {
 	const ownerId = locals.user!.id;
-	if (!isEnabled('editor.dos-shell', ownerId)) {
-		error(403, 'The editor is not switched on for your account yet (feature flag editor.dos-shell).');
-	}
 	const categories = repo.listCategories(ownerId).map((c) => ({ id: c.id, name: c.name }));
 	const targets = repo.listJobTargets(ownerId).map((t) => ({ id: t.id, name: `${t.company} — ${t.roleTitle}` }));
 

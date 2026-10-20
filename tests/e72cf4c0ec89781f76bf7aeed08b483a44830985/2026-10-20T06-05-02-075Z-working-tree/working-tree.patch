@@ -1,0 +1,1705 @@
+diff --git a/.dockerignore b/.dockerignore
+index 596cc5f..96e10bf 100644
+--- a/.dockerignore
++++ b/.dockerignore
+@@ -5,3 +5,5 @@ data
+ .env
+ .git
+ *.sqlite*
++
++tests/
+diff --git a/.env.example b/.env.example
+index 4e224c5..189252f 100644
+--- a/.env.example
++++ b/.env.example
+@@ -3,6 +3,8 @@ APP_ENV=staging
+ # Public URL of the app (cookies, CSRF check and printed links depend on it)
+ ORIGIN=https://cv.example.com
+ PORT=3000
++# Allow multipart uploads up to 4 MB plus form overhead (also set in the image)
++BODY_SIZE_LIMIT=6M
+ # Absolute path inside the container; /data is the mounted volume
+ DATABASE_PATH=/data/composer.sqlite
+ # First admin: a one-time sign-up link for this address is printed to the log on start
+diff --git a/Dockerfile b/Dockerfile
+index 478e18f..f08ce31 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -22,6 +22,7 @@ ENV NODE_ENV=production \
+ 	APP_ENV=production \
+ 	APP_VERSION=${APP_VERSION} \
+ 	PORT=3000 \
++	BODY_SIZE_LIMIT=6M \
+ 	DATABASE_PATH=/data/composer.sqlite \
+ 	CHROMIUM_PATH=/usr/bin/chromium
+ WORKDIR /app
+diff --git a/README.md b/README.md
+index 6104fb6..c3697f6 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,19 @@
+ # Modular CV Composer
+ 
+-A hosted app for building CVs from reusable modules. Content is written once
+-(entries, items and their alternative wordings), grouped by tags, and assembled
+-into tailored CVs through job-category recipes. The editor has a keyboard-driven,
+-DOS-style interface; the CVs it produces are modern HTML (and PDF from the same HTML).
++A CV library and composer built around reusable facts, alternative wordings and independently saved CVs. Import PDF or DOCX CVs, review the extraction, reconcile matching experience and export through a measured Classical A4 template with a two-page limit.
+ 
+-**Status:** all 7 build steps done — ready for invite-only testing. Deploy with [`docs/DEPLOY.md`](docs/DEPLOY.md). Test mode (invite-only) until all features are confirmed.
++**Status:** tasks 1–4 of the eight-task redesign are implemented, with midpoint consolidation completed. The saved-CV editor, chat exchange, reference templates and final navigation simplification follow. The original category/job assembly remains available as a legacy workflow; its CVs can be copied into Saved CVs. See [the midpoint audit](docs/MIDPOINT-AUDIT.md).
+ 
+ ## Documents
+ 
++- [`docs/CLASSICAL-A4.md`](docs/CLASSICAL-A4.md) — measured two-page A4 preview and HTML/PDF export for saved CVs.
++
++- [`docs/RECONCILIATION.md`](docs/RECONCILIATION.md) — reconcile another CV against shared facts and wordings, resolve conflicts and inspect saved CVs.
++
++- [`docs/IMPORTING.md`](docs/IMPORTING.md) — upload PDF/Word CVs, review extraction, approve content and retain originals.
++
++- [`docs/LIBRARY.md`](docs/LIBRARY.md) — phase 1 of the CV-library redesign: facts, targeting, source provenance and independent compositions (data layer; import/editor screens follow).
++
+ - [`docs/SCHEMA.md`](docs/SCHEMA.md) — the data model. Everything depends on it; change it first.
+ - [`docs/AUTH.md`](docs/AUTH.md) — accounts, sessions, invites, first admin, resets, feature flags.
+ - [`docs/RENDERING.md`](docs/RENDERING.md) — designs, live preview, HTML and PDF export, output safety.
+@@ -90,7 +95,7 @@ and **off-machine backups of `/data`**. Migrations run automatically on start.
+ 2. Update `src/lib/server/db/schema.ts`
+ 3. `npm run db:generate` and commit the new file in `drizzle/`
+ 
+-## Build plan
++## Original build history (before the redesign)
+ 
+ 1. ✅ Data model + container skeleton
+ 2. ✅ Auth, invite gate, admin screen, feature flags, environments
+diff --git a/docs/DEPLOY.md b/docs/DEPLOY.md
+index b0bad2f..52711ff 100644
+--- a/docs/DEPLOY.md
++++ b/docs/DEPLOY.md
+@@ -41,7 +41,7 @@ volume snapshots to another region). Test a restore once: stop the app, put a ba
+ 1. Start the container, open its log, find `[bootstrap] No admin yet. Sign up as … <link>`.
+ 2. Open the link within 24 hours and create your admin account.
+ 3. **Admin → Feature flags**: switch on `editor.dos-shell`, `render.pdf`, `snapshots.share-links` for everyone
+-   (or first only for yourself with a per-user override). Leave `ai.tailoring` off.
++   (or first only for yourself with a per-user override).
+ 4. **Admin → Invite codes**: create one per tester (tie it to their e-mail), send them the sign-up link.
+ 5. Testers' feedback (Shift+F1) appears under **Admin → Tester feedback**; the Admin menu shows the open count.
+ 
+diff --git a/docs/SCHEMA.md b/docs/SCHEMA.md
+index c5fb9fe..d3dd266 100644
+--- a/docs/SCHEMA.md
++++ b/docs/SCHEMA.md
+@@ -5,7 +5,7 @@ change it here first, then in `src/lib/server/db/schema.ts` and `src/lib/domain/
+ 
+ ## 1. Core idea
+ 
+-A CV is never stored as a document. It is **assembled** from reusable content:
++A CV can be assembled from reusable content or saved as an independent composition. Original source documents and their provenance are retained separately:
+ 
+ | Concept | What it is | Stored as |
+ |---|---|---|
+@@ -19,11 +19,9 @@ A CV is never stored as a document. It is **assembled** from reusable content:
+ | **Snapshot** | A frozen, rendered CV exactly as it was generated/sent | `snapshots` |
+ 
+ **Rule 1 — single source.** A fact exists once. Categories and job targets
+-*select* content; they never copy it. The only place content is duplicated is a
+-snapshot, and that is deliberate (it records what was sent).
++*select* content; they never copy it. Snapshots and compositions deliberately copy content: snapshots record what was sent; compositions isolate document edits from library edits.
+ 
+-**Rule 2 — variants are wordings, not facts.** Anything that changes the facts
+-(dates, employer, numbers) is a different entry/item, not a variant.
++**Rule 2 — variants are wordings, not facts.** Contradictory facts (dates, employer, numbers) must be corrected or kept as separate entries/items. Reconciliation may attach wordings with different numerical detail only after the user verifies they are compatible descriptions of the same achievement; it never overwrites neutral facts.
+ 
+ ## 2. Modules (code enum)
+ 
+@@ -171,3 +169,45 @@ self-service account deletion (cascade + explicit feedback removal, `secure_dele
+ 1. Is `headline` a module (with variants per category), or a profile field? Current choice: module.
+ 2. Should categories be able to inherit from another category (e.g. "Audit" = "Governance" + extra rules)? Current choice: no, copy the recipe; revisit if recipes multiply.
+ 3. Photo on CV: out of scope for v1 (also reduces bias concerns in EU hiring contexts).
++
++## Library evolution — phase 1
++
++Existing entries remain shared structured facts, items remain individual achievements/skills, and variants remain alternative wordings. No automatic merging or rewriting occurs. Items gain optional `facts` (a neutral factual statement, not an inferred claim). Existing rows receive an empty statement, preserving their wording unchanged.
++
++Variants gain `targeting`: role families, competencies and keywords, plus `basis` (`unspecified`, `inferred`, `confirmed`) and notes. Empty defaults do not infer intent from old tags. Targeting is descriptive metadata and does not change existing assembly rules.
++
++`source_documents` stores owner-scoped source metadata: filename, media type (PDF/DOCX/text), SHA-256, optional extracted text, and targeting context. File upload/storage arrives in phase 2; no arbitrary file paths are accepted. `source_references` attaches a source excerpt/location to exactly one entry, item or variant. Source deletion removes its references, never library facts. Target deletion removes its references. Repository checks ownership of both ends.
++
++`compositions` stores a named, editable, versioned document containing an ordered array of sections, entries and selected item wordings, a profile copy, design key and style. Optional library IDs preserve lineage; copied facts and text are authoritative and survive library edits/deletion. New lineage references must belong to the owner and match their parent. Composition updates replace only document content, never library rows. Source deletion nulls the composition source link. Snapshots and category/job recipes retain their existing semantics.
++
++The additive migration preserves all existing IDs, facts, text, tags, recipes, job overrides and snapshots. It does not invent source documents or claim imported provenance. New tables cascade on account deletion and are included in account export. Production data is migrated only on the next normal application start; development tests use disposable databases.
++
++## CV import — phase 2
++
++`source_files` retains the original PDF/DOCX bytes as a SQLite BLOB, keyed by source document and owner. This keeps originals in the same transactional backup/deletion lifecycle as the library. Downloads require ownership and use attachment headers. Account export includes originals as base64.
++
++`cv_imports` retains an editable review draft, source link, accepted timestamp and composition link. Upload/extraction creates only source metadata, original bytes and a draft. Approval validates selected module fields, then atomically creates entries/items/wordings, source references and an independent composition in source order. Approval is idempotent; no existing entries or profile are overwritten. Optional profile import is explicit. Deleting a draft/source never deletes already-approved library content or compositions. Multiple-CV reconciliation remains phase 3.
++
++Extraction is local, bounded and runs in a separate process; PDF/DOCX bytes are never interpreted as app instructions. Scanned or ambiguous material is surfaced for review. Unsupported/unrecognised sections are retained as custom content rather than discarded. Dates with missing months are left for review; credential kind and language level are never invented. The review draft can be saved with incomplete fields; approval requires valid selected entries.
++
++## Reconcile imported CVs — phase 3
++
++Review blocks optionally carry `reconciliation`: an explicitly chosen existing entry, a fingerprint of its reviewed facts, a conflict decision (`unresolved` or `library`), and per-bullet reuse/new decisions tied to both incoming text and position. Legacy drafts without this property still create separate entries. Suggestions never apply decisions automatically.
++
++Matching is local and owner-scoped. Organisation/institution/credential identity, dates and wording overlap produce explainable suggestions; field differences are shown individually. Reusing an entry never updates its facts, tags, archive state or default wording. Conflicting facts require either correction, keeping a separate entry, or explicit use of library facts. A changed/deleted selected library entry invalidates a stale review. Archived targets cannot be reused until restored.
++
++For an explicitly reused entry, identical bullet text can reuse an existing active item. Different wording is attached to a selected item only by explicit user choice; numeric differences require confirmation that it is the same achievement. Otherwise it creates a new item. Identical wording with equivalent targeting reuses its variant; distinct wording or targeting creates a non-default alternative. Original source references and each CV's copied selection/order remain separate. Reconciliation never changes older compositions or snapshots. Approval stays transactional and idempotent, including conflict and ownership failures.
++
++The optional JSON extension needs no SQL migration. Saved compositions are listed and readable under Saved CVs; the document editing workflow follows in phase 5.
++
++## Classical A4 layout — phase 4
++
++Saved compositions can now be rendered through a fixed Classical A4 template: one column, serif type, 11 pt body text, 18 mm vertical / 19 mm horizontal margins. The saved content, original source and library remain unchanged. The initial composition-rendering workflow deliberately uses this one template; legacy category designs and frozen snapshots keep their existing renderers.
++
++Chromium measures actual text with embedded fonts, then paginates into explicit A4 sheets. Headings are kept with following content where possible; oversized prose/bullets split without dropping characters. Preview and export use the same paginated HTML. One or two pages is valid; longer content remains visible in preview and is identified by section/entry/bullet. Standard HTML/PDF export is refused above two pages or with unresolved layout overflow. No automatic text shrinking, clipping or content removal occurs.
++
++Layout results are briefly cached in memory per owner/content/template revision; every request checks composition ownership before using them. Composition edits invalidate the content key. No new persisted schema or SQL migration is needed. PDF export follows the existing feature flag and rate limits. A Chromium failure leaves the saved content view available.
++
++## Reusable reference templates (redesign task 7)
++
++`cv_templates` stores owner-scoped names, validated style choices and an optional retained reference source. Reference bytes use the existing source storage/export/deletion lifecycle. Applying a template copies its style into a composition (`designKey = reference`); subsequent template edits/deletion cannot restyle existing CVs. Classical compositions keep the fixed baseline. No uploaded CSS, fonts or scripts are executed.
+diff --git a/docs/TERMS.md b/docs/TERMS.md
+index 451f41d..d3cd120 100644
+--- a/docs/TERMS.md
++++ b/docs/TERMS.md
+@@ -24,4 +24,4 @@ job's company name is excluded, line breaks end phrases, and all-caps heading li
+ ## Tuning
+ Tuned on three real ads (Nilfisk IT Security & Compliance Manager, Liferay Security Operations Manager, MOL E&P IT
+ Operations Manager), kept as fixtures in `src/lib/domain/fixtures/ads.ts`. Real ads are the best test set. Add missed terms or aliases to `VOCAB`, noise to `ACRONYM_STOP` / `PHRASE_STOP`, and a
+-case to `terms.test.ts`. AI-assisted matching (synonyms, rewording suggestions) is planned behind the `ai.tailoring` flag.
++case to `terms.test.ts`. Job comparison and rewording can be handled in external chat; a dedicated exchange workflow is planned in task 6 of the redesign.
+diff --git a/drizzle/meta/_journal.json b/drizzle/meta/_journal.json
+index 5136d1e..27c9375 100644
+--- a/drizzle/meta/_journal.json
++++ b/drizzle/meta/_journal.json
+@@ -43,6 +43,27 @@
+       "when": 1790506215881,
+       "tag": "0005_misty_stature",
+       "breakpoints": true
++    },
++    {
++      "idx": 6,
++      "version": "6",
++      "when": 1792439356334,
++      "tag": "0006_striped_grandmaster",
++      "breakpoints": true
++    },
++    {
++      "idx": 7,
++      "version": "6",
++      "when": 1792440976624,
++      "tag": "0007_great_william_stryker",
++      "breakpoints": true
++    },
++    {
++      "idx": 8,
++      "version": "6",
++      "when": 1792475748934,
++      "tag": "0008_yummy_storm",
++      "breakpoints": true
+     }
+   ]
+ }
+\ No newline at end of file
+diff --git a/e2e/run-all.sh b/e2e/run-all.sh
+index 67588ec..54b376b 100755
+--- a/e2e/run-all.sh
++++ b/e2e/run-all.sh
+@@ -7,7 +7,9 @@ cd "$(dirname "$0")/.."
+ : "${CHROMIUM_PATH:?Set CHROMIUM_PATH to a Chromium or Chrome binary}"
+ OUT="$PWD/e2e/out"; mkdir -p "$OUT"
+ PORT=3123; fails=0
+-for s in e2e/step*.mjs; do
++scripts=("$@")
++if [ "${#scripts[@]}" -eq 0 ]; then scripts=(e2e/step*.mjs); fi
++for s in "${scripts[@]}"; do
+ 	rm -rf "$OUT/data"
+ 	APP_ENV=development ORIGIN=http://localhost:$PORT PORT=$PORT ADMIN_EMAIL=admin@example.test \
+ 	OPERATOR_NAME="Test Operator" OPERATOR_CONTACT="privacy@example.test" APP_VERSION=e2e-test BACKUP_INTERVAL_HOURS=0 \
+diff --git a/e2e/step3-assemble.mjs b/e2e/step3-assemble.mjs
+index 9887eeb..23a0c56 100644
+--- a/e2e/step3-assemble.mjs
++++ b/e2e/step3-assemble.mjs
+@@ -9,14 +9,14 @@ const check = (c, l) => { console.log(`${c ? 'PASS' : 'FAIL'} ${l}`); if (!c) pr
+ await p.goto(bootUrl); await p.waitForLoadState('networkidle');
+ await p.fill('#name', 'Admin'); await p.fill('#email', 'admin@example.test'); await p.fill('#password', PW); await p.fill('#confirm', PW);
+ await p.click('button.primary'); await p.waitForURL(B + '/');
+-await p.click('text=Assemble'); await p.click('text=Load example content');
++await p.goto(B+'/assemble'); await p.click('text=Load example content');
+ check(await p.locator('#category').isVisible(), 'example content loaded');
+ await p.selectOption('#category', { label: 'IT governance roles' }); await p.locator('form:has(#category) button').click(); await p.waitForURL(/category=/);
+ const gov = await p.frameLocator('iframe.preview').locator('main').textContent();
+ check(/IT operations leader — governance/.test(gov) && !/Tailspin/.test(gov), 'governance CV: governance headline, early career dropped');
+ await p.screenshot({ path: `${process.env.OUT}/shot-4-assemble-gov.png`, fullPage: true });
+ await p.selectOption('#target', { label: 'Example Insurance plc — Head of IT Risk & Compliance' }); await p.locator('form:has(#target) button').click(); await p.waitForURL(/target=/);
+-await p.frameLocator('iframe.preview[src*="target="]').locator('h1').waitFor();
++await p.frameLocator('iframe.preview[src*="target="]').locator('main').filter({ hasText: 'NIS2 readiness' }).waitFor();
+ const t = await p.frameLocator('iframe.preview[src*="target="]').locator('main').textContent();
+ check(/NIS2 readiness/.test(t) && t.indexOf('Certifications') < t.indexOf('Experience'), 'job target: NIS2 summary, credentials before experience');
+ check((await p.content()).includes('matches job tags: nis2'), 'trace explains the job-tag choice');
+@@ -25,5 +25,19 @@ const again = await p.request.post(B + '/assemble?/loadDemo', { form: {}, header
+ check((await again.text()).includes('empty account'), 'example cannot be loaded twice');
+ const other = await p.request.get(B + '/assemble?target=does-not-exist');
+ check(other.status() === 404, 'unknown/foreign target gives 404');
++await p.goto(B + '/admin');
++await p.locator('tr', { hasText: 'editor.dos-shell' }).locator('button').click();
++await p.goto(B + '/assemble');
++await p.selectOption('#target', { label: 'Example Insurance plc — Head of IT Risk & Compliance' });
++await p.locator('form:has(#target) button').click(); await p.waitForURL(/target=/);
++const beforeCopy = await (await p.request.get(B + '/account/export')).json();
++await p.getByRole('button', { name: 'Copy to Saved CVs', exact: true }).click();
++await p.waitForURL(/\/edit\/cvs\/[\w-]+$/);
++const afterCopy = await (await p.request.get(B + '/account/export')).json();
++check(afterCopy.library.compositions.length === 1, 'legacy job can be copied into an independent saved CV');
++check(JSON.stringify(afterCopy.library.compositions[0].document).includes('NIS2 readiness'), 'copy preserves the selected job wording');
++check(JSON.stringify(beforeCopy.content) === JSON.stringify(afterCopy.content) && JSON.stringify(beforeCopy.jobs) === JSON.stringify(afterCopy.jobs), 'copy leaves library and legacy job untouched');
++const missingCopy = await p.request.post(B + '/assemble?/saveCopy', { form: { target: 'does-not-exist' }, headers: { origin: B } });
++check(missingCopy.status() === 404, 'copy rejects an unknown or foreign job');
+ check(errs.length === 0, 'no console errors ' + errs.join('|'));
+ await browser.close();
+diff --git a/e2e/step5-editor.mjs b/e2e/step5-editor.mjs
+index f18588c..ac90f61 100644
+--- a/e2e/step5-editor.mjs
++++ b/e2e/step5-editor.mjs
+@@ -17,7 +17,7 @@ await p.click('button.primary'); await p.waitForURL(B + '/');
+ 
+ // flag gate
+ const gated = await p.goto(B + '/edit/content');
+-check(gated.status() === 403, `editor is gated by its flag (${gated.status()})`);
++check(gated.status() === 200, `editor is available independently of its appearance flag (${gated.status()})`);
+ await p.goto(B + '/admin'); await p.locator('tr', { hasText: 'editor.dos-shell' }).locator('button').click();
+ await p.locator('.msg.ok', { hasText: 'editor.dos-shell updated' }).waitFor();
+ await p.goto(B + '/');
+@@ -35,7 +35,7 @@ await p.fill('#lu1', ''); await p.fill('#ll1', ''); await p.keyboard.press('F2')
+ 
+ // Headline via side menu and arrow keys
+ await p.keyboard.press('F3'); await p.waitForURL(/\/edit\/content$/);
+-await p.locator('nav.side a').first().focus(); await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter');
++await p.locator('nav.side a[href="/edit/profile"]').focus(); await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter');
+ await p.waitForURL(/\/edit\/content\/headline/);
+ check(true, 'arrow keys + Enter navigate the side menu');
+ await p.fill('#new-text', 'Service delivery lead'); await p.fill('#new-tags', 'Delivery'); await p.keyboard.press('F2');
+@@ -65,7 +65,7 @@ await p.goto(B + '/edit/content/languages');
+ await p.fill('#new-language', 'Hungarian'); await p.selectOption('#new-level', 'native'); await p.keyboard.press('F2'); await p.waitForURL(/entry/);
+ 
+ // Category → preview appears
+-await p.keyboard.press('F4'); await p.waitForURL(/\/edit\/categories$/);
++await p.goto(B+'/edit/categories'); await p.waitForURL(/\/edit\/categories$/);
+ await p.fill('#c-name', 'Governance roles'); await p.keyboard.press('F2'); await p.waitForURL(/\/edit\/categories\/[\w-]+$/);
+ await frame().locator('h1').waitFor();
+ check((await frame().locator('h1').textContent()) === 'Ádám Tester', 'preview shows the new category');
+@@ -78,7 +78,7 @@ check(bullets.length === 2 && bullets.includes('Passed ISO 27001 audit with no f
+ check((await frame().locator('.kind').first().textContent()) === 'Certification', 'credential labelled by kind');
+ 
+ // Job with tailoring
+-await p.keyboard.press('F8'); await p.waitForURL(/\/edit\/jobs$/);
++await p.goto(B+'/edit/jobs'); await p.waitForURL(/\/edit\/jobs$/);
+ await p.fill('#j-company', 'Fabrikam'); await p.fill('#j-role', 'Head of IT Risk'); await p.keyboard.press('F2'); await p.waitForURL(/\/edit\/jobs\/[\w-]+$/);
+ const cutRow = p.locator('.item', { hasText: 'Hired and led 12 engineers' });
+ check((await cutRow.locator('.state').textContent()).trim() === 'OUT', 'job page shows the lowest-ranked bullet as OUT, with its reason');
+diff --git a/package-lock.json b/package-lock.json
+index 96ffc63..c12c381 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -12,7 +12,9 @@
+         "@fontsource/source-serif-4": "^5.3.0",
+         "better-sqlite3": "^13.0.3",
+         "drizzle-orm": "^0.45.3",
++        "mammoth": "^1.13.0",
+         "playwright-core": "^1.63.0",
++        "unpdf": "^1.9.1",
+         "uuidv7": "^1.2.1",
+         "zod": "^4.6.5"
+       },
+@@ -23,6 +25,7 @@
+         "@types/better-sqlite3": "^9.6.0",
+         "@types/node": "^26.6.3",
+         "drizzle-kit": "^0.31.11",
++        "jszip": "^3.10.1",
+         "svelte": "^5.57.1",
+         "svelte-check": "^4.7.6",
+         "typescript": "^6.0.3",
+@@ -1983,6 +1986,15 @@
+         "url": "https://opencollective.com/vitest"
+       }
+     },
++    "node_modules/@xmldom/xmldom": {
++      "version": "0.8.15",
++      "resolved": "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.8.15.tgz",
++      "integrity": "sha512-/5NV/vDALVFDXgLmfsy9TRCBlKwO2LNBFzpzvb9iIj+jR+eSc6DLYYvVOdivT/jm7MtU6TebYuRmzEOI7w40UA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=10.0.0"
++      }
++    },
+     "node_modules/acorn": {
+       "version": "8.18.0",
+       "resolved": "https://registry.npmjs.org/acorn/-/acorn-8.18.0.tgz",
+@@ -1996,6 +2008,15 @@
+         "node": ">=0.4.0"
+       }
+     },
++    "node_modules/argparse": {
++      "version": "1.0.10",
++      "resolved": "https://registry.npmjs.org/argparse/-/argparse-1.0.10.tgz",
++      "integrity": "sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==",
++      "license": "MIT",
++      "dependencies": {
++        "sprintf-js": "~1.0.2"
++      }
++    },
+     "node_modules/aria-query": {
+       "version": "5.3.1",
+       "resolved": "https://registry.npmjs.org/aria-query/-/aria-query-5.3.1.tgz",
+@@ -2026,6 +2047,26 @@
+         "node": ">= 0.4"
+       }
+     },
++    "node_modules/base64-js": {
++      "version": "1.5.1",
++      "resolved": "https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz",
++      "integrity": "sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==",
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/feross"
++        },
++        {
++          "type": "patreon",
++          "url": "https://www.patreon.com/feross"
++        },
++        {
++          "type": "consulting",
++          "url": "https://feross.org/support"
++        }
++      ],
++      "license": "MIT"
++    },
+     "node_modules/better-sqlite3": {
+       "version": "13.0.3",
+       "resolved": "https://registry.npmjs.org/better-sqlite3/-/better-sqlite3-13.0.3.tgz",
+@@ -2098,6 +2139,12 @@
+         "node": ">= 0.6"
+       }
+     },
++    "node_modules/core-util-is": {
++      "version": "1.0.3",
++      "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz",
++      "integrity": "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==",
++      "license": "MIT"
++    },
+     "node_modules/deepmerge": {
+       "version": "4.3.1",
+       "resolved": "https://registry.npmjs.org/deepmerge/-/deepmerge-4.3.1.tgz",
+@@ -2125,6 +2172,12 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/dingbat-to-unicode": {
++      "version": "1.0.2",
++      "resolved": "https://registry.npmjs.org/dingbat-to-unicode/-/dingbat-to-unicode-1.0.2.tgz",
++      "integrity": "sha512-R0bRerYzy/EZP6QzD3Hkl6JjUDA1Mnn+pd928w0nWjPzihnbAR6dcjGJGiRyznj5E4S1duEKzWrTqw02DPcdzg==",
++      "license": "BSD-2-Clause"
++    },
+     "node_modules/drizzle-kit": {
+       "version": "0.31.11",
+       "resolved": "https://registry.npmjs.org/drizzle-kit/-/drizzle-kit-0.31.11.tgz",
+@@ -2754,6 +2807,15 @@
+         }
+       }
+     },
++    "node_modules/duck": {
++      "version": "0.1.12",
++      "resolved": "https://registry.npmjs.org/duck/-/duck-0.1.12.tgz",
++      "integrity": "sha512-wkctla1O6VfP89gQ+J/yDesM0S7B7XLXjKGzXxMDVFg7uEn706niAtyYovKbyq1oT9YwDcly721/iUWoc8MVRg==",
++      "license": "BSD",
++      "dependencies": {
++        "underscore": "^1.13.1"
++      }
++    },
+     "node_modules/es-errors": {
+       "version": "1.3.0",
+       "resolved": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
+@@ -2924,6 +2986,18 @@
+         "node": ">= 0.4"
+       }
+     },
++    "node_modules/immediate": {
++      "version": "3.0.6",
++      "resolved": "https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz",
++      "integrity": "sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==",
++      "license": "MIT"
++    },
++    "node_modules/inherits": {
++      "version": "2.0.4",
++      "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz",
++      "integrity": "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==",
++      "license": "ISC"
++    },
+     "node_modules/is-core-module": {
+       "version": "2.17.0",
+       "resolved": "https://registry.npmjs.org/is-core-module/-/is-core-module-2.17.0.tgz",
+@@ -2957,6 +3031,24 @@
+         "@types/estree": "*"
+       }
+     },
++    "node_modules/isarray": {
++      "version": "1.0.0",
++      "resolved": "https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz",
++      "integrity": "sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==",
++      "license": "MIT"
++    },
++    "node_modules/jszip": {
++      "version": "3.10.2",
++      "resolved": "https://registry.npmjs.org/jszip/-/jszip-3.10.2.tgz",
++      "integrity": "sha512-3l+rb15IOWtUhU0H5MFqES/T6Kh7abYwjosBey/vD6hDt8zoEffkSC5Ws5SGtgVw3gBx2NEbhTeSW1+kWkpyTQ==",
++      "license": "(MIT OR GPL-3.0-or-later)",
++      "dependencies": {
++        "lie": "~3.3.0",
++        "pako": "~1.0.2",
++        "readable-stream": "~2.3.6",
++        "setimmediate": "^1.0.5"
++      }
++    },
+     "node_modules/kleur": {
+       "version": "4.1.5",
+       "resolved": "https://registry.npmjs.org/kleur/-/kleur-4.1.5.tgz",
+@@ -2967,6 +3059,15 @@
+         "node": ">=6"
+       }
+     },
++    "node_modules/lie": {
++      "version": "3.3.0",
++      "resolved": "https://registry.npmjs.org/lie/-/lie-3.3.0.tgz",
++      "integrity": "sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==",
++      "license": "MIT",
++      "dependencies": {
++        "immediate": "~3.0.5"
++      }
++    },
+     "node_modules/lightningcss": {
+       "version": "1.33.0",
+       "resolved": "https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz",
+@@ -3235,6 +3336,17 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/lop": {
++      "version": "0.4.2",
++      "resolved": "https://registry.npmjs.org/lop/-/lop-0.4.2.tgz",
++      "integrity": "sha512-RefILVDQ4DKoRZsJ4Pj22TxE3omDO47yFpkIBoDKzkqPRISs5U1cnAdg/5583YPkWPaLIYHOKRMQSvjFsO26cw==",
++      "license": "BSD-2-Clause",
++      "dependencies": {
++        "duck": "^0.1.12",
++        "option": "~0.2.1",
++        "underscore": "^1.13.1"
++      }
++    },
+     "node_modules/magic-string": {
+       "version": "0.30.21",
+       "resolved": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
+@@ -3245,6 +3357,28 @@
+         "@jridgewell/sourcemap-codec": "^1.5.5"
+       }
+     },
++    "node_modules/mammoth": {
++      "version": "1.13.0",
++      "resolved": "https://registry.npmjs.org/mammoth/-/mammoth-1.13.0.tgz",
++      "integrity": "sha512-2cawcYFcP7ISfXbBcL9lmVgTNWo88v/52ND1gnywHtVT/pX0//puPnf0iMPV9ZgmuvNOE+zkIhDgZ9M2c2dDDg==",
++      "license": "BSD-2-Clause",
++      "dependencies": {
++        "@xmldom/xmldom": "^0.8.6",
++        "argparse": "~1.0.3",
++        "base64-js": "^1.5.1",
++        "dingbat-to-unicode": "^1.0.1",
++        "jszip": "^3.7.1",
++        "lop": "^0.4.2",
++        "underscore": "^1.13.1",
++        "xmlbuilder": "^10.0.0"
++      },
++      "bin": {
++        "mammoth": "bin/mammoth"
++      },
++      "engines": {
++        "node": ">=12.0.0"
++      }
++    },
+     "node_modules/mri": {
+       "version": "1.2.0",
+       "resolved": "https://registry.npmjs.org/mri/-/mri-1.2.0.tgz",
+@@ -3307,6 +3441,18 @@
+         "node": ">=12.20.0"
+       }
+     },
++    "node_modules/option": {
++      "version": "0.2.4",
++      "resolved": "https://registry.npmjs.org/option/-/option-0.2.4.tgz",
++      "integrity": "sha512-pkEqbDyl8ou5cpq+VsnQbe/WlEy5qS7xPzMS1U55OCG9KPvwFD46zDbxQIj3egJSFc3D+XhYOPUzz49zQAVy7A==",
++      "license": "BSD-2-Clause"
++    },
++    "node_modules/pako": {
++      "version": "1.0.11",
++      "resolved": "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz",
++      "integrity": "sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==",
++      "license": "(MIT AND Zlib)"
++    },
+     "node_modules/path-parse": {
+       "version": "1.0.7",
+       "resolved": "https://registry.npmjs.org/path-parse/-/path-parse-1.0.7.tgz",
+@@ -3375,6 +3521,27 @@
+         "node": "^10 || ^12 || >=14"
+       }
+     },
++    "node_modules/process-nextick-args": {
++      "version": "2.0.1",
++      "resolved": "https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-2.0.1.tgz",
++      "integrity": "sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==",
++      "license": "MIT"
++    },
++    "node_modules/readable-stream": {
++      "version": "2.3.8",
++      "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-2.3.8.tgz",
++      "integrity": "sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==",
++      "license": "MIT",
++      "dependencies": {
++        "core-util-is": "~1.0.0",
++        "inherits": "~2.0.3",
++        "isarray": "~1.0.0",
++        "process-nextick-args": "~2.0.0",
++        "safe-buffer": "~5.1.1",
++        "string_decoder": "~1.1.1",
++        "util-deprecate": "~1.0.1"
++      }
++    },
+     "node_modules/readdirp": {
+       "version": "4.1.2",
+       "resolved": "https://registry.npmjs.org/readdirp/-/readdirp-4.1.2.tgz",
+@@ -3514,6 +3681,12 @@
+         "node": ">=6"
+       }
+     },
++    "node_modules/safe-buffer": {
++      "version": "5.1.2",
++      "resolved": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.1.2.tgz",
++      "integrity": "sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==",
++      "license": "MIT"
++    },
+     "node_modules/set-cookie-parser": {
+       "version": "3.1.2",
+       "resolved": "https://registry.npmjs.org/set-cookie-parser/-/set-cookie-parser-3.1.2.tgz",
+@@ -3521,6 +3694,12 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/setimmediate": {
++      "version": "1.0.5",
++      "resolved": "https://registry.npmjs.org/setimmediate/-/setimmediate-1.0.5.tgz",
++      "integrity": "sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==",
++      "license": "MIT"
++    },
+     "node_modules/sirv": {
+       "version": "3.0.2",
+       "resolved": "https://registry.npmjs.org/sirv/-/sirv-3.0.2.tgz",
+@@ -3567,6 +3746,12 @@
+         "source-map": "^0.6.0"
+       }
+     },
++    "node_modules/sprintf-js": {
++      "version": "1.0.3",
++      "resolved": "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz",
++      "integrity": "sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==",
++      "license": "BSD-3-Clause"
++    },
+     "node_modules/std-env": {
+       "version": "4.2.0",
+       "resolved": "https://registry.npmjs.org/std-env/-/std-env-4.2.0.tgz",
+@@ -3574,6 +3759,15 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/string_decoder": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.1.1.tgz",
++      "integrity": "sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==",
++      "license": "MIT",
++      "dependencies": {
++        "safe-buffer": "~5.1.0"
++      }
++    },
+     "node_modules/supports-preserve-symlinks-flag": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz",
+@@ -3729,6 +3923,12 @@
+         "node": ">=14.17"
+       }
+     },
++    "node_modules/underscore": {
++      "version": "1.13.8",
++      "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.13.8.tgz",
++      "integrity": "sha512-DXtD3ZtEQzc7M8m4cXotyHR+FAS18C64asBYY5vqZexfYryNNnDc02W4hKg3rdQuqOYas1jkseX0+nZXjTXnvQ==",
++      "license": "MIT"
++    },
+     "node_modules/undici-types": {
+       "version": "8.9.0",
+       "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-8.9.0.tgz",
+@@ -3736,6 +3936,29 @@
+       "devOptional": true,
+       "license": "MIT"
+     },
++    "node_modules/unpdf": {
++      "version": "1.9.1",
++      "resolved": "https://registry.npmjs.org/unpdf/-/unpdf-1.9.1.tgz",
++      "integrity": "sha512-nO1npM2kNyd4hj1fKzUVU6bvnWjDSxI97eycM/DgzI83dYyW+pNRI9NeMQVEfef8fI3Q06i9lkMeE1HxrQqKoA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=22"
++      },
++      "peerDependencies": {
++        "@napi-rs/canvas": "^0.1.69 || ^1.0.0"
++      },
++      "peerDependenciesMeta": {
++        "@napi-rs/canvas": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/util-deprecate": {
++      "version": "1.0.2",
++      "resolved": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
++      "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==",
++      "license": "MIT"
++    },
+     "node_modules/uuidv7": {
+       "version": "1.2.1",
+       "resolved": "https://registry.npmjs.org/uuidv7/-/uuidv7-1.2.1.tgz",
+@@ -3949,6 +4172,15 @@
+         "node": ">=20.11"
+       }
+     },
++    "node_modules/xmlbuilder": {
++      "version": "10.1.1",
++      "resolved": "https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-10.1.1.tgz",
++      "integrity": "sha512-OyzrcFLL/nb6fMGHbiRDuPup9ljBycsdCypwuyg5AAHvyWzGfChJpCXMG88AGTIMFhGZ9RccFN1e6lhg3hkwKg==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=4.0"
++      }
++    },
+     "node_modules/zimmerframe": {
+       "version": "1.1.5",
+       "resolved": "https://registry.npmjs.org/zimmerframe/-/zimmerframe-1.1.5.tgz",
+diff --git a/package.json b/package.json
+index 655943b..6269a2f 100644
+--- a/package.json
++++ b/package.json
+@@ -11,11 +11,12 @@
+     "build": "vite build",
+     "preview": "vite preview",
+     "start": "node scripts/migrate.js && node build",
+-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+-    "test": "vitest run",
++    "check": "node scripts/verify-and-record.mjs --phase=check",
++    "test": "node scripts/verify-and-record.mjs --phase=unit",
+     "db:generate": "drizzle-kit generate",
+     "db:migrate": "node scripts/migrate.js",
+-    "e2e": "bash e2e/run-all.sh"
++    "e2e": "node scripts/verify-and-record.mjs --phase=browser",
++    "verify": "node scripts/verify-and-record.mjs"
+   },
+   "devDependencies": {
+     "@sveltejs/adapter-node": "^5.5.7",
+@@ -24,6 +25,7 @@
+     "@types/better-sqlite3": "^9.6.0",
+     "@types/node": "^26.6.3",
+     "drizzle-kit": "^0.31.11",
++    "jszip": "^3.10.1",
+     "svelte": "^5.57.1",
+     "svelte-check": "^4.7.6",
+     "typescript": "^6.0.3",
+@@ -35,7 +37,9 @@
+     "@fontsource/source-serif-4": "^5.3.0",
+     "better-sqlite3": "^13.0.3",
+     "drizzle-orm": "^0.45.3",
++    "mammoth": "^1.13.0",
+     "playwright-core": "^1.63.0",
++    "unpdf": "^1.9.1",
+     "uuidv7": "^1.2.1",
+     "zod": "^4.6.5"
+   }
+diff --git a/src/lib/domain/content.ts b/src/lib/domain/content.ts
+index 5060f65..3bd0220 100644
+--- a/src/lib/domain/content.ts
++++ b/src/lib/domain/content.ts
+@@ -1,7 +1,9 @@
+ // The engine's input and output shapes. Pure data: no database, no framework.
++import type { Targeting } from './library';
+ import type { Module, VariantLength } from './modules';
+ 
+ export type VariantIn = {
++	targeting?: Targeting;
+ 	id: string;
+ 	text: string;
+ 	length: VariantLength;
+@@ -11,6 +13,7 @@ export type VariantIn = {
+ };
+ 
+ export type ItemIn = {
++	facts?: string;
+ 	id: string;
+ 	position: number;
+ 	archived: boolean;
+diff --git a/src/lib/domain/modules.ts b/src/lib/domain/modules.ts
+index 7ac7956..e818c14 100644
+--- a/src/lib/domain/modules.ts
++++ b/src/lib/domain/modules.ts
+@@ -70,3 +70,29 @@ export type EntryData<M extends Module> = z.infer<(typeof entryData)[M]>;
+ export function parseEntryData<M extends Module>(module: M, data: unknown): EntryData<M> {
+ 	return entryData[module].parse(data) as EntryData<M>;
+ }
++
++/** Modules whose entries carry prose wordings of their own (not just bullets). */
++export const ENTRY_WORDINGS: Record<Module, 'required' | 'optional' | 'none'> = {
++	headline: 'required',
++	summary: 'required',
++	experience: 'optional',
++	education: 'optional',
++	credentials: 'optional',
++	skills: 'optional',
++	languages: 'optional',
++	projects: 'optional',
++	custom: 'optional'
++};
++
++/** Modules whose entries have items (bullets / skills). */
++export const HAS_ITEMS: Record<Module, boolean> = {
++	headline: false,
++	summary: false,
++	experience: true,
++	education: true,
++	credentials: false,
++	skills: true,
++	languages: false,
++	projects: true,
++	custom: true
++};
+diff --git a/src/lib/domain/style.ts b/src/lib/domain/style.ts
+index e0574f6..bfa641d 100644
+--- a/src/lib/domain/style.ts
++++ b/src/lib/domain/style.ts
+@@ -39,3 +39,7 @@ export const styleOptions = z
+ 	})
+ 	.partial();
+ export type StyleOptions = z.infer<typeof styleOptions>;
++
++/** Supported choices for measured, single-column reference templates. */
++export const templateStyleSchema = styleOptions.omit({ dates: true }).strict();
++export type TemplateStyle = z.infer<typeof templateStyleSchema>;
+diff --git a/src/lib/editor/EntryFields.svelte b/src/lib/editor/EntryFields.svelte
+index 9b33590..b6e7d57 100644
+--- a/src/lib/editor/EntryFields.svelte
++++ b/src/lib/editor/EntryFields.svelte
+@@ -1,7 +1,7 @@
+ <script lang="ts">
+ 	import type { Module } from '$lib/domain/modules';
+ 	import { MODULE_FIELDS } from './fields';
+-	let { module, data = {}, idPrefix = 'f' }: { module: Module; data?: Record<string, unknown>; idPrefix?: string } = $props();
++	let { module, data = {}, idPrefix = 'f', namePrefix = '', onChange }: { module: Module; data?: Record<string, unknown>; idPrefix?: string; namePrefix?: string; onChange?: (name: string, value: string | null) => void } = $props();
+ 	const val = (k: string) => (typeof data[k] === 'string' ? (data[k] as string) : '');
+ </script>
+ 
+@@ -10,17 +10,17 @@
+ 		<div>
+ 			<label for="{idPrefix}-{f.name}">{f.label}{'required' in f && f.required ? ' *' : ''}</label>
+ 			{#if f.kind === 'select'}
+-				<select id="{idPrefix}-{f.name}" name={f.name} required={f.required}>
+-					{#if !f.required}<option value="">—</option>{/if}
++				<select id="{idPrefix}-{f.name}" name={namePrefix + f.name} required={f.required} onchange={event => onChange?.(f.name, event.currentTarget.value)}>
++					<option value="" selected={!val(f.name)}>— choose —</option>
+ 					{#each f.options as o}<option selected={val(f.name) === o}>{o}</option>{/each}
+ 				</select>
+ 			{:else if f.kind === 'month'}
+-				<input id="{idPrefix}-{f.name}" name={f.name} type="month" value={val(f.name)} required={f.required} placeholder="YYYY-MM" />
++				<input id="{idPrefix}-{f.name}" name={namePrefix + f.name} type="month" value={val(f.name)} required={f.required} oninput={event => onChange?.(f.name, event.currentTarget.value)} placeholder="YYYY-MM" />
+ 			{:else if f.kind === 'end'}
+-				<input id="{idPrefix}-{f.name}" name={f.name} type="month" value={val(f.name)} placeholder="YYYY-MM" />
+-				<label class="check"><input type="checkbox" name="{f.name}_present" checked={data[f.name] === null} /> present</label>
++				<input id="{idPrefix}-{f.name}" name={namePrefix + f.name} type="month" value={val(f.name)} oninput={event => onChange?.(f.name, event.currentTarget.value)} placeholder="YYYY-MM" />
++				<label class="check"><input type="checkbox" name="{namePrefix}{f.name}_present" checked={data[f.name] === null} onchange={event => onChange?.(f.name, event.currentTarget.checked ? null : '')} /> present</label>
+ 			{:else}
+-				<input id="{idPrefix}-{f.name}" name={f.name} type={f.kind === 'url' ? 'url' : 'text'} value={val(f.name)} required={f.required}
++				<input id="{idPrefix}-{f.name}" name={namePrefix + f.name} type={f.kind === 'url' ? 'url' : 'text'} value={val(f.name)} required={f.required} oninput={event => onChange?.(f.name, event.currentTarget.value)}
+ 					placeholder={f.kind === 'url' ? 'https://' : ''} />
+ 				{#if 'hint' in f && f.hint}<span class="hint">{f.hint}</span>{/if}
+ 			{/if}
+diff --git a/src/lib/editor/Wordings.svelte b/src/lib/editor/Wordings.svelte
+index 1ccd131..c815991 100644
+--- a/src/lib/editor/Wordings.svelte
++++ b/src/lib/editor/Wordings.svelte
+@@ -1,5 +1,6 @@
+ <script lang="ts">
+ 	// Edit the alternative wordings of one entry or item.
++	import TargetingFields from './TargetingFields.svelte';
+ 	import { enhance } from '$app/forms';
+ 	import { keep } from '$lib/ui/enhance';
+ 	import { VARIANT_LENGTHS } from '$lib/domain/modules';
+@@ -16,6 +17,7 @@
+ 		<input type="hidden" name="id" value={v.id} />
+ 		<label for="{idPrefix}-t{i}" class="sr">Wording {i + 1}</label>
+ 		<textarea id="{idPrefix}-t{i}" name="text" rows={compact ? 2 : 3} required>{v.text}</textarea>
++		<TargetingFields value={v.targeting}/>
+ 		<div class="row tools">
+ 			<div><label for="{idPrefix}-l{i}">Length</label>
+ 				<select id="{idPrefix}-l{i}" name="length">{#each VARIANT_LENGTHS as l}<option selected={l === v.length}>{l}</option>{/each}</select></div>
+@@ -37,6 +39,7 @@
+ 		{#if entryId}<input type="hidden" name="entryId" value={entryId} />{/if}
+ 		{#if itemId}<input type="hidden" name="itemId" value={itemId} />{/if}
+ 		<label for="{idPrefix}-new">New wording</label>
++		<TargetingFields/>
+ 		<!-- svelte-ignore a11y_autofocus -->
+ 		<textarea id="{idPrefix}-new" name="text" rows="2" required autofocus></textarea>
+ 		<div class="row tools">
+diff --git a/src/lib/editor/fields.ts b/src/lib/editor/fields.ts
+index 805d3aa..8ea86e3 100644
+--- a/src/lib/editor/fields.ts
++++ b/src/lib/editor/fields.ts
+@@ -71,31 +71,7 @@ export const MODULE_FIELDS: Record<Module, Field[]> = {
+ 	custom: [{ name: 'heading', label: 'Heading', kind: 'text', required: true }]
+ };
+ 
+-/** Modules whose entries carry prose wordings of their own (not just bullets). */
+-export const ENTRY_WORDINGS: Record<Module, 'required' | 'optional' | 'none'> = {
+-	headline: 'required',
+-	summary: 'required',
+-	experience: 'optional',
+-	education: 'optional',
+-	credentials: 'none',
+-	skills: 'none',
+-	languages: 'none',
+-	projects: 'optional',
+-	custom: 'optional'
+-};
+-
+-/** Modules whose entries have items (bullets / skills). */
+-export const HAS_ITEMS: Record<Module, boolean> = {
+-	headline: false,
+-	summary: false,
+-	experience: true,
+-	education: true,
+-	credentials: false,
+-	skills: true,
+-	languages: false,
+-	projects: true,
+-	custom: true
+-};
++export { ENTRY_WORDINGS, HAS_ITEMS } from '$lib/domain/modules';
+ 
+ /** Turns submitted form fields into the module's data object (empty → omitted, end "present" → null). */
+ export function dataFromForm(module: Module, form: FormData): Record<string, unknown> {
+diff --git a/src/lib/render/designs/shared.ts b/src/lib/render/designs/shared.ts
+index 2106608..96245bb 100644
+--- a/src/lib/render/designs/shared.ts
++++ b/src/lib/render/designs/shared.ts
+@@ -62,11 +62,11 @@ export function sectionBody(s: ResolvedSection, block: EntryBlock): SafeHtml {
+ 		case 'skills':
+ 			return h`${s.entries.map((e) => {
+ 				const group = str(e.data, 'group');
+-				return h`<p class="inline">${group ? h`<span class="group">${group}:</span> ` : ''}${joinWithSep(e.items.map((i) => h`<span${src('item', e.id, i.id)}>${i.text}</span>`))}</p>`;
++				return h`${e.text ? h`<p class="desc"${src('entry', e.id)}>${e.text}</p>` : ''}<p class="inline">${group ? h`<span class="group">${group}:</span> ` : ''}${joinWithSep(e.items.map((i) => h`<span${src('item', e.id, i.id)}>${i.text}</span>`))}</p>`;
+ 			})}`;
+ 		case 'languages':
+ 			return h`<p class="inline">${joinWithSep(
+-				s.entries.map((e) => h`<span${src('entry', e.id)}>${str(e.data, 'language')} (${LANGUAGE_LEVEL_LABEL[str(e.data, 'level')] ?? str(e.data, 'level')})</span>`)
++				s.entries.map((e) => h`<span${src('entry', e.id)}>${str(e.data, 'language')} (${LANGUAGE_LEVEL_LABEL[str(e.data, 'level')] ?? str(e.data, 'level')})${e.text ? h` — ${e.text}` : ''}</span>`)
+ 			)}</p>`;
+ 		case 'custom':
+ 			return h`${s.entries.map((e) => block(str(e.data, 'heading'), '', '', e))}`;
+diff --git a/src/lib/render/render.test.ts b/src/lib/render/render.test.ts
+index a1d4e45..515ff4d 100644
+--- a/src/lib/render/render.test.ts
++++ b/src/lib/render/render.test.ts
+@@ -33,6 +33,19 @@ const cv = (over: Partial<ResolvedCV> = {}): ResolvedCV => ({
+ const render = (c = cv()) => renderDocument(c, { fontCss: '', fontSrc: 'data:' });
+ 
+ describe('renderDocument', () => {
++ it('preserves imported skill and language descriptions in every legacy design', () => {
++  const content = cv({ sections: [
++   {module:'skills',title:'Skills',entries:[{id:'s',module:'skills',data:{group:'Core'},variantId:null,text:'Applied in operational governance <daily>',items:[{id:'i',variantId:'iv',text:'ITIL'}]}]},
++   {module:'languages',title:'Languages',entries:[{id:'l',module:'languages',data:{language:'English',level:'C1'},variantId:null,text:'Used for international negotiations',items:[]}]}
++  ] });
++  for (const designKey of ['modern','classic','business','executive','bold']) {
++   const html = renderDocument(content, {designKey,fontCss:'',fontSrc:'data:'});
++   expect(html).toContain('Applied in operational governance &lt;daily&gt;');
++   expect(html).toContain('Used for international negotiations');
++   expect(html).toContain('ITIL');
++  }
++ });
++
+ 	it('escapes every piece of user text', () => {
+ 		const html = render();
+ 		expect(html).not.toContain('<script>');
+diff --git a/src/lib/server/auth/rate-limit.ts b/src/lib/server/auth/rate-limit.ts
+index f2a355f..b4ce269 100644
+--- a/src/lib/server/auth/rate-limit.ts
++++ b/src/lib/server/auth/rate-limit.ts
+@@ -15,7 +15,3 @@ export function hit(key: string, limit: number, windowMs: number, now = Date.now
+ 	}
+ 	return { allowed: b.count <= limit, retryAfterMs: Math.max(0, b.resetAt - now) };
+ }
+-
+-export function resetLimits() {
+-	buckets.clear();
+-}
+diff --git a/src/lib/server/auth/session.ts b/src/lib/server/auth/session.ts
+index 466efb9..cad859d 100644
+--- a/src/lib/server/auth/session.ts
++++ b/src/lib/server/auth/session.ts
+@@ -1,5 +1,5 @@
+ // Sessions: random token in an httpOnly cookie, sha256(token) in the database.
+-import { and, eq, gt, lt, ne } from 'drizzle-orm';
++import { and, eq, lt, ne } from 'drizzle-orm';
+ import { db } from '../db';
+ import { session, user, type Role } from '../db/schema';
+ import { newToken, sha256 } from './tokens';
+@@ -59,11 +59,3 @@ export function invalidateUserSessions(userId: string, exceptToken?: string) {
+ export function purgeExpiredSessions(now = Date.now()) {
+ 	return db.delete(session).where(lt(session.expiresAt, now)).run().changes;
+ }
+-
+-export function activeSessionCount(userId: string, now = Date.now()) {
+-	return db
+-		.select({ id: session.id })
+-		.from(session)
+-		.where(and(eq(session.userId, userId), gt(session.expiresAt, now)))
+-		.all().length;
+-}
+diff --git a/src/lib/server/db/schema.ts b/src/lib/server/db/schema.ts
+index d74ef4e..85509a4 100644
+--- a/src/lib/server/db/schema.ts
++++ b/src/lib/server/db/schema.ts
+@@ -1,5 +1,7 @@
++import type { ImportDraft } from '../../domain/import';
+ // Database schema — mirrors docs/SCHEMA.md. Change the spec first, then this file,
+ // then run `npm run db:generate` to create a migration.
++import type { Targeting, CompositionDocument } from '../../domain/library';
+ import { sql } from 'drizzle-orm';
+ import {
+ 	sqliteTable,
+@@ -8,7 +10,8 @@ import {
+ 	primaryKey,
+ 	index,
+ 	uniqueIndex,
+-	check
++	check,
++	blob
+ } from 'drizzle-orm/sqlite-core';
+ import { MODULES, VARIANT_LENGTHS } from '../../domain/modules';
+ import type { Recipe, Overrides } from '../../domain/recipe';
+@@ -155,6 +158,7 @@ export const items = sqliteTable(
+ 			.references(() => entries.id, { onDelete: 'cascade' }),
+ 		position: integer('position').notNull().default(0),
+ 		note: text('note'),
++		facts: text('facts').notNull().default(''),
+ 		archivedAt: ms('archived_at'),
+ 		createdAt: createdAt(),
+ 		updatedAt: updatedAt()
+@@ -170,6 +174,7 @@ export const variants = sqliteTable(
+ 		entryId: text('entry_id').references(() => entries.id, { onDelete: 'cascade' }),
+ 		itemId: text('item_id').references(() => items.id, { onDelete: 'cascade' }),
+ 		text: text('text').notNull(),
++		targeting: text('targeting', { mode: 'json' }).$type<Targeting>().notNull().default({ roleFamilies: [], competencies: [], keywords: [], basis: 'unspecified', notes: '' }),
+ 		length: text('length', { enum: VARIANT_LENGTHS }).notNull().default('standard'),
+ 		isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+ 		position: integer('position').notNull().default(0),
+@@ -303,3 +308,52 @@ export const termStatus = sqliteTable(
+ 	},
+ 	(t) => [primaryKey({ columns: [t.ownerId, t.termKey] })]
+ );
++
++// ── Source provenance and independently editable CV compositions
++export const sourceDocuments = sqliteTable('source_documents', {
++ id: id(), ownerId: ownerId(), filename: text('filename').notNull(),
++ mediaType: text('media_type').notNull(), sha256: text('sha256').notNull(),
++ extractedText: text('extracted_text'),
++ targeting: text('targeting', { mode: 'json' }).$type<Targeting>().notNull(),
++ createdAt: createdAt()
++}, t => [index('source_documents_owner').on(t.ownerId)]);
++
++export const sourceReferences = sqliteTable('source_references', {
++ id: id(), ownerId: ownerId(),
++ sourceDocumentId: text('source_document_id').notNull().references(() => sourceDocuments.id, { onDelete: 'cascade' }),
++ entryId: text('entry_id').references(() => entries.id, { onDelete: 'cascade' }),
++ itemId: text('item_id').references(() => items.id, { onDelete: 'cascade' }),
++ variantId: text('variant_id').references(() => variants.id, { onDelete: 'cascade' }),
++ location: text('location').notNull().default(''), excerpt: text('excerpt').notNull().default(''), createdAt: createdAt()
++}, t => [
++ index('source_references_owner').on(t.ownerId),
++ check('source_references_one_target', sql`((${t.entryId} IS NOT NULL) + (${t.itemId} IS NOT NULL) + (${t.variantId} IS NOT NULL)) = 1`)
++]);
++
++export const compositions = sqliteTable('compositions', {
++ id: id(), ownerId: ownerId(), name: text('name').notNull(),
++ sourceDocumentId: text('source_document_id').references(() => sourceDocuments.id, { onDelete: 'set null' }),
++ designKey: text('design_key').notNull(),
++ style: text('style', { mode: 'json' }).$type<StyleOptions>().notNull().default({}),
++ document: text('document', { mode: 'json' }).$type<CompositionDocument>().notNull(),
++ createdAt: createdAt(), updatedAt: updatedAt()
++}, t => [index('compositions_owner').on(t.ownerId)]);
++
++export const sourceFiles = sqliteTable('source_files', {
++ sourceDocumentId: text('source_document_id').primaryKey().references(() => sourceDocuments.id, { onDelete: 'cascade' }),
++ ownerId: ownerId(), bytes: blob('bytes', { mode: 'buffer' }).notNull()
++});
++export const cvImports = sqliteTable('cv_imports', {
++ id: id(), ownerId: ownerId(),
++ sourceDocumentId: text('source_document_id').notNull().unique().references(() => sourceDocuments.id, { onDelete: 'cascade' }),
++ draft: text('draft', { mode: 'json' }).$type<ImportDraft>().notNull(),
++ compositionId: text('composition_id').references(() => compositions.id, { onDelete: 'set null' }),
++ acceptedAt: ms('accepted_at'), createdAt: createdAt(), updatedAt: updatedAt()
++}, t => [index('cv_imports_owner').on(t.ownerId)]);
++
++export const cvTemplates = sqliteTable('cv_templates', {
++ id: id(), ownerId: ownerId(), name: text('name').notNull(),
++ referenceSourceId: text('reference_source_id').references(() => sourceDocuments.id, { onDelete: 'set null' }),
++ style: text('style', { mode: 'json' }).$type<StyleOptions>().notNull(),
++ createdAt: createdAt()
++}, t => [index('cv_templates_owner').on(t.ownerId)]);
+diff --git a/src/lib/server/editor.ts b/src/lib/server/editor.ts
+index 7e4ef46..b001d4f 100644
+--- a/src/lib/server/editor.ts
++++ b/src/lib/server/editor.ts
+@@ -15,10 +15,6 @@ export function attempt<T>(fn: () => T, context: Record<string, unknown> = {}) {
+ 
+ export const str = (f: FormData, k: string) => String(f.get(k) ?? '').trim();
+ export const optStr = (f: FormData, k: string) => str(f, k) || null;
+-export const intOrUndefined = (f: FormData, k: string) => {
+-	const v = str(f, k);
+-	return v === '' ? undefined : Number.isInteger(Number(v)) ? Number(v) : NaN;
+-};
+ /** "Governance, audit ,  nis2" → ["governance","audit","nis2"] (validation lower-cases). */
+ export const tagList = (f: FormData, k: string) =>
+ 	str(f, k)
+diff --git a/src/lib/server/flags.ts b/src/lib/server/flags.ts
+index 469253c..3416755 100644
+--- a/src/lib/server/flags.ts
++++ b/src/lib/server/flags.ts
+@@ -5,10 +5,9 @@ import { db } from './db';
+ import { featureFlagOverrides, featureFlags } from './db/schema';
+ 
+ export const FLAGS = {
+-	'editor.dos-shell': 'DOS-style content editor (step 5)',
++	'editor.dos-shell': 'Default DOS appearance (optional; editor access is always available)',
+ 	'render.pdf': 'PDF export via Chromium (step 4)',
+-	'snapshots.share-links': 'Public share links for snapshots (step 6)',
+-	'ai.tailoring': 'AI job-ad tailoring (after test phase)'
++	'snapshots.share-links': 'Public share links for snapshots (step 6)'
+ } as const;
+ export type FlagKey = keyof typeof FLAGS;
+ 
+diff --git a/src/lib/server/render/pdf.ts b/src/lib/server/render/pdf.ts
+index a42055e..4b6a9cf 100644
+--- a/src/lib/server/render/pdf.ts
++++ b/src/lib/server/render/pdf.ts
+@@ -1,7 +1,7 @@
+ // PDF export: one shared headless Chromium, at most two renders at a time.
+ // The page gets our own escaped HTML, runs no scripts (the document's CSP forbids them),
+ // and every network request is blocked, so rendering cannot be used to reach other hosts.
+-import { chromium, type Browser } from 'playwright-core';
++import { chromium, type Browser, type Page } from 'playwright-core';
+ 
+ const CHROMIUM_PATH = process.env.CHROMIUM_PATH ?? '/usr/bin/chromium';
+ const MAX_PARALLEL = 2;
+@@ -43,29 +43,26 @@ async function slot<T>(fn: () => Promise<T>): Promise<T> {
+ 	}
+ }
+ 
++/** One bounded, offline print context shared by PDF rendering and measured CV layout. */
++export async function withPrintPage<T>(html: string, inspect: (page: Page) => Promise<T>): Promise<T> {
++ return slot(async () => {
++  const b = await getBrowser();
++  const context = await b.newContext({ offline: true });
++  try {
++   await context.route('**/*', (route) => route.abort());
++   const page = await context.newPage();
++   page.setDefaultTimeout(TIMEOUT_MS);
++   await page.setContent(html, { waitUntil: 'load' });
++   await page.evaluate(() => document.fonts.ready);
++   await page.emulateMedia({ media: 'print' });
++   return await inspect(page);
++  } finally { await context.close(); }
++ });
++}
++
+ /** The PDF's title metadata comes from the document's <title>. */
+ export async function renderPdf(html: string): Promise<Buffer> {
+-	return slot(async () => {
+-		const b = await getBrowser();
+-		const context = await b.newContext({ offline: true });
+-		try {
+-			await context.route('**/*', (route) => route.abort());
+-			const page = await context.newPage();
+-			page.setDefaultTimeout(TIMEOUT_MS);
+-			await page.setContent(html, { waitUntil: 'load' });
+-			await page.evaluate(() => document.fonts.ready); // CDP evaluation is not subject to the page's CSP
+-			await page.emulateMedia({ media: 'print' });
+-			return await page.pdf({
+-				format: 'A4',
+-				printBackground: true,
+-				preferCSSPageSize: true,
+-				tagged: true, // accessible PDF structure (headings, lists)
+-				outline: true
+-			});
+-		} finally {
+-			await context.close();
+-		}
+-	});
++ return withPrintPage(html, (page) => page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true, tagged: true, outline: true }));
+ }
+ 
+ export async function closePdfBrowser() {
+diff --git a/src/lib/server/repo/account.test.ts b/src/lib/server/repo/account.test.ts
+index adbbca5..ff05687 100644
+--- a/src/lib/server/repo/account.test.ts
++++ b/src/lib/server/repo/account.test.ts
+@@ -22,7 +22,9 @@ describe('export', () => {
+ 		const s = repo.createSnapshot(A, { jobTargetId: j.id });
+ 		repo.createShareLink(A, s);
+ 		submitFeedback(A, 'Nice tool', '/edit', null);
++		repo.updateCategory(A, j.categoryId, { style: { accent: 'burgundy' } });
+ 		const e = repo.exportAccount(A);
++		expect(e.categories.find(c => c.id === j.categoryId)?.style).toEqual({ accent: 'burgundy' });
+ 		expect(e.format).toBe('modular-cv-composer/export@1');
+ 		expect(e.account.email).toBe('a@x.test');
+ 		expect(e.content.length).toBe(repo.loadContent(A).entries.length);
+diff --git a/src/lib/server/repo/account.ts b/src/lib/server/repo/account.ts
+index 55250c7..ffa1f48 100644
+--- a/src/lib/server/repo/account.ts
++++ b/src/lib/server/repo/account.ts
+@@ -5,6 +5,9 @@ import { feedback, inviteCodes, user } from '../db/schema';
+ import { getProfile, listTags, loadContent } from './content';
+ import { listCategories, listJobTargets } from './assembly';
+ import { listSnapshots, getSnapshot, listShareLinks } from './snapshots';
++import { listTemplates } from './templates';
++import { exportImportData } from './imports';
++import { listSourceDocuments, listSourceReferences, listCompositions } from './library';
+ import { InvalidError, NotFoundError } from './errors';
+ 
+ export const EXPORT_FORMAT = 'modular-cv-composer/export@1';
+@@ -23,9 +26,12 @@ export function exportAccount(ownerId: string) {
+ 		exportedAt: new Date().toISOString(),
+ 		account: { ...account, createdAt: iso(account.createdAt), lastLoginAt: iso(account.lastLoginAt) },
+ 		profile: getProfile(ownerId),
++		imports: exportImportData(ownerId),
++        templates: listTemplates(ownerId),
++		library: { sources: listSourceDocuments(ownerId), references: listSourceReferences(ownerId), compositions: listCompositions(ownerId) },
+ 		content: loadContent(ownerId).entries,
+ 		tags: listTags(ownerId).map((t) => t.name),
+-		categories: listCategories(ownerId).map((c) => ({ id: c.id, name: c.name, description: c.description, designKey: c.designKey, recipe: c.recipe })),
++		categories: listCategories(ownerId).map((c) => ({ id: c.id, name: c.name, description: c.description, designKey: c.designKey, style: c.style, recipe: c.recipe })),
+ 		jobs: listJobTargets(ownerId).map((j) => ({
+ 			id: j.id, categoryId: j.categoryId, company: j.company, roleTitle: j.roleTitle, jobUrl: j.jobUrl, jobAdText: j.jobAdText,
+ 			status: j.status, overrides: j.overrides, createdAt: iso(j.createdAt)
+diff --git a/src/lib/server/repo/content.ts b/src/lib/server/repo/content.ts
+index 0940142..13d42db 100644
+--- a/src/lib/server/repo/content.ts
++++ b/src/lib/server/repo/content.ts
+@@ -6,6 +6,7 @@ import { z } from 'zod';
+ import { db } from '../db';
+ import { entries, entryTags, items, itemTags, profiles, tags, variantTags, variants } from '../db/schema';
+ import { MODULES, VARIANT_LENGTHS, entryData, webUrl, type Module, type VariantLength } from '$lib/domain/modules';
++import { targetingSchema } from '$lib/domain/library';
+ import { tagName } from '$lib/domain/recipe';
+ import type { Content, EntryIn, ItemIn, VariantIn } from '$lib/domain/content';
+ import { entryOrder, itemOrder } from '$lib/domain/order';
+@@ -129,7 +130,7 @@ export function deleteEntry(ownerId: string, id: string) {
+ // ── items
+ // Update schemas never carry .default(): with Zod 4, defaults also fill fields left out of a
+ // .partial() parse, which would silently reset them on every update.
+-const itemFields = z.object({ position: z.number().int(), note: z.string().max(500).nullish() });
++const itemFields = z.object({ position: z.number().int(), note: z.string().max(500).nullish(), facts: z.string().trim().max(10000).optional() });
+ const itemCreate = itemFields.partial({ position: true });
+ const itemPatch = itemFields.partial();
+ 
+@@ -140,7 +141,7 @@ export function createItem(ownerId: string, entryId: string, input: unknown = {}
+ 		ownedEntry(tx, ownerId, entryId);
+ 		const now = Date.now();
+ 		const position = i.position ?? nextPosition(tx, items, eq(items.entryId, entryId));
+-		tx.insert(items).values({ id, ownerId, entryId, position, note: i.note ?? null, createdAt: now, updatedAt: now }).run();
++		tx.insert(items).values({ id, ownerId, entryId, position, note: i.note ?? null, facts: i.facts ?? '', createdAt: now, updatedAt: now }).run();
+ 	});
+ 	return id;
+ }
+@@ -149,7 +150,7 @@ export function updateItem(ownerId: string, id: string, input: unknown) {
+ 	const p = parse(itemPatch, input);
+ 	const r = db
+ 		.update(items)
+-		.set({ ...(p.position !== undefined && { position: p.position }), ...(p.note !== undefined && { note: p.note ?? null }), updatedAt: Date.now() })
++		.set({ ...(p.position !== undefined && { position: p.position }), ...(p.note !== undefined && { note: p.note ?? null }), ...(p.facts !== undefined && { facts: p.facts }), updatedAt: Date.now() })
+ 		.where(and(eq(items.id, id), eq(items.ownerId, ownerId)))
+ 		.run();
+ 	if (r.changes !== 1) throw new NotFoundError('Item not found');
+@@ -175,6 +176,7 @@ const variantCreate = z
+ 		entryId: z.string().optional(),
+ 		itemId: z.string().optional(),
+ 		text: z.string().trim().min(1).max(2000),
++		targeting: targetingSchema.default(() => targetingSchema.parse({})),
+ 		length: z.enum(VARIANT_LENGTHS).default('standard'),
+ 		isDefault: z.boolean().default(false),
+ 		position: z.number().int().optional()
+@@ -201,13 +203,14 @@ export function createVariant(ownerId: string, input: unknown): string {
+ 		const now = Date.now();
+ 		const position = v.position ?? nextPosition(tx, variants, target.entryId ? eq(variants.entryId, target.entryId) : eq(variants.itemId, target.itemId!));
+ 		tx.insert(variants)
+-			.values({ id, ownerId, ...target, text: v.text, length: v.length, isDefault: v.isDefault, position, createdAt: now, updatedAt: now })
++			.values({ id, ownerId, ...target, text: v.text, targeting: v.targeting, length: v.length, isDefault: v.isDefault, position, createdAt: now, updatedAt: now })
+ 			.run();
+ 	});
+ 	return id;
+ }
+ 
+ const variantPatch = z.object({
++	targeting: targetingSchema.optional(),
+ 	text: z.string().trim().min(1).max(2000).optional(),
+ 	length: z.enum(VARIANT_LENGTHS).optional(),
+ 	isDefault: z.boolean().optional(),
+@@ -295,6 +298,7 @@ export function loadContent(ownerId: string): Content {
+ 	const toVariant = (v: (typeof vRows)[number]): VariantIn => ({
+ 		id: v.id,
+ 		text: v.text,
++		targeting: v.targeting,
+ 		length: v.length as VariantLength,
+ 		isDefault: v.isDefault,
+ 		position: v.position,
+@@ -309,7 +313,7 @@ export function loadContent(ownerId: string): Content {
+ 
+ 	const itemsByEntry = new Map<string, ItemIn[]>();
+ 	for (const i of db.select().from(items).where(eq(items.ownerId, ownerId)).all()) {
+-		const it: ItemIn = { id: i.id, position: i.position, archived: i.archivedAt !== null, tags: iTags.get(i.id) ?? [], variants: byItem.get(i.id) ?? [] };
++		const it: ItemIn = { id: i.id, facts: i.facts, position: i.position, archived: i.archivedAt !== null, tags: iTags.get(i.id) ?? [], variants: byItem.get(i.id) ?? [] };
+ 		itemsByEntry.set(i.entryId, [...(itemsByEntry.get(i.entryId) ?? []), it]);
+ 	}
+ 
+diff --git a/src/lib/server/repo/index.ts b/src/lib/server/repo/index.ts
+index a569a01..4b25b53 100644
+--- a/src/lib/server/repo/index.ts
++++ b/src/lib/server/repo/index.ts
+@@ -4,3 +4,7 @@ export * from './assembly';
+ export * from './snapshots';
+ export * from './account';
+ export * from './terms';
++export * from './library';
++export * from './imports';
++export * from './composer';
++export * from './templates';
+diff --git a/src/routes/+layout.server.ts b/src/routes/+layout.server.ts
+index 0126c52..a47255c 100644
+--- a/src/routes/+layout.server.ts
++++ b/src/routes/+layout.server.ts
+@@ -2,11 +2,14 @@ import { env } from '$lib/server/env';
+ import { enabledFlags } from '$lib/server/flags';
+ import { openFeedbackCount } from '$lib/server/feedback';
+ 
+-export function load({ locals }) {
++export function load({ locals, cookies }) {
++	const flags=locals.user?enabledFlags(locals.user.id):[];
++	const saved=cookies.get('cv_appearance');
+ 	return {
++        appearance: saved==='dos'||saved==='plain'?saved:flags.includes('editor.dos-shell')?'dos':'plain',
+ 		user: locals.user,
+ 		appEnv: env.appEnv,
+-		flags: locals.user ? enabledFlags(locals.user.id) : [],
++		flags,
+ 		appVersion: env.appVersion,
+ 		openFeedback: locals.user?.role === 'admin' ? openFeedbackCount() : 0
+ 	};
+diff --git a/src/routes/+layout.svelte b/src/routes/+layout.svelte
+index 55d6f7c..f35086f 100644
+--- a/src/routes/+layout.svelte
++++ b/src/routes/+layout.svelte
+@@ -6,6 +6,7 @@
+ 	const here = (p: string) => (page.url.pathname === p ? 'page' : undefined);
+ </script>
+ 
++<div class="app-shell" class:plain={data.appearance==='plain'}>
+ <a href="#main" class="skip">Skip to content</a>
+ 
+ {#if data.appEnv !== 'production'}
+@@ -16,11 +17,12 @@
+ 	<strong>MODULAR CV COMPOSER</strong>
+ 	{#if data.user}
+ 		<a href="/" aria-current={here('/')}>Home</a>
+-		{#if data.flags.includes('editor.dos-shell')}<a href="/edit" aria-current={page.url.pathname.startsWith('/edit') ? 'page' : undefined}>Editor</a>{/if}
+-		<a href="/assemble" aria-current={here('/assemble')}>Assemble</a>
++		<a href="/edit/cvs" aria-current={page.url.pathname.startsWith('/edit') ? 'page' : undefined}>My CVs</a>
++		<a href="/assemble" aria-current={here('/assemble')}>Earlier tools</a>
+ 		<a href="/account" aria-current={here('/account')}>Account</a>
+ 		{#if data.user.role === 'admin'}<a href="/admin" aria-current={here('/admin')}>Admin{data.openFeedback ? ` (${data.openFeedback})` : ''}</a>{/if}
+ 		<span class="grow"></span>
++        <form method="POST" action="/appearance"><input type="hidden" name="appearance" value={data.appearance==='plain'?'dos':'plain'}/><input type="hidden" name="back" value={page.url.pathname}/><button>{data.appearance==='plain'?'DOS appearance':'Simple appearance'}</button></form>
+ 		<span>{data.user.email}</span>
+ 		<form method="POST" action="/logout"><button>Log out</button></form>
+ 	{/if}
+@@ -32,7 +34,16 @@
+ 
+ {#if data.user}<Feedback appVersion={data.appVersion} />{/if}
+ 
++</div>
+ <style>
++ .app-shell { min-height:100vh; background:var(--bg); color:var(--fg); }
++ .plain { --bg:#f7f8fa;--fg:#202630;--dim:#56616f;--accent:#135c91;--hi-bg:#dcecf7;--hi-fg:#142d42;--field-bg:#fff;--error:#ffc6c6;--ok:#ccebd5;--focus:#1769a1;--warn-bg:#755000;font-family:system-ui,sans-serif;color-scheme:light; }
++ :global(.plain .window){border:1px solid #bdc6d0;border-radius:6px;background:#fff;}
++ :global(.plain .window>h1),:global(.plain .window>h2){position:static;background:transparent;padding:0;margin:0 0 1rem;font-size:1.2rem;}
++ :global(.plain button),:global(.plain .btn){box-shadow:none;border:1px solid #aab6c4;border-radius:4px;background:#e4e9ee;color:#142d42;}
++ :global(.plain button.primary){background:#dcecf7;}
++ :global(.plain tr:nth-child(even) td){background:#eef2f6;}
++ :global(.plain .side){border:1px solid #bdc6d0;}
+ 	.skip { position: absolute; left: -999px; }
+ 	.skip:focus { left: 1ch; top: 0.25rem; background: #ffff55; color: #000; padding: 0 1ch; z-index: 10; }
+ 	nav form { display: contents; }
+diff --git a/src/routes/+page.svelte b/src/routes/+page.svelte
+index 2413ecc..beb197a 100644
+--- a/src/routes/+page.svelte
++++ b/src/routes/+page.svelte
+@@ -1,28 +1,8 @@
+-<script lang="ts">
+-	let { data } = $props();
+-</script>
+-
+-<svelte:head><title>Home · Modular CV Composer</title></svelte:head>
+-
+-<section class="window">
+-	<h1>Welcome, {data.user?.name}</h1>
+-	{#if data.flags.includes('editor.dos-shell')}
+-		<p>Write your career facts once, then let each job category pick the right ones. Getting started:</p>
+-		<ol>
+-			<li><a href="/edit/profile">Profile</a> — name and contact details.</li>
+-			<li><a href="/edit/content">Content</a> — roles with bullets, headline and summary wordings, certificates, skills. Tag things (e.g. <i>governance</i>, <i>delivery</i>).</li>
+-			<li><a href="/edit/categories">Job categories</a> — which sections, which tags, how long. Watch the preview on the right.</li>
+-			<li><a href="/edit/jobs">Jobs</a> — one per application: adjust, then <b>Freeze this version</b> when you send it.</li>
+-		</ol>
+-		<p class="hint">Want to see it working first? <a href="/assemble">Assemble</a> can load a fictional example into an empty account.
+-			In the editor, F1 shows the keys. Anything odd or missing: <b>Shift+F1</b> sends feedback from any page.</p>
+-	{:else}
+-		<p class="muted">The editor is not switched on for your account yet.</p>
+-		<p class="muted"><a href="/assemble">Assemble</a> shows how a CV is put together and why — with example content if your account is empty.</p>
+-	{/if}
++<script lang="ts">let {data}=$props();</script>
++<svelte:head><title>Home · CV Composer</title></svelte:head>
++<section class="window"><h1>Welcome, {data.user?.name}</h1>
++ <p>Build a library from your existing CVs, then edit independent copies without disturbing their layout.</p>
++ <p>Getting started:</p><ol><li><a href="/edit/imports">Import CVs</a> — review extracted facts and match existing experience.</li><li><a href="/edit/cvs">My CVs</a> — create, edit, reorder and export a CV within two pages.</li><li>Open a saved CV to compare it with a job description in your chat client or apply a reusable reference style.</li></ol>
++ <p><a href="/edit/content">Shared library</a> · <a href="/edit/templates">Templates</a> · <a href="/assemble">Earlier assembly tools and example content</a></p>
++ <p class="hint">F1 shows editor shortcuts. Shift+F1 sends feedback. Switch between simple and DOS appearance in the menu; appearance never changes your exported CV.</p>
+ </section>
+-
+-<style>
+-	ol { padding-left: 3ch; }
+-	li { margin: 0.3rem 0; }
+-</style>
+diff --git a/src/routes/assemble/+page.server.ts b/src/routes/assemble/+page.server.ts
+index 326e142..f63cf83 100644
+--- a/src/routes/assemble/+page.server.ts
++++ b/src/routes/assemble/+page.server.ts
+@@ -1,6 +1,5 @@
+-// Read-only view of the assembly engine: pick a category or job target, see the
+-// designed CV (live preview) and why each piece is in or out. Becomes part of the editor in step 5.
+-import { error, fail } from '@sveltejs/kit';
++// Legacy assembly view, with an explicit copy into independent saved CVs.
++import { error, fail, redirect } from '@sveltejs/kit';
+ import * as repo from '$lib/server/repo';
+ import { hasContent, seedDemo } from '$lib/server/demo';
+ import { isEnabled } from '$lib/server/flags';
+@@ -42,6 +41,25 @@ export function load({ locals, url }) {
+ }
+ 
+ export const actions = {
++ saveCopy: async ({ locals, request }) => {
++  const ownerId = locals.user!.id;
++  const form = await request.formData();
++  const targetId = String(form.get('target') ?? '').trim();
++  const categoryId = String(form.get('category') ?? '').trim();
++  if (!targetId && !categoryId) return fail(400, { error: 'Choose a category or job first.' });
++  let id: string;
++  try {
++   const cv = targetId ? repo.resolveJobTarget(ownerId, targetId) : repo.resolveCategory(ownerId, categoryId);
++   const target = targetId ? repo.getJobTarget(ownerId, targetId) : null;
++   const name = target ? `${target.company} — ${target.roleTitle}` : repo.getCategory(ownerId, categoryId).name;
++   id = repo.createComposition(ownerId, { name: name.slice(0, 200), document: repo.compositionDocumentFromCV(cv) });
++  } catch (e) {
++   if (e instanceof repo.NotFoundError) error(404, 'Not found');
++   if (e instanceof repo.InvalidError) return fail(400, { error: e.message });
++   throw e;
++  }
++  redirect(303, `/edit/cvs/${id}`);
++ },
+ 	loadDemo: async ({ locals }) => {
+ 		if (hasContent(locals.user!.id)) return fail(400, { error: 'Example content can only be loaded into an empty account.' });
+ 		seedDemo(locals.user!.id);
+diff --git a/src/routes/assemble/+page.svelte b/src/routes/assemble/+page.svelte
+index 74d7444..ab8c53a 100644
+--- a/src/routes/assemble/+page.svelte
++++ b/src/routes/assemble/+page.svelte
+@@ -11,10 +11,11 @@
+ <svelte:head><title>Assemble · Modular CV Composer</title></svelte:head>
+ 
+ <section class="window">
+-	<h1>Assemble a CV</h1>
++	<h1>Legacy CV assembly</h1>
++ <p>For the new workflow, open <a href="/edit/cvs">Saved CVs</a> or <a href="/edit/imports">import an existing CV</a>. You can copy an assembled CV into Saved CVs below.</p>
+ 	{#if form?.error}<p class="msg error" role="alert">{form.error}</p>{/if}
+ 	{#if data.empty}
+-		<p>Your account has no content yet. The editor arrives in step 5; until then you can load a fictional example
++		<p>Your account has no content yet. You can import your own CV or load a fictional example
+ 			(Alex Example: 3 roles, credentials, skills, two job categories, one tailored job target) to see how assembly works.</p>
+ 		<form method="POST" action="?/loadDemo"><button class="primary">Load example content</button></form>
+ 	{:else}
+@@ -44,6 +45,12 @@
+ 
+ 	<section class="window">
+ 		<h2>Preview</h2>
++  <form method="POST" action="?/saveCopy">
++   <input type="hidden" name="target" value={data.selected.targetId ?? ''} />
++   <input type="hidden" name="category" value={data.selected.categoryId ?? ''} />
++   <button class="primary">Copy to Saved CVs</button>
++   <p class="hint">Creates an independent copy using the Classical A4 template. Existing categories, jobs and snapshots stay available.</p>
++  </form>
+ 		<p class="row">
+ 			<a class="btn" data-sveltekit-reload href="/cv/render?{q}&format=html">Download HTML</a>
+ 			{#if data.pdfEnabled}
+diff --git a/src/routes/edit/+layout.server.ts b/src/routes/edit/+layout.server.ts
+index 49b4747..323f420 100644
+--- a/src/routes/edit/+layout.server.ts
++++ b/src/routes/edit/+layout.server.ts
+@@ -1,15 +1,10 @@
+-import { error } from '@sveltejs/kit';
+ import * as repo from '$lib/server/repo';
+-import { isEnabled } from '$lib/server/flags';
+ import { MODULES } from '$lib/domain/modules';
+ 
+ const PREVIEW_COOKIE = 'cvc_preview';
+ 
+ export function load({ locals, cookies }) {
+ 	const ownerId = locals.user!.id;
+-	if (!isEnabled('editor.dos-shell', ownerId)) {
+-		error(403, 'The editor is not switched on for your account yet (feature flag editor.dos-shell).');
+-	}
+ 	const categories = repo.listCategories(ownerId).map((c) => ({ id: c.id, name: c.name }));
+ 	const targets = repo.listJobTargets(ownerId).map((t) => ({ id: t.id, name: `${t.company} — ${t.roleTitle}` }));
+ 
+diff --git a/src/routes/edit/+layout.svelte b/src/routes/edit/+layout.svelte
+index 6b4969d..3e71a09 100644
+--- a/src/routes/edit/+layout.svelte
++++ b/src/routes/edit/+layout.svelte
+@@ -16,8 +16,8 @@
+ 		{ key: 'F2', label: 'Save', run: saveCurrentForm },
+ 		{ key: 'Ctrl+S', label: 'Save', run: saveCurrentForm },
+ 		{ key: 'F3', label: 'Content', run: () => goto('/edit/content') },
+-		{ key: 'F4', label: 'Categories', run: () => goto('/edit/categories') },
+-		{ key: 'F8', label: 'Jobs', run: () => goto('/edit/jobs') },
++		{ key: 'F4', label: 'CVs', run: () => goto('/edit/cvs') },
++		{ key: 'F8', label: 'Import', run: () => goto('/edit/imports') },
+ 		{ key: 'F9', label: 'Profile', run: () => goto('/edit/profile') },
+ 		{ key: 'Escape', label: 'Close', run: () => (help = false) }
+ 	];
+@@ -31,6 +31,8 @@
+ 		if (help) helpEl?.focus();
+ 	});
+ 
++	const importing = $derived(['/edit/imports','/edit/cvs','/edit/templates'].some(path=>page.url.pathname.startsWith(path)));
++ const legacy = $derived(['/edit/categories','/edit/jobs','/edit/terms','/edit/snapshots'].some(path=>page.url.pathname.startsWith(path)));
+ 	const here = (p: string) => (page.url.pathname === p || page.url.pathname.startsWith(p + '/') ? 'page' : undefined);
+ 	const previewSrc = $derived(
+ 		data.preview ? `/cv/render?${data.preview.kind}=${encodeURIComponent(data.preview.id)}&format=preview&click=1&rev=${encodeURIComponent(data.revision)}` : null
+@@ -56,24 +58,29 @@
+ 
+ <svelte:window onkeydown={onKey} />
+ 
+-<div class="editor">
++<div class="editor" class:importing>
+ 	<nav class="side" aria-label="Editor" use:arrowNav>
+-		<p class="menu-title">CONTENT</p>
++		<p class="menu-title">LIBRARY</p>
++		<a data-nav href="/edit/imports" aria-current={here('/edit/imports')}>Import CVs</a>
++		<a data-nav href="/edit/cvs" aria-current={here('/edit/cvs')}>Saved CVs</a>
++		<a data-nav href="/edit/templates" aria-current={here('/edit/templates')}>Templates</a>
++		<p class="menu-title">SHARED LIBRARY</p>
+ 		<a data-nav href="/edit/profile" aria-current={here('/edit/profile')}>Profile</a>
+ 		{#each MODULES as m}
+ 			<a data-nav href="/edit/content/{m}" aria-current={here(`/edit/content/${m}`)}>
+ 				{MODULE_LABELS[m]}<span class="count">{data.counts[m] || ''}</span>
+ 			</a>
+ 		{/each}
+-		<p class="menu-title">ASSEMBLY</p>
++		<details open={legacy}><summary>Earlier assembly tools</summary>
+ 		<a data-nav href="/edit/categories" aria-current={here('/edit/categories')}>Job categories</a>
+ 		<a data-nav href="/edit/jobs" aria-current={here('/edit/jobs')}>Jobs</a>
+ 		<a data-nav href="/edit/terms" aria-current={here('/edit/terms')}>Terms &amp; gaps</a>
+-		<a data-nav href="/edit/snapshots" aria-current={here('/edit/snapshots')}>Snapshots</a>
++		<a data-nav href="/edit/snapshots" aria-current={here('/edit/snapshots')}>Snapshots</a></details>
+ 	</nav>
+ 
+ 	<div class="work">{@render children()}</div>
+ 
++	{#if !importing}
+ 	<aside class="preview" aria-label="Live preview">
+ 		<form method="GET" action="/edit/preview" class="pick" bind:this={previewForm} data-sveltekit-reload>
+ 			<input type="hidden" name="back" value={page.url.pathname + page.url.search} />
+@@ -95,6 +102,7 @@
+ 			<p class="muted pad">The preview appears once you have a job category. Add content first, then create a category under <a href="/edit/categories">Job categories</a>.</p>
+ 		{/if}
+ 	</aside>
++	{/if}
+ </div>
+ 
+ <footer class="fkeys" aria-label="Function keys">
+@@ -111,7 +119,7 @@
+ 				<tbody>
+ 					<tr><td><b>F1</b></td><td>Show / hide this help</td></tr>
+ 					<tr><td><b>F2</b> or <b>Ctrl+S</b></td><td>Save the form you are in</td></tr>
+-					<tr><td><b>F3</b> · <b>F4</b> · <b>F8</b> · <b>F9</b></td><td>Content · Job categories · Jobs · Profile</td></tr>
++					<tr><td><b>F3</b> · <b>F4</b> · <b>F8</b> · <b>F9</b></td><td>Content · Saved CVs · Import CVs · Profile</td></tr>
+ 					<tr><td><b>↑ ↓ Home End</b></td><td>Move through menus and lists</td></tr>
+ 					<tr><td><b>Tab</b> / <b>Shift+Tab</b></td><td>Next / previous field</td></tr>
+ 					<tr><td><b>Enter</b></td><td>Open the highlighted item</td></tr>
+@@ -119,9 +127,8 @@
+ 					<tr><td><b>Esc</b></td><td>Close this help</td></tr>
+ 				</tbody>
+ 			</table>
+-			<p class="hint">How it fits together: write facts once under Content, give their wordings tags,
+-				then a Job category decides which sections, tags and lengths to use. A Job adds changes for one application.
+-				The preview on the right updates after every save.</p>
++			<p class="hint">Import a CV, review its facts and wordings, then open its independent copy in Saved CVs.
++                Content holds the reusable library. Categories, jobs and their preview belong to the legacy assembly workflow.</p>
+ 			<p class="hint">Version {page.data.appVersion}</p>
+ 			<button onclick={() => (help = false)}>Close</button>
+ 		</section>
+@@ -136,6 +143,7 @@
+ 		align-items: start;
+ 		padding-bottom: 2.5rem;
+ 	}
++	.editor.importing { grid-template-columns: 26ch minmax(0, 1fr); }
+ 	.side { display: flex; flex-direction: column; border: 3px double var(--fg); padding: 0.5rem 0; position: sticky; top: 0.5rem; }
+ 	.side a { color: var(--fg); text-decoration: none; padding: 0 1ch; display: flex; justify-content: space-between; }
+ 	.side a:focus-visible, .side a:hover { background: var(--hi-bg); color: var(--hi-fg); outline: none; }
+@@ -161,7 +169,7 @@
+ 		.preview iframe { height: 1180px; }
+ 	}
+ 	@media (max-width: 760px) {
+-		.editor { grid-template-columns: 1fr; }
++		.editor, .editor.importing { grid-template-columns: 1fr; }
+ 		.side { position: static; margin-bottom: 1rem; }
+ 	}
+ </style>
+diff --git a/src/routes/edit/+page.server.ts b/src/routes/edit/+page.server.ts
+index d6b6e20..f5f9d3e 100644
+--- a/src/routes/edit/+page.server.ts
++++ b/src/routes/edit/+page.server.ts
+@@ -1,2 +1,2 @@
+ import { redirect } from '@sveltejs/kit';
+-export const load = () => redirect(307, '/edit/content');
++export const load = () => redirect(307, '/edit/cvs');
+diff --git a/src/routes/edit/content/+page.svelte b/src/routes/edit/content/+page.svelte
+index bae744e..73e812c 100644
+--- a/src/routes/edit/content/+page.svelte
++++ b/src/routes/edit/content/+page.svelte
+@@ -9,6 +9,7 @@
+ 
+ <section class="window">
+ 	<h1>Content</h1>
++	<p><a href="/edit/imports">Import an existing CV →</a></p>
+ 	<p class="hint">Write each fact once. Pick a section (↑ ↓ and Enter work here too).</p>
+ 	<ul class="list" use:arrowNav>
+ 		{#each MODULES as m}
+diff --git a/src/routes/edit/content/entry/[id]/+page.server.ts b/src/routes/edit/content/entry/[id]/+page.server.ts
+index 20189a4..e238acd 100644
+--- a/src/routes/edit/content/entry/[id]/+page.server.ts
++++ b/src/routes/edit/content/entry/[id]/+page.server.ts
+@@ -25,7 +25,9 @@ export function load({ locals, params }) {
+ /** Target of a wording form: exactly one of entryId / itemId. */
+ const target = (f: FormData) => (str(f, 'itemId') ? { itemId: str(f, 'itemId') } : { entryId: str(f, 'entryId') });
+ 
++const targetingFromForm=(f:FormData)=>({roleFamilies:tagList(f,'roleFamilies'),competencies:tagList(f,'competencies'),keywords:tagList(f,'keywords'),basis:str(f,'basis')||'unspecified',notes:str(f,'targetingNotes')});
+ export const actions = {
++ saveItemFacts:async({request,locals})=>{const f=await request.formData();const r=attempt(()=>repo.updateItem(locals.user!.id,str(f,'itemId'),{facts:str(f,'facts')}));return r.ok?{saved:'Achievement facts saved.'}:r.failure;},
+ 	saveFields: async ({ request, locals, params }) => {
+ 		const e = findEntry(locals.user!.id, params.id);
+ 		const f = await request.formData();
+@@ -39,7 +41,7 @@ export const actions = {
+ 	addWording: async ({ request, locals }) => {
+ 		const f = await request.formData();
+ 		const r = attempt(() => {
+-			const id = repo.createVariant(locals.user!.id, { ...target(f), text: str(f, 'text'), length: str(f, 'length') || 'standard', isDefault: f.get('isDefault') === 'on' });
++			const id = repo.createVariant(locals.user!.id, { ...target(f), text: str(f, 'text'), targeting:targetingFromForm(f), length: str(f, 'length') || 'standard', isDefault: f.get('isDefault') === 'on' });
+ 			const tags = tagList(f, 'tags');
+ 			if (tags.length) repo.setTags(locals.user!.id, { variantId: id }, tags);
+ 		});
+@@ -51,6 +53,7 @@ export const actions = {
+ 		const r = attempt(() => {
+ 			repo.updateVariant(locals.user!.id, id, {
+ 				text: str(f, 'text'),
++                ...(f.has('roleFamilies')?{targeting:targetingFromForm(f)}:{}),
+ 				length: str(f, 'length'),
+ 				...(f.get('isDefault') === 'on' ? { isDefault: true } : {})
+ 			});
+diff --git a/src/routes/edit/content/entry/[id]/+page.svelte b/src/routes/edit/content/entry/[id]/+page.svelte
+index e2de5e9..03a5388 100644
+--- a/src/routes/edit/content/entry/[id]/+page.svelte
++++ b/src/routes/edit/content/entry/[id]/+page.svelte
+@@ -65,7 +65,10 @@
+ 		<h2>{e.module === 'skills' ? 'Skills' : 'Bullets'}</h2>
+ 		{#each e.items as item, i (item.id)}
+ 			<div class="item" class:archived={item.archived} id="item-{item.id}">
+-				<div class="item-head">
++				<form method="POST" action="?/saveItemFacts" use:enhance={keep}>
++                    <input type="hidden" name="itemId" value={item.id}/><label>Neutral achievement facts<textarea name="facts" rows="2" maxlength="10000">{item.facts??''}</textarea></label><button class="small">Save facts</button>
++                </form>
++                <div class="item-head">
+ 					<b>{i + 1}.</b>
+ 					<form method="POST" action="?/itemTags" use:enhance={keep} class="row tagform">
+ 						<input type="hidden" name="itemId" value={item.id} />
+diff --git a/src/routes/privacy/+page.svelte b/src/routes/privacy/+page.svelte
+index 6a3e7be..3564630 100644
+--- a/src/routes/privacy/+page.svelte
++++ b/src/routes/privacy/+page.svelte
+@@ -18,6 +18,7 @@
+ 	<ul>
+ 		<li><b>Your account:</b> name, e-mail address, role, a scrypt hash of your password (never the password itself), when you joined and last logged in.</li>
+ 		<li><b>What you write:</b> your profile, CV content, wordings, tags, job categories, jobs (including job-ad text you paste in) and the snapshots you save.</li>
++		<li><b>CV imports:</b> original PDF/Word files, extracted text, review drafts, source references and saved compositions. Extraction runs on this server.</li>
+ 		<li><b>Share links:</b> for each link you create, how often it was opened and when last. Nothing about the visitor (no IP address, no browser details).</li>
+ 		<li><b>Feedback</b> you send from inside the app.</li>
+ 	</ul>
+diff --git a/tsconfig.json b/tsconfig.json
+index a8f10c8..9d43333 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -1,14 +1,19 @@
+ {
+-	"extends": "./.svelte-kit/tsconfig.json",
+-	"compilerOptions": {
+-		"allowJs": true,
+-		"checkJs": true,
+-		"esModuleInterop": true,
+-		"forceConsistentCasingInFileNames": true,
+-		"resolveJsonModule": true,
+-		"skipLibCheck": true,
+-		"sourceMap": true,
+-		"strict": true,
+-		"moduleResolution": "bundler"
+-	}
++  "extends": "./.svelte-kit/tsconfig.json",
++  "compilerOptions": {
++    "allowJs": true,
++    "checkJs": true,
++    "esModuleInterop": true,
++    "forceConsistentCasingInFileNames": true,
++    "resolveJsonModule": true,
++    "skipLibCheck": true,
++    "sourceMap": true,
++    "strict": true,
++    "moduleResolution": "bundler"
++  },
++  "exclude": [
++    "node_modules/**",
++    "build/**",
++    "tests/**"
++  ]
+ }

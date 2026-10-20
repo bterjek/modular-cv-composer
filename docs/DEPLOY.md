@@ -41,7 +41,7 @@ volume snapshots to another region). Test a restore once: stop the app, put a ba
 1. Start the container, open its log, find `[bootstrap] No admin yet. Sign up as … <link>`.
 2. Open the link within 24 hours and create your admin account.
 3. **Admin → Feature flags**: switch on `editor.dos-shell`, `render.pdf`, `snapshots.share-links` for everyone
-   (or first only for yourself with a per-user override). Leave `ai.tailoring` off.
+   (or first only for yourself with a per-user override).
 4. **Admin → Invite codes**: create one per tester (tie it to their e-mail), send them the sign-up link.
 5. Testers' feedback (Shift+F1) appears under **Admin → Tester feedback**; the Admin menu shows the open count.
 

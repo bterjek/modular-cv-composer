@@ -15,10 +15,6 @@ export function attempt<T>(fn: () => T, context: Record<string, unknown> = {}) {
 
 export const str = (f: FormData, k: string) => String(f.get(k) ?? '').trim();
 export const optStr = (f: FormData, k: string) => str(f, k) || null;
-export const intOrUndefined = (f: FormData, k: string) => {
-	const v = str(f, k);
-	return v === '' ? undefined : Number.isInteger(Number(v)) ? Number(v) : NaN;
-};
 /** "Governance, audit ,  nis2" → ["governance","audit","nis2"] (validation lower-cases). */
 export const tagList = (f: FormData, k: string) =>
 	str(f, k)

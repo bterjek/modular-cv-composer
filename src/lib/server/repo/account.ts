@@ -5,6 +5,9 @@ import { feedback, inviteCodes, user } from '../db/schema';
 import { getProfile, listTags, loadContent } from './content';
 import { listCategories, listJobTargets } from './assembly';
 import { listSnapshots, getSnapshot, listShareLinks } from './snapshots';
+import { listTemplates } from './templates';
+import { exportImportData } from './imports';
+import { listSourceDocuments, listSourceReferences, listCompositions } from './library';
 import { InvalidError, NotFoundError } from './errors';
 
 export const EXPORT_FORMAT = 'modular-cv-composer/export@1';
@@ -23,9 +26,12 @@ export function exportAccount(ownerId: string) {
 		exportedAt: new Date().toISOString(),
 		account: { ...account, createdAt: iso(account.createdAt), lastLoginAt: iso(account.lastLoginAt) },
 		profile: getProfile(ownerId),
+		imports: exportImportData(ownerId),
+        templates: listTemplates(ownerId),
+		library: { sources: listSourceDocuments(ownerId), references: listSourceReferences(ownerId), compositions: listCompositions(ownerId) },
 		content: loadContent(ownerId).entries,
 		tags: listTags(ownerId).map((t) => t.name),
-		categories: listCategories(ownerId).map((c) => ({ id: c.id, name: c.name, description: c.description, designKey: c.designKey, recipe: c.recipe })),
+		categories: listCategories(ownerId).map((c) => ({ id: c.id, name: c.name, description: c.description, designKey: c.designKey, style: c.style, recipe: c.recipe })),
 		jobs: listJobTargets(ownerId).map((j) => ({
 			id: j.id, categoryId: j.categoryId, company: j.company, roleTitle: j.roleTitle, jobUrl: j.jobUrl, jobAdText: j.jobAdText,
 			status: j.status, overrides: j.overrides, createdAt: iso(j.createdAt)

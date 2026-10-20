@@ -62,11 +62,11 @@ export function sectionBody(s: ResolvedSection, block: EntryBlock): SafeHtml {
 		case 'skills':
 			return h`${s.entries.map((e) => {
 				const group = str(e.data, 'group');
-				return h`<p class="inline">${group ? h`<span class="group">${group}:</span> ` : ''}${joinWithSep(e.items.map((i) => h`<span${src('item', e.id, i.id)}>${i.text}</span>`))}</p>`;
+				return h`${e.text ? h`<p class="desc"${src('entry', e.id)}>${e.text}</p>` : ''}<p class="inline">${group ? h`<span class="group">${group}:</span> ` : ''}${joinWithSep(e.items.map((i) => h`<span${src('item', e.id, i.id)}>${i.text}</span>`))}</p>`;
 			})}`;
 		case 'languages':
 			return h`<p class="inline">${joinWithSep(
-				s.entries.map((e) => h`<span${src('entry', e.id)}>${str(e.data, 'language')} (${LANGUAGE_LEVEL_LABEL[str(e.data, 'level')] ?? str(e.data, 'level')})</span>`)
+				s.entries.map((e) => h`<span${src('entry', e.id)}>${str(e.data, 'language')} (${LANGUAGE_LEVEL_LABEL[str(e.data, 'level')] ?? str(e.data, 'level')})${e.text ? h` — ${e.text}` : ''}</span>`)
 			)}</p>`;
 		case 'custom':
 			return h`${s.entries.map((e) => block(str(e.data, 'heading'), '', '', e))}`;
