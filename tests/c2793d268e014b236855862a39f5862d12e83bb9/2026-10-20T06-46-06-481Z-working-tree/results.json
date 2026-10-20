@@ -1,0 +1,29 @@
+{
+  "baseCommit": "c2793d268e014b236855862a39f5862d12e83bb9",
+  "testedState": "uncommitted working tree",
+  "startedAt": "2026-10-20T06:46:06.494Z",
+  "status": "M scripts/extract-cv.mjs\n M src/lib/domain/import.test.ts\n M src/lib/domain/import.ts\n M src/lib/server/import-extract.test.ts\n?? scripts/cv-headings.mjs\n?? scripts/pdf-reading-order.mjs\n?? tests/c2793d268e014b236855862a39f5862d12e83bb9/",
+  "commands": [
+    {
+      "name": "sync",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/@sveltejs/kit/svelte-kit.js",
+        "sync"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "check",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/svelte-check/bin/svelte-check",
+        "--tsconfig",
+        "./tsconfig.json"
+      ],
+      "exitCode": 1
+    }
+  ],
+  "finishedAt": "2026-10-20T06:46:12.062Z",
+  "passed": false
+}

@@ -33,6 +33,13 @@ describe('CV suggestions', () => {
   const uncertain = parseCVText('Experience\n2020 – 2024\nManager\nAcme\nOther context', 'cv.pdf');
   expect(uncertain.blocks[0].text).toBe('2020 – 2024\nOther context');
  });
+ it('recognises additional experience and separates undated pipe-delimited roles without inventing dates',()=>{
+  const draft=parseCVText('Additional Experience\nCo-Founder | Example AI\nDeveloping governed adoption.\nFounder | Example Advisory\nBuilding advisory services.','cv.pdf');
+  expect(draft.blocks).toHaveLength(2);
+  expect(draft.blocks[0].data).toEqual({title:'Co-Founder',organization:'Example AI'});
+  expect(draft.blocks[1].data).toEqual({title:'Founder',organization:'Example Advisory'});
+  expect(draft.blocks[1].text).toBe('Building advisory services.');
+ });
  it('surfaces scanned or unreadable content without producing fabricated entries', () => {
   const draft = parseCVText('', 'scanned.pdf');
   expect(draft.blocks).toEqual([]);

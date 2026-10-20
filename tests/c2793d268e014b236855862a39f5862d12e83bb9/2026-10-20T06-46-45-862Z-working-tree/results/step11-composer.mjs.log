@@ -1,0 +1,21 @@
+PASS new editor does not require a DOS appearance flag
+PASS new CV content can be edited and saved
+PASS saving a CV does not silently publish to library
+PASS structured facts and reordered bullets are saved together
+PASS removing a bullet preserves the remaining content
+PASS duplicate edits leave the original CV unchanged
+PASS explicit publication creates library wording
+PASS library entries can be selected into an existing CV
+PASS chat export contains the selected CV and reusable library
+PASS reviewing chat content does not save it
+PASS accepted chat content cannot forge library relationships
+PASS style preview does not create a template
+PASS reference template is applied to the saved CV
+PASS restyling does not alter CV content
+PASS reference template preview uses its saved font and margins
+PASS original style reference is retained exactly
+PASS preview rejects arbitrary style code
+PASS chat and reference downloads require authentication
+PASS chat and reference downloads require authentication
+PASS DOS appearance is an optional toggle
+PASS no browser errors 

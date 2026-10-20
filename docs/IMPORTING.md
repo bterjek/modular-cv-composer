@@ -33,3 +33,9 @@ Unit/integration coverage exercises actual PDF/DOCX extraction, invalid files, c
 Extractor references: [unpdf](https://github.com/unjs/unpdf), [Mammoth](https://github.com/mwilliamson/mammoth.js).
 
 Uploads and review pages are available only while `editor.dos-shell` is enabled for the account, like the existing editor. Originals remain private even when public snapshot sharing is enabled.
+
+## PDF reading order
+
+PDF imports recover top-to-bottom text positions rather than trusting the file's drawing order. Separate recognised section headings on the same row create independent column regions, so certificates are not interleaved with education/languages. Date/title columns are read together; `Job title | Organisation` headers are recognised, including additional and undated experience. Dates that are not present in the source remain for review.
+
+This is still a conservative suggestion, not a guarantee of perfect reconstruction for arbitrary layouts. Review the source excerpt and the original PDF. Existing review drafts are not silently re-extracted or replaced when the parser changes. Upload the original again to produce a fresh draft using the new PDF reading order; reparsing an old extracted-text field does not recover the original geometry.

@@ -1,0 +1,10 @@
+step10-classical.mjs: 20 passed, 0 failed
+step11-composer.mjs: 21 passed, 0 failed
+step2-auth.mjs: 18 passed, 0 failed
+step3-assemble.mjs: 11 passed, 0 failed
+step4-render.mjs: 12 passed, 0 failed
+step5-editor.mjs: 24 passed, 0 failed
+step6-snapshots.mjs: 21 passed, 0 failed
+step7-feedback-designs.mjs: 24 passed, 0 failed
+step8-import.mjs: 15 passed, 0 failed
+step9-reconcile.mjs: 18 passed, 0 failed

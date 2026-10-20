@@ -1,0 +1,41 @@
+No Svelte config file found in /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/tests/e72cf4c0ec89781f76bf7aeed08b483a44830985/2026-10-20-midpoint-consolidation-working-tree/test-sources - using SvelteKit's default configuration without an adapter.
+No Svelte config file found in /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/tests/e72cf4c0ec89781f76bf7aeed08b483a44830985/2026-10-20T05-57-55-382Z-working-tree/test-sources - using SvelteKit's default configuration without an adapter.
+The following Vite config options will be overridden by SvelteKit:
+  - root
+No Svelte config file found in /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/tests/e72cf4c0ec89781f76bf7aeed08b483a44830985/2026-10-20T05-58-25-293Z-working-tree/test-sources - using SvelteKit's default configuration without an adapter.
+The following Vite config options will be overridden by SvelteKit:
+  - root
+No Svelte config file found in /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/tests/e72cf4c0ec89781f76bf7aeed08b483a44830985/2026-10-20T05-59-16-694Z-working-tree/test-sources - using SvelteKit's default configuration without an adapter.
+The following Vite config options will be overridden by SvelteKit:
+  - root
+The following Vite config options will be overridden by SvelteKit:
+  - root
+Loading svelte-check in workspace: /Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer
+Getting Svelte diagnostics...
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/scripts/pdf-reading-order.mjs:9:97
+Error: 'item.str' is possibly 'undefined'. 
+export function pdfPageText(items){
+ const tokens=items.filter(item=>item.str?.trim()&&item.transform?.length===6).map(item=>({text:item.str.trim(),x:item.transform[4],y:item.transform[5],width:item.width??0,height:Math.abs(item.height??item.transform[3])}));
+ /** @type {Array<{y:number;tokens:typeof tokens}>} */
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/scripts/pdf-reading-order.mjs:9:115
+Error: 'item.transform' is possibly 'undefined'. 
+export function pdfPageText(items){
+ const tokens=items.filter(item=>item.str?.trim()&&item.transform?.length===6).map(item=>({text:item.str.trim(),x:item.transform[4],y:item.transform[5],width:item.width??0,height:Math.abs(item.height??item.transform[3])}));
+ /** @type {Array<{y:number;tokens:typeof tokens}>} */
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/scripts/pdf-reading-order.mjs:9:135
+Error: 'item.transform' is possibly 'undefined'. 
+export function pdfPageText(items){
+ const tokens=items.filter(item=>item.str?.trim()&&item.transform?.length===6).map(item=>({text:item.str.trim(),x:item.transform[4],y:item.transform[5],width:item.width??0,height:Math.abs(item.height??item.transform[3])}));
+ /** @type {Array<{y:number;tokens:typeof tokens}>} */
+
+/Users/bterjek/Documents/Gitrepos/modal cv/modular-cv-composer/scripts/pdf-reading-order.mjs:9:202
+Error: 'item.transform' is possibly 'undefined'. 
+export function pdfPageText(items){
+ const tokens=items.filter(item=>item.str?.trim()&&item.transform?.length===6).map(item=>({text:item.str.trim(),x:item.transform[4],y:item.transform[5],width:item.width??0,height:Math.abs(item.height??item.transform[3])}));
+ /** @type {Array<{y:number;tokens:typeof tokens}>} */
+
+====================================
+svelte-check found 4 errors and 0 warnings in 1 file

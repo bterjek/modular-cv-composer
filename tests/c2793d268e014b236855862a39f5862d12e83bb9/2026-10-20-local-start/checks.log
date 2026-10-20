@@ -1,0 +1,10 @@
+Recorded output from the completed local checks:
+pdf-smoke: ok (9967 bytes, Chromium 155.0.8059.79)
+healthy modular-cv-composer:local
+Health: 200
+Login: 200
+Saved CVs require login: 303
+Database integrity: ok
+Changed existing tables: feature_flags (4 rows before and after; registry descriptions refreshed)
+Existing administrator accounts: 1
+New tables present: 6

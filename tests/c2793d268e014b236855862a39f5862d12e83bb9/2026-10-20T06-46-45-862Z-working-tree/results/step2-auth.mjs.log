@@ -1,0 +1,18 @@
+PASS anonymous /admin redirects to login
+PASS bootstrap code prefilled from link
+PASS first admin signed up (has Admin menu)
+PASS tester invite created (P3E8-D7D7-3ZCP-KKP0)
+PASS email-bound invite rejects other address
+PASS tester signed up with lower-case, spaced code (no Admin menu)
+PASS tester cannot open /admin
+PASS tester cannot call admin actions directly
+PASS admin issued reset code
+PASS tester still logged in before reset
+PASS tester reset password
+PASS reset logged tester out everywhere
+PASS tester logs in with new password
+PASS logout ends the session
+PASS cross-site form post blocked (403)
+PASS CSP header present
+PASS last admin cannot demote self
+PASS no unexpected console errors 

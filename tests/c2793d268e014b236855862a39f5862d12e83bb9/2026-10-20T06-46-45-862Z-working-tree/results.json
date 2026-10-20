@@ -1,0 +1,64 @@
+{
+  "baseCommit": "c2793d268e014b236855862a39f5862d12e83bb9",
+  "testedState": "uncommitted working tree",
+  "startedAt": "2026-10-20T06:46:45.868Z",
+  "status": "M scripts/extract-cv.mjs\n M src/lib/domain/import.test.ts\n M src/lib/domain/import.ts\n M src/lib/server/import-extract.test.ts\n?? scripts/cv-headings.mjs\n?? scripts/pdf-reading-order.mjs\n?? tests/c2793d268e014b236855862a39f5862d12e83bb9/",
+  "commands": [
+    {
+      "name": "sync",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/@sveltejs/kit/svelte-kit.js",
+        "sync"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "check",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/svelte-check/bin/svelte-check",
+        "--tsconfig",
+        "./tsconfig.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "unit",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=tests/c2793d268e014b236855862a39f5862d12e83bb9/2026-10-20T06-46-45-862Z-working-tree/results/unit.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "build",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "browser",
+      "command": "bash",
+      "args": [
+        "e2e/run-all.sh"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "unitSummary": {
+    "passed": 173,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "The optional visual-export helper requires VISUAL_OUT; browser-dependent suites also require an available CHROMIUM_PATH."
+  },
+  "finishedAt": "2026-10-20T06:49:40.695Z",
+  "passed": true
+}

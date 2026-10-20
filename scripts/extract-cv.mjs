@@ -1,6 +1,7 @@
 // Isolated extraction subprocess: bounded by the caller's heap, output and timeout limits.
 import { extractRawText } from 'mammoth';
-import { getDocumentProxy, extractText } from 'unpdf';
+import { getDocumentProxy } from 'unpdf';
+import { pdfPageText } from './pdf-reading-order.mjs';
 let input = [];
 for await (const chunk of process.stdin) input.push(chunk);
 const bytes = Buffer.concat(input);
@@ -10,9 +11,11 @@ try {
   const pdf = await getDocumentProxy(new Uint8Array(bytes), { isEvalSupported: false, useSystemFonts: false });
   try {
    if (pdf.numPages > 30) throw new Error('Use a CV with at most 30 pages.');
-   const result = await extractText(pdf, { mergePages: false });
-   text = result.text.join('\n\n');
-   if (result.text.some(page => page.trim().length < 10)) warnings.push('Some PDF pages have little or no readable text. Check the original for scanned or missing content.');
+   const pages=[];
+   for(let n=1;n<=pdf.numPages;n++){const page=await pdf.getPage(n);const content=await page.getTextContent();pages.push(pdfPageText(content.items));}
+   text = pages.join('\n\n');
+   warnings.push('PDF text was ordered by position. Review columns, repeated headers and wrapped paragraphs against the original.');
+   if (pages.some(page => page.trim().length < 10)) warnings.push('Some PDF pages have little or no readable text. Check the original for scanned or missing content.');
   } finally { await pdf.loadingTask.destroy(); }
  } else {
   // Check ZIP central-directory limits before Mammoth expands DOCX content.

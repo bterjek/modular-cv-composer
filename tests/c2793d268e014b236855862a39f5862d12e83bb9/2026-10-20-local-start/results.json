@@ -1,0 +1,30 @@
+{
+  "commit": "c2793d268e014b236855862a39f5862d12e83bb9",
+  "date": "2026-10-20",
+  "timezone": "Europe/Budapest",
+  "databaseBackup": "data/backups/pre-redesign-20261020-081711-022206.sqlite",
+  "backupIntegrity": "ok",
+  "localImage": "modular-cv-composer:local",
+  "imageVersion": "redesign",
+  "container": "cv-composer",
+  "containerHealth": "healthy",
+  "databaseIntegrity": "ok",
+  "originalContentComparison": "All original column values in the 21 existing non-migration tables match the pre-start check, except feature_flags (startup refreshed registry descriptions; row count unchanged).",
+  "newTablesPresent": 6,
+  "existingAdministratorPreserved": true,
+  "publicExposure": "127.0.0.1:3000 only",
+  "commands": [
+    "docker compose -f compose.local.yaml build --build-arg APP_VERSION=redesign",
+    "docker compose -f compose.local.yaml up -d --no-build --wait --wait-timeout 90",
+    "docker exec cv-composer node scripts/pdf-smoke.js",
+    "GET http://localhost:3000/healthz",
+    "GET http://localhost:3000/login",
+    "GET http://localhost:3000/edit/cvs"
+  ],
+  "pdfSmoke": "passed",
+  "httpChecks": {
+    "/healthz": 200,
+    "/login": 200,
+    "/edit/cvs": 303
+  }
+}

@@ -1,0 +1,24 @@
+PASS version shown in footer
+PASS home shows getting-started steps
+PASS preview uses the Classic design ("Source Serif 4", "Liberation Serif", "DejaVu Serif", Georgia, serif)
+PASS serif font loaded in preview
+PASS Shift+F1 opens feedback
+PASS Shift+F1 does not open help
+PASS feedback sent
+PASS F1 still opens help
+PASS admin menu shows 1 open feedback
+PASS feedback shows message, page, version and window size
+PASS feedback carries no CV content
+PASS open count cleared after marking done
+PASS done feedback listed under "done"
+PASS snapshot records the Classic design
+PASS clicking a preview bullet opens that bullet (Closed the annual SOC 2 audit …)
+PASS clicking the name opens the profile
+PASS ServiceNow shown as GAP
+PASS NIS2 shown as IN CV
+PASS ITSM shown as LEFT OUT (bullet exists, not in this CV)
+PASS after applying suggestions ITSM is IN CV
+PASS gap log lists SIEM as a gap
+PASS write-a-bullet opens the new bullet box prefilled with the term
+PASS styled 404 page
+PASS no console errors Failed to load resource: the server responded with a status of 404 (Not Found)

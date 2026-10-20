@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MODULES, type Module } from './modules';
+import { headingOf } from '../../../scripts/cv-headings.mjs';
 import { targetingSchema } from './library';
 
 export const reconciliationSchema = z.object({
@@ -29,20 +30,10 @@ export const importDraftSchema = z.object({
 export type ImportDraft = z.infer<typeof importDraftSchema>;
 export type ImportBlock = z.infer<typeof importBlockSchema>;
 
-const headings: [Module, RegExp][] = [
- ['summary', /^(?:professional |executive |career )?(?:summary|profile|objective|about me|összefoglaló|bemutatkozás)$/i],
- ['experience', /^(?:(?:professional|work|career|employment|relevant) )?(?:experience|history)$|^(?:szakmai tapasztalat|munkatapasztalat)$/i],
- ['education', /^(?:education(?: and qualifications)?|academic background|tanulmányok|végzettség)$/i],
- ['credentials', /^(?:certifications?|certificates?|credentials|training|courses|certifications? (?:&|and) (?:training|courses)|képesítések|tanúsítványok)$/i],
- ['skills', /^(?:(?:core|key|technical|professional) )?(?:skills|competenc(?:ies|es)|expertise)$|^(?:készségek|kompetenciák)$/i],
- ['languages', /^(?:languages?|language skills|nyelvtudás|nyelvek)$/i],
- ['projects', /^(?:selected |key )?projects$/i],
- ['headline', /^headline$/i]
-];
 const cleanLine = (s: string) => s.trim().replace(/^[•●▪◦\-*]\s+/, '').trim();
-const headingOf = (s: string) => headings.find(([, re]) => re.test(s.trim().replace(/:$/, '')))?.[0];
 const dateToken = '(?:[A-Za-zÀ-ž]+\\.? \\d{4}|\\d{1,2}[/.]\\d{4}|\\d{4}(?:[-/.](?:0?[1-9]|1[0-2]))?)';
 const dateRange = new RegExp(`(${dateToken})\\s*[–—-]\\s*(${dateToken}|present|current|jelenleg)`, 'i');
+const roleIdentity = (line:string) => line.replace(dateRange,'').trim().match(/^(.{1,140}?)\s+\|\s+(.{1,140})$/);
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 function exactMonth(value: string) {
  if (/^\d{4}[-/.]\d{1,2}$/.test(value)) return value.slice(0,4) + '-' + value.slice(5).padStart(2,'0');
@@ -89,7 +80,7 @@ export function parseCVText(raw: string, filename: string, extractionWarnings: s
   const chunks: string[][] = [];
   let chunk: string[] = [];
   for (const line of section.lines) {
-   if (section.module === 'experience' && dateRange.test(line) && chunk.some(l => dateRange.test(l))) {
+   if (section.module === 'experience' && ((dateRange.test(line) && chunk.some(l => dateRange.test(l))) || (roleIdentity(line) && chunk.some(l=>roleIdentity(l))))) {
     chunks.push(chunk); chunk = [];
    }
    chunk.push(line);
@@ -103,14 +94,17 @@ export function parseCVText(raw: string, filename: string, extractionWarnings: s
    const excerpt = group.join('\n');
    const data: Record<string, unknown> = {};
    const warnings: string[] = [];
+   let identityHeader: string | undefined;
    let text = excerpt;
    let items: string[] = [];
    const bulletLines = group.filter(l => /^[•●▪◦\-*]\s+/.test(l));
    if (module === 'experience') {
     const range = excerpt.match(dateRange);
     const header = group.filter(l => !/^[•●▪◦\-*]\s+/.test(l)).map(l => l.replace(dateRange, '').replace(/^[|,;–—\-\s]+|[|,;–—\-\s]+$/g, '')).filter(Boolean);
-    data.title = header[0] ?? '';
-    data.organization = header[1] ?? '';
+    identityHeader=header.slice(0,4).find(line=>roleIdentity(line));
+    const identity=identityHeader?roleIdentity(identityHeader):null;
+    data.title = identity?.[1]?.trim() ?? header[0] ?? '';
+    data.organization = identity?.[2]?.trim() ?? header[1] ?? '';
     if (range) {
      const month = exactMonth;
      data.start = month(range[1]);
@@ -148,13 +142,13 @@ export function parseCVText(raw: string, filename: string, extractionWarnings: s
    };
    const represented = (headerKeys[module] ?? []).map(key => data[key]).filter(value => typeof value === 'string' && value);
    const descriptionLines = text.split('\n').filter(line => {
-    if (represented.includes(line)) return false;
+    if (represented.includes(line) || line === identityHeader) return false;
     if (module !== 'experience') return true;
     const match = line.match(dateRange);
     // Keep imprecise or uncertain dates in the wording until they are reviewed.
     if (!match || !data.start || data.end === '') return true;
     const rest = line.replace(dateRange, '').replace(/^[|,;–—\-\s]+|[|,;–—\-\s]+$/g, '');
-    return Boolean(rest) && !represented.includes(rest);
+    return Boolean(rest) && !represented.includes(rest) && rest !== identityHeader;
    });
    text = descriptionLines.join('\n');
    draft.blocks.push({ module, label: String(data.title || data.name || section.title).slice(0,120), included: true, data, text, items,

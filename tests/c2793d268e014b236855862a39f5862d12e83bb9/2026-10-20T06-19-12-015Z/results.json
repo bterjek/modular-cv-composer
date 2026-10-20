@@ -1,0 +1,28 @@
+{
+  "baseCommit": "c2793d268e014b236855862a39f5862d12e83bb9",
+  "testedState": "clean commit",
+  "startedAt": "2026-10-20T06:19:12.023Z",
+  "status": "",
+  "commands": [
+    {
+      "name": "unit",
+      "command": "/Users/bterjek/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "args": [
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=tests/c2793d268e014b236855862a39f5862d12e83bb9/2026-10-20T06-19-12-015Z/results/unit.json"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "unitSummary": {
+    "passed": 170,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "The optional visual-export helper requires VISUAL_OUT; browser-dependent suites also require an available CHROMIUM_PATH."
+  },
+  "finishedAt": "2026-10-20T06:19:30.108Z",
+  "passed": true
+}
